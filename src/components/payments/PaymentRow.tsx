@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { TableCell, TableRow } from "@/components/ui/table";
-import { PaymentDetailsDropdown } from "./PaymentDetailsDropdown";
+import { PaymentDropdown } from "./PaymentDropdown";
 import type { Payment } from "@/types/payments";
 
 interface PaymentRowProps {
@@ -43,10 +43,7 @@ const formatPaymentId = (id: string) => {
 
 export const PaymentRow = ({ payment, style }: PaymentRowProps) => {
   return (
-    <TableRow
-      className="hover:bg-muted/50 transition-all duration-200 animate-in fade-in-0 slide-in-from-left-1"
-      style={style}
-    >
+    <TableRow className="hover:bg-muted/50" style={style}>
       {/* Payment ID */}
       <TableCell>
         <div className="font-mono text-xs bg-muted px-2 py-1 rounded inline-block">
@@ -111,7 +108,7 @@ export const PaymentRow = ({ payment, style }: PaymentRowProps) => {
       {/* Actions */}
       <TableCell>
         <div className="flex justify-end">
-          <PaymentDetailsDropdown payment={payment} />
+          <PaymentDropdown payment={payment} />
         </div>
       </TableCell>
     </TableRow>

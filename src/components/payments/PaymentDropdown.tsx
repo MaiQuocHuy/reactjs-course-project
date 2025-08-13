@@ -33,7 +33,7 @@ import { Separator } from "@/components/ui/separator";
 import type { Payment } from "@/types/payments";
 import { useState } from "react";
 
-interface PaymentDetailsDropdownProps {
+interface PaymentDropdownProps {
   payment: Payment;
 }
 
@@ -68,9 +68,7 @@ const formatDate = (date: Date | undefined) => {
   });
 };
 
-export const PaymentDetailsDropdown = ({
-  payment,
-}: PaymentDetailsDropdownProps) => {
+export const PaymentDropdown = ({ payment }: PaymentDropdownProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const handleViewDetails = () => {
