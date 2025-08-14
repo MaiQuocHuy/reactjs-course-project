@@ -1,14 +1,14 @@
 import { Badge } from "@/components/ui/badge";
 import { TableCell, TableRow } from "@/components/ui/table";
-import { PaymentDropdown } from "./PaymentDropdown";
-import type { Payment } from "@/types/payments";
+import { RefundDropdown } from "./RefundDropdown";
+import type { Refund } from "@/types/refunds";
 
-interface PaymentRowProps {
-  payment: Payment;
+interface RefundRowProps {
+  refund: Refund;
   style?: React.CSSProperties;
 }
 
-const getStatusVariant = (status: Payment["status"]) => {
+const getStatusVariant = (status: Refund["status"]) => {
   switch (status) {
     case "COMPLETED":
       return "default" as const;
@@ -28,7 +28,7 @@ const formatCurrency = (amount: number) => {
   }).format(amount);
 };
 
-const formatDate = (date: Date | undefined) => {
+const formatDate = (date: Date | undefined | null) => {
   if (!date) return "N/A";
   return new Date(date).toLocaleDateString("en-US", {
     year: "numeric",
@@ -37,17 +37,17 @@ const formatDate = (date: Date | undefined) => {
   });
 };
 
-const formatPaymentId = (id: string) => {
+const formatRefundId = (id: string) => {
   return id.slice(0, 8).toUpperCase();
 };
 
-export const PaymentRow = ({ payment, style }: PaymentRowProps) => {
+export const RefundRow = ({ refund, style }: RefundRowProps) => {
   return (
     <TableRow className="hover:bg-muted/50" style={style}>
-      {/* Payment ID */}
+      {/* Refund ID */}
       <TableCell>
         <div className="font-mono text-xs bg-muted px-2 py-1 rounded inline-block">
-          {formatPaymentId(payment.id)}
+          {formatRefundId(refund.id)}
         </div>
       </TableCell>
 
@@ -55,7 +55,12 @@ export const PaymentRow = ({ payment, style }: PaymentRowProps) => {
       <TableCell>
         <div className="flex items-center space-x-3">
           <div className="min-w-0">
-            <p className="font-medium text-sm truncate">{payment.user.name}</p>
+            <p className="font-medium text-sm truncate">
+              {refund.payment.user.name}
+            </p>
+            <p className="text-xs text-muted-foreground truncate">
+              {refund.payment.user.email}
+            </p>
           </div>
         </div>
       </TableCell>
@@ -65,41 +70,53 @@ export const PaymentRow = ({ payment, style }: PaymentRowProps) => {
         <div className="min-w-0">
           <p
             className="font-medium text-sm truncate"
-            title={payment.course.title}
+            title={refund.payment.course.title}
           >
-            {payment.course.title}
+            {refund.payment.course.title}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Original: {formatCurrency(refund.payment.amount)}
           </p>
         </div>
       </TableCell>
 
-      {/* Amount */}
+      {/* Refund Amount */}
       <TableCell>
-        <span className="font-medium">{formatCurrency(payment.amount)}</span>
+        <span className="font-medium text-green-600">
+          {formatCurrency(refund.amount)}
+        </span>
       </TableCell>
 
       {/* Payment Method */}
       <TableCell>
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium capitalize">
-            {payment.paymentMethod}
+            {refund.payment.paymentMethod}
           </span>
         </div>
       </TableCell>
 
       {/* Status */}
       <TableCell>
-        <Badge variant={getStatusVariant(payment.status)}>
-          {payment.status}
-        </Badge>
+        <Badge variant={getStatusVariant(refund.status)}>{refund.status}</Badge>
+      </TableCell>
+
+      {/* Reason */}
+      <TableCell>
+        <div className="max-w-[200px]">
+          <p className="text-sm truncate" title={refund.reason}>
+            {refund.reason}
+          </p>
+        </div>
       </TableCell>
 
       {/* Date */}
       <TableCell>
         <div className="text-sm">
-          <p>{formatDate(payment.createdAt)}</p>
-          {payment.paidAt && payment.status === "COMPLETED" && (
+          <p>{formatDate(refund.requestedAt)}</p>
+          {refund.processedAt && refund.status !== "PENDING" && (
             <p className="text-xs text-muted-foreground">
-              Paid: {formatDate(payment.paidAt)}
+              Processed: {formatDate(refund.processedAt)}
             </p>
           )}
         </div>
@@ -108,7 +125,7 @@ export const PaymentRow = ({ payment, style }: PaymentRowProps) => {
       {/* Actions */}
       <TableCell>
         <div className="flex justify-end">
-          <PaymentDropdown payment={payment} />
+          <RefundDropdown refund={refund} />
         </div>
       </TableCell>
     </TableRow>

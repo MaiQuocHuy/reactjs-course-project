@@ -90,7 +90,7 @@ export const Pagination = () => {
             value={itemsPerPage.toString()}
             onValueChange={handleItemsPerPageChange}
           >
-            <SelectTrigger className="h-8 w-[70px] transition-all duration-200 hover:bg-muted/50">
+            <SelectTrigger className="h-8 w-[70px] hover:bg-muted/50">
               <SelectValue />
             </SelectTrigger>
             <SelectContent side="top">
@@ -126,7 +126,7 @@ export const Pagination = () => {
             value={itemsPerPage.toString()}
             onValueChange={handleItemsPerPageChange}
           >
-            <SelectTrigger className="h-8 w-[70px] transition-all duration-200 hover:bg-muted/50">
+            <SelectTrigger className="h-8 w-[70px] hover:bg-muted/50">
               <SelectValue />
             </SelectTrigger>
             <SelectContent side="top">
@@ -144,7 +144,7 @@ export const Pagination = () => {
             size="sm"
             onClick={() => goToPage(1)}
             disabled={!canGoPrevious}
-            className="h-8 w-8 p-0 transition-all duration-200 hover:bg-muted/50"
+            className="h-8 w-8 p-0 hover:bg-muted/50"
           >
             <span className="sr-only">Go to first page</span>
             <ChevronsLeft className="h-4 w-4" />
@@ -154,7 +154,7 @@ export const Pagination = () => {
             size="sm"
             onClick={() => goToPage(currentPage - 1)}
             disabled={!canGoPrevious}
-            className="h-8 w-8 p-0 transition-all duration-200 hover:bg-muted/50"
+            className="h-8 w-8 p-0 hover:bg-muted/50"
           >
             <span className="sr-only">Go to previous page</span>
             <ChevronLeft className="h-4 w-4" />
@@ -175,7 +175,7 @@ export const Pagination = () => {
                   variant={page === currentPage ? "default" : "outline"}
                   size="sm"
                   onClick={() => goToPage(page as number)}
-                  className="h-8 w-8 p-0 transition-all duration-200 hover:bg-muted/50"
+                  className="h-8 w-8 p-0 hover:bg-muted/50"
                 >
                   {page}
                 </Button>
@@ -188,7 +188,7 @@ export const Pagination = () => {
             size="sm"
             onClick={() => goToPage(currentPage + 1)}
             disabled={!canGoNext}
-            className="h-8 w-8 p-0 transition-all duration-200 hover:bg-muted/50"
+            className="h-8 w-8 p-0 hover:bg-muted/50"
           >
             <span className="sr-only">Go to next page</span>
             <ChevronRight className="h-4 w-4" />
@@ -198,7 +198,7 @@ export const Pagination = () => {
             size="sm"
             onClick={() => goToPage(totalPages)}
             disabled={!canGoNext}
-            className="h-8 w-8 p-0 transition-all duration-200 hover:bg-muted/50"
+            className="h-8 w-8 p-0 hover:bg-muted/50"
           >
             <span className="sr-only">Go to last page</span>
             <ChevronsRight className="h-4 w-4" />
