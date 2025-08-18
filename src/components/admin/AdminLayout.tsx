@@ -1,4 +1,6 @@
 import React from "react";
+import { Link } from "react-router-dom";
+import { Button } from "../ui/button";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -17,6 +19,17 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               </h1>
             </div>
             <div className="flex items-center space-x-4">
+              <div className="flex space-x-2">
+                <Button>
+                  <Link to="/admin/users">Users</Link>
+                </Button>
+                <Button>
+                  <Link to="/admin/payments">Payments</Link>
+                </Button>
+                <Button>
+                  <Link to="/admin/refunds">Refunds</Link>
+                </Button>
+              </div>
               <span className="text-sm text-gray-700">Admin User</span>
               <div className="h-8 w-8 bg-blue-600 rounded-full flex items-center justify-center">
                 <span className="text-white text-sm font-medium">A</span>

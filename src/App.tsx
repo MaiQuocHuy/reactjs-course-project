@@ -9,6 +9,8 @@ import LoginForm from "./components/LoginForm";
 import { AdminLayout } from "./components/admin/AdminLayout";
 import { UsersListPage } from "./pages/admin/users";
 import { UserDetailPage } from "./pages/admin/users";
+import { PaymentsPage } from "./pages/payments";
+import RefundsPage from "./pages/refunds";
 
 function App() {
   return (
@@ -31,6 +33,22 @@ function App() {
           element={
             <AdminLayout>
               <UserDetailPage />
+            </AdminLayout>
+          }
+        />
+        <Route
+          path="/admin/payments"
+          element={
+            <AdminLayout>
+              <PaymentsPage />
+            </AdminLayout>
+          }
+        />
+        <Route
+          path="/admin/refunds"
+          element={
+            <AdminLayout>
+              <RefundsPage />
             </AdminLayout>
           }
         />
