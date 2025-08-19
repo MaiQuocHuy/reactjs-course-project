@@ -3,8 +3,11 @@ export interface User {
   name: string;
   email: string;
   avatar?: string;
+  thumbnailUrl?: string; // For Spring Boot API compatibility
   role: UserRole;
   status: UserStatus;
+  isActive: boolean; // For Spring Boot API compatibility
+  bio?: string;
   createdAt: string;
   updatedAt: string;
   lastLoginAt?: string;
