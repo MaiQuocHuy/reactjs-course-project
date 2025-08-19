@@ -1,14 +1,14 @@
 import { Badge } from "@/components/ui/badge";
 import { TableCell, TableRow } from "@/components/ui/table";
-import { PaymentDropdown } from "./PaymentDropdown";
-import type { Payment } from "@/types/payments";
+import { PaymentActions } from "./PaymentActions";
+import type { PaymentResponse } from "@/services/paymentsApi";
 
 interface PaymentRowProps {
-  payment: Payment;
+  payment: PaymentResponse;
   style?: React.CSSProperties;
 }
 
-const getStatusVariant = (status: Payment["status"]) => {
+const getStatusVariant = (status: PaymentResponse["status"]) => {
   switch (status) {
     case "COMPLETED":
       return "default" as const;
@@ -21,16 +21,15 @@ const getStatusVariant = (status: Payment["status"]) => {
   }
 };
 
-const formatCurrency = (amount: number) => {
+const formatCurrency = (amount: number, currency = "USD") => {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: "USD",
+    currency: currency,
   }).format(amount);
 };
 
-const formatDate = (date: Date | undefined) => {
-  if (!date) return "N/A";
-  return new Date(date).toLocaleDateString("en-US", {
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString("en-US", {
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -74,7 +73,9 @@ export const PaymentRow = ({ payment, style }: PaymentRowProps) => {
 
       {/* Amount */}
       <TableCell>
-        <span className="font-medium">{formatCurrency(payment.amount)}</span>
+        <span className="font-medium">
+          {formatCurrency(payment.amount, payment.currency)}
+        </span>
       </TableCell>
 
       {/* Payment Method */}
@@ -108,7 +109,7 @@ export const PaymentRow = ({ payment, style }: PaymentRowProps) => {
       {/* Actions */}
       <TableCell>
         <div className="flex justify-end">
-          <PaymentDropdown payment={payment} />
+          <PaymentActions payment={payment} />
         </div>
       </TableCell>
     </TableRow>

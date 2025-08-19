@@ -27,8 +27,8 @@ const mockUsers: User[] = [
     email: "john.doe@example.com",
     thumbnailUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=John",
     role: { id: "1", role: "STUDENT" },
-    createdAt: new Date("2024-01-15"),
-    updatedAt: new Date("2024-01-15"),
+    createdAt: "2024-01-15T00:00:00.000Z",
+    updatedAt: "2024-01-15T00:00:00.000Z",
   },
   {
     id: "2",
@@ -36,8 +36,8 @@ const mockUsers: User[] = [
     email: "jane.smith@example.com",
     thumbnailUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=Jane",
     role: { id: "2", role: "STUDENT" },
-    createdAt: new Date("2024-02-10"),
-    updatedAt: new Date("2024-02-10"),
+    createdAt: "2024-02-10T00:00:00.000Z",
+    updatedAt: "2024-02-10T00:00:00.000Z",
   },
   {
     id: "3",
@@ -45,8 +45,8 @@ const mockUsers: User[] = [
     email: "alice.johnson@example.com",
     thumbnailUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alice",
     role: { id: "3", role: "STUDENT" },
-    createdAt: new Date("2024-03-05"),
-    updatedAt: new Date("2024-03-05"),
+    createdAt: "2024-03-05T00:00:00.000Z",
+    updatedAt: "2024-03-05T00:00:00.000Z",
   },
   {
     id: "4",
@@ -54,8 +54,8 @@ const mockUsers: User[] = [
     email: "bob.wilson@example.com",
     thumbnailUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=Bob",
     role: { id: "4", role: "STUDENT" },
-    createdAt: new Date("2024-01-20"),
-    updatedAt: new Date("2024-01-20"),
+    createdAt: "2024-01-20T00:00:00.000Z",
+    updatedAt: "2024-01-20T00:00:00.000Z",
   },
   {
     id: "5",
@@ -63,8 +63,8 @@ const mockUsers: User[] = [
     email: "emily.davis@example.com",
     thumbnailUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=Emily",
     role: { id: "5", role: "STUDENT" },
-    createdAt: new Date("2024-02-25"),
-    updatedAt: new Date("2024-02-25"),
+    createdAt: "2024-02-25T00:00:00.000Z",
+    updatedAt: "2024-02-25T00:00:00.000Z",
   },
 ];
 
@@ -75,8 +75,8 @@ const mockInstructor: User = {
   email: "michael.brown@example.com",
   thumbnailUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=Michael",
   role: { id: "instructor-role", role: "INSTRUCTOR" },
-  createdAt: new Date("2023-06-01"),
-  updatedAt: new Date("2023-06-01"),
+  createdAt: "2023-06-01T00:00:00.000Z",
+  updatedAt: "2023-06-01T00:00:00.000Z",
 };
 
 // Mock courses
@@ -93,8 +93,8 @@ const mockCourses: Course[] = [
     thumbnailUrl: "https://via.placeholder.com/300x200?text=React+Course",
     level: "BEGINNER",
     isDeleted: false,
-    createdAt: new Date("2023-08-01"),
-    updatedAt: new Date("2023-08-01"),
+    createdAt: "2023-08-01T00:00:00.000Z",
+    updatedAt: "2023-08-01T00:00:00.000Z",
   },
   {
     id: "2",
@@ -108,8 +108,8 @@ const mockCourses: Course[] = [
     thumbnailUrl: "https://via.placeholder.com/300x200?text=TypeScript+Course",
     level: "ADVANCED",
     isDeleted: false,
-    createdAt: new Date("2023-09-01"),
-    updatedAt: new Date("2023-09-01"),
+    createdAt: "2023-09-01T00:00:00.000Z",
+    updatedAt: "2023-09-01T00:00:00.000Z",
   },
   {
     id: "3",
@@ -123,8 +123,8 @@ const mockCourses: Course[] = [
     thumbnailUrl: "https://via.placeholder.com/300x200?text=Node.js+Course",
     level: "INTERMEDIATE",
     isDeleted: false,
-    createdAt: new Date("2023-10-01"),
-    updatedAt: new Date("2023-10-01"),
+    createdAt: "2023-10-01T00:00:00.000Z",
+    updatedAt: "2023-10-01T00:00:00.000Z",
   },
   {
     id: "4",
@@ -138,8 +138,8 @@ const mockCourses: Course[] = [
     thumbnailUrl: "https://via.placeholder.com/300x200?text=Full+Stack+Course",
     level: "ADVANCED",
     isDeleted: false,
-    createdAt: new Date("2023-11-01"),
-    updatedAt: new Date("2023-11-01"),
+    createdAt: "2023-11-01T00:00:00.000Z",
+    updatedAt: "2023-11-01T00:00:00.000Z",
   },
   {
     id: "5",
@@ -153,8 +153,8 @@ const mockCourses: Course[] = [
     thumbnailUrl: "https://via.placeholder.com/300x200?text=JavaScript+Course",
     level: "BEGINNER",
     isDeleted: false,
-    createdAt: new Date("2023-07-01"),
-    updatedAt: new Date("2023-07-01"),
+    createdAt: "2023-07-01T00:00:00.000Z",
+    updatedAt: "2023-07-01T00:00:00.000Z",
   },
 ];
 
@@ -169,12 +169,15 @@ const generateMockPayments = (): Payment[] => {
     const paymentMethod =
       paymentMethods[Math.floor(Math.random() * paymentMethods.length)];
 
-    const createdAt = new Date(
+    const createdAtDate = new Date(
       2024,
       Math.floor(Math.random() * 6), // First 6 months to allow for refunds
       Math.floor(Math.random() * 28) + 1
     );
-    const paidAt = new Date(createdAt.getTime() + Math.random() * 86400000);
+    const createdAt = createdAtDate.toISOString();
+    const paidAt = new Date(
+      createdAtDate.getTime() + Math.random() * 86400000
+    ).toISOString();
 
     payments.push({
       id: `payment-${i}`,
@@ -221,15 +224,17 @@ const generateMockRefunds = (): Refund[] => {
     const refundAmount =
       Math.random() > 0.3 ? payment.amount : Math.round(payment.amount * 0.5);
 
-    const requestedAt = new Date(
-      payment.createdAt!.getTime() + Math.random() * 30 * 24 * 60 * 60 * 1000 // Within 30 days of payment
+    const requestedAtDate = new Date(
+      new Date(payment.createdAt!).getTime() +
+        Math.random() * 30 * 24 * 60 * 60 * 1000 // Within 30 days of payment
     );
+    const requestedAt = requestedAtDate.toISOString();
 
     const processedAt =
       status !== "PENDING"
         ? new Date(
-            requestedAt.getTime() + Math.random() * 7 * 24 * 60 * 60 * 1000
-          ) // Within 7 days of request
+            requestedAtDate.getTime() + Math.random() * 7 * 24 * 60 * 60 * 1000
+          ).toISOString() // Within 7 days of request
         : null;
 
     refunds.push({
@@ -359,7 +364,7 @@ const refundsSlice = createSlice({
       const refund = state.refunds.find((r) => r.id === refundId);
       if (refund && refund.status === "PENDING") {
         refund.status = "COMPLETED";
-        refund.processedAt = new Date();
+        refund.processedAt = new Date().toISOString();
       }
       refundsSlice.caseReducers.applyFilters(state);
     },
@@ -368,7 +373,7 @@ const refundsSlice = createSlice({
       const refund = state.refunds.find((r) => r.id === refundId);
       if (refund && refund.status === "PENDING") {
         refund.status = "FAILED";
-        refund.processedAt = new Date();
+        refund.processedAt = new Date().toISOString();
       }
       refundsSlice.caseReducers.applyFilters(state);
     },

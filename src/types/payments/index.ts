@@ -6,8 +6,8 @@ export interface User {
   thumbnailUrl?: string;
   bio?: string;
   role?: Role;
-  createdAt?: Date;
-  updatedAt?: Date;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Role {
@@ -27,8 +27,8 @@ export interface Course {
   thumbnailUrl?: string;
   level: "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
   isDeleted?: boolean;
-  createdAt?: Date;
-  updatedAt?: Date;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Payment {
@@ -39,7 +39,7 @@ export interface Payment {
   status: "PENDING" | "COMPLETED" | "FAILED";
   paymentMethod: "stripe" | "paypal";
   sessionId?: string;
-  paidAt?: Date;
-  createdAt?: Date;
-  updatedAt?: Date;
+  paidAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }

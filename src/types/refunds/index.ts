@@ -6,6 +6,6 @@ export interface Refund {
   amount: number;
   status: "PENDING" | "COMPLETED" | "FAILED";
   reason: string;
-  requestedAt?: Date;
-  processedAt?: Date | null;
+  requestedAt?: string;
+  processedAt?: string | null;
 }

@@ -17,21 +17,31 @@ import {
   setCurrentPage,
   setItemsPerPage,
 } from "@/features/payments/paymentsSlice";
+import { useGetPaymentsQuery } from "@/services/paymentsApi";
 
 export const Pagination = () => {
   const dispatch = useAppDispatch();
-  const { currentPage, totalPages, itemsPerPage, filteredPayments } =
-    useAppSelector((state) => state.payments);
+  const { currentPage, itemsPerPage } = useAppSelector(
+    (state) => state.payments
+  );
+  const { data } = useGetPaymentsQuery({
+    page: currentPage,
+    size: itemsPerPage,
+  });
 
-  const startItem = (currentPage - 1) * itemsPerPage + 1;
-  const endItem = Math.min(currentPage * itemsPerPage, filteredPayments.length);
-  const totalItems = filteredPayments.length;
+  const pageInfo = data?.data?.page;
+  if (!pageInfo) return null;
 
-  const canGoPrevious = currentPage > 1;
-  const canGoNext = currentPage < totalPages;
+  const totalPages = pageInfo.totalPages;
+  const totalElements = pageInfo.totalElements;
+  const startItem = currentPage * itemsPerPage + 1;
+  const endItem = Math.min((currentPage + 1) * itemsPerPage, totalElements);
+
+  const canGoPrevious = !pageInfo.first;
+  const canGoNext = !pageInfo.last;
 
   const goToPage = (page: number) => {
-    if (page >= 1 && page <= totalPages) {
+    if (page >= 0 && page < totalPages) {
       dispatch(setCurrentPage(page));
     }
   };
@@ -45,16 +55,17 @@ export const Pagination = () => {
     const delta = 2;
     const range = [];
     const rangeWithDots = [];
+    const displayCurrentPage = currentPage + 1; // Convert to 1-based for display
 
     for (
-      let i = Math.max(2, currentPage - delta);
-      i <= Math.min(totalPages - 1, currentPage + delta);
+      let i = Math.max(2, displayCurrentPage - delta);
+      i <= Math.min(totalPages - 1, displayCurrentPage + delta);
       i++
     ) {
       range.push(i);
     }
 
-    if (currentPage - delta > 2) {
+    if (displayCurrentPage - delta > 2) {
       rangeWithDots.push(1, "...");
     } else {
       rangeWithDots.push(1);
@@ -62,9 +73,9 @@ export const Pagination = () => {
 
     rangeWithDots.push(...range);
 
-    if (currentPage + delta < totalPages - 1) {
+    if (displayCurrentPage + delta < totalPages - 1) {
       rangeWithDots.push("...", totalPages);
-    } else {
+    } else if (totalPages > 1) {
       rangeWithDots.push(totalPages);
     }
 
@@ -77,10 +88,11 @@ export const Pagination = () => {
         <div className="flex items-center space-x-2">
           <p className="text-sm text-muted-foreground">
             Showing{" "}
-            <span className="font-medium text-foreground">{totalItems}</span> of{" "}
-            <span className="font-medium text-foreground">{totalItems}</span>{" "}
+            <span className="font-medium text-foreground">{totalElements}</span>{" "}
+            of{" "}
+            <span className="font-medium text-foreground">{totalElements}</span>{" "}
             result
-            {totalItems !== 1 ? "s" : ""}
+            {totalElements !== 1 ? "s" : ""}
           </p>
         </div>
 
@@ -113,9 +125,10 @@ export const Pagination = () => {
           <span className="font-medium text-foreground">
             {startItem}-{endItem}
           </span>{" "}
-          of <span className="font-medium text-foreground">{totalItems}</span>{" "}
+          of{" "}
+          <span className="font-medium text-foreground">{totalElements}</span>{" "}
           result
-          {totalItems !== 1 ? "s" : ""}
+          {totalElements !== 1 ? "s" : ""}
         </p>
       </div>
 
@@ -142,7 +155,7 @@ export const Pagination = () => {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => goToPage(1)}
+            onClick={() => goToPage(0)}
             disabled={!canGoPrevious}
             className="h-8 w-8 p-0 hover:bg-muted/50"
           >
@@ -172,9 +185,9 @@ export const Pagination = () => {
               ) : (
                 <Button
                   key={page}
-                  variant={page === currentPage ? "default" : "outline"}
+                  variant={page === currentPage + 1 ? "default" : "outline"}
                   size="sm"
-                  onClick={() => goToPage(page as number)}
+                  onClick={() => goToPage((page as number) - 1)} // Convert back to 0-based
                   className="h-8 w-8 p-0 hover:bg-muted/50"
                 >
                   {page}
@@ -196,7 +209,7 @@ export const Pagination = () => {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => goToPage(totalPages)}
+            onClick={() => goToPage(totalPages - 1)}
             disabled={!canGoNext}
             className="h-8 w-8 p-0 hover:bg-muted/50"
           >

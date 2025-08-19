@@ -1,22 +1,21 @@
-import { useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { SearchBar } from "@/components/payments/SearchBar";
 import { FilterBar } from "@/components/payments/FilterBar";
 import { PaymentsTable } from "@/components/payments/PaymentsTable";
 import { Pagination } from "@/components/payments/Pagination";
-import { useAppDispatch, useAppSelector } from "@/hooks/redux";
-import { initializeFilters } from "@/features/payments/paymentsSlice";
+import { useAppSelector } from "@/hooks/redux";
+import { useGetPaymentsQuery } from "@/services/paymentsApi";
 
 export const PaymentsPage = () => {
-  const dispatch = useAppDispatch();
-  const { filteredPayments, payments } = useAppSelector(
+  const { currentPage, itemsPerPage } = useAppSelector(
     (state) => state.payments
   );
+  const { data } = useGetPaymentsQuery({
+    page: currentPage,
+    size: itemsPerPage,
+  });
 
-  // Initialize filters on component mount
-  useEffect(() => {
-    dispatch(initializeFilters());
-  }, [dispatch]);
+  const totalElements = data?.data?.page?.totalElements || 0;
 
   return (
     <div className="container mx-auto p-4 lg:p-6 space-y-6">
@@ -49,7 +48,7 @@ export const PaymentsPage = () => {
         <PaymentsTable />
 
         {/* Pagination */}
-        {filteredPayments.length > 0 && (
+        {totalElements > 0 && (
           <Card>
             <CardContent className="p-4">
               <Pagination />
@@ -59,9 +58,9 @@ export const PaymentsPage = () => {
       </div>
 
       {/* Results Summary */}
-      {filteredPayments.length > 0 && (
+      {totalElements > 0 && (
         <div className="text-center text-sm text-muted-foreground">
-          Showing {filteredPayments.length} of {payments.length} total payments
+          Total {totalElements} payment{totalElements !== 1 ? "s" : ""}
         </div>
       )}
     </div>
