@@ -1,0 +1,233 @@
+import React, { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { Button } from "../ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import { Badge } from "../ui/badge";
+import {
+  Users,
+  CreditCard,
+  RefreshCw,
+  Home,
+  Settings,
+  LogOut,
+  Bell,
+  Search,
+  Menu,
+  X,
+  ChevronDown,
+} from "lucide-react";
+import { Input } from "../ui/input";
+
+interface AdminLayoutProps {
+  children: React.ReactNode;
+}
+
+interface NavigationItem {
+  name: string;
+  href: string;
+  icon: React.ElementType;
+  badge?: number;
+}
+
+const navigation: NavigationItem[] = [
+  { name: "Dashboard", href: "/admin", icon: Home },
+  { name: "Users", href: "/admin/users", icon: Users, badge: 12 },
+  { name: "Payments", href: "/admin/payments", icon: CreditCard, badge: 5 },
+  { name: "Refunds", href: "/admin/refunds", icon: RefreshCw, badge: 2 },
+  { name: "Settings", href: "/admin/settings", icon: Settings },
+];
+
+export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const location = useLocation();
+
+  const isActive = (href: string) => {
+    if (href === "/admin") {
+      return location.pathname === "/admin";
+    }
+    return location.pathname.startsWith(href);
+  };
+
+  return (
+    <div className="flex h-screen bg-gray-50/50">
+      {/* Mobile sidebar overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <div
+        className={`
+        fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-xl transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 lg:flex lg:flex-shrink-0
+        ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+      `}
+      >
+        <div className="flex flex-col h-full">
+          {/* Logo */}
+          <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">SE</span>
+              </div>
+              <span className="text-xl font-bold text-gray-900">
+                Sybau Admin
+              </span>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="lg:hidden"
+              onClick={() => setSidebarOpen(false)}
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
+
+          {/* Navigation */}
+          <nav className="flex-1 px-4 py-6 space-y-2">
+            {navigation.map((item) => {
+              const Icon = item.icon;
+              const active = isActive(item.href);
+
+              return (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  className={`
+                    flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
+                    ${
+                      active
+                        ? "bg-blue-50 text-blue-700 border-r-2 border-blue-600"
+                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                    }
+                  `}
+                  onClick={() => setSidebarOpen(false)}
+                >
+                  <div className="flex items-center space-x-3">
+                    <Icon
+                      className={`h-5 w-5 ${
+                        active ? "text-blue-600" : "text-gray-400"
+                      }`}
+                    />
+                    <span>{item.name}</span>
+                  </div>
+                  {item.badge && (
+                    <Badge
+                      variant={active ? "default" : "secondary"}
+                      className="h-5 text-xs"
+                    >
+                      {item.badge}
+                    </Badge>
+                  )}
+                </Link>
+              );
+            })}
+          </nav>
+
+          {/* User info */}
+          <div className="p-4 border-t border-gray-200">
+            <div className="flex items-center space-x-3 p-3 rounded-lg bg-gray-50">
+              <Avatar className="h-8 w-8">
+                <AvatarImage src="/api/placeholder/32/32" />
+                <AvatarFallback>AD</AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900 truncate">
+                  Admin User
+                </p>
+                <p className="text-xs text-gray-500 truncate">
+                  admin@sybau.edu
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main content - flex-1 để chiếm toàn bộ không gian còn lại */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Top header */}
+        <header className="bg-white shadow-sm border-b border-gray-200 flex-shrink-0 z-30">
+          <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center space-x-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="lg:hidden"
+                onClick={() => setSidebarOpen(true)}
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+
+              {/* Search */}
+              <div className="relative hidden sm:block">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  placeholder="Search users, payments..."
+                  className="pl-10 w-80 bg-gray-50 border-0 focus:bg-white"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-4">
+              {/* Notifications */}
+              <Button variant="ghost" size="sm" className="relative">
+                <Bell className="h-5 w-5" />
+                <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">
+                  3
+                </span>
+              </Button>
+
+              {/* User menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="flex items-center space-x-3"
+                  >
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src="/api/placeholder/32/32" />
+                      <AvatarFallback>AD</AvatarFallback>
+                    </Avatar>
+                    <span className="hidden sm:block text-sm font-medium">
+                      Admin User
+                    </span>
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>
+                    <Settings className="mr-2 h-4 w-4" />
+                    Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Log out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+        </header>
+
+        {/* Page content - flex-1 để chiếm toàn bộ không gian còn lại */}
+        <main className="flex-1 overflow-auto">
+          <div className="p-4 sm:p-6 lg:p-8 h-full">{children}</div>
+        </main>
+      </div>
+    </div>
+  );
+};
