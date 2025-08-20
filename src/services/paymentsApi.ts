@@ -14,7 +14,7 @@ export const paymentsApi = createApi({
       // Hardcode bearer token as requested
       headers.set(
         "authorization",
-        "Bearer eyJhbGciOiJIUzM4NCJ9.eyJyb2xlcyI6WyJST0xFX0FETUlOIl0sInN1YiI6ImFsaWNlQGV4YW1wbGUuY29tIiwiaWF0IjoxNzU1Njc2Njg1LCJleHAiOjE3NTU2ODAyODV9.MwaX2kTtxKgdSpa5FqlIRFSBfUQ_lCNeosJUJrDk075CNZlRBpT0u9M-my3LZBlT"
+        "Bearer eyJhbGciOiJIUzM4NCJ9.eyJyb2xlcyI6WyJST0xFX0FETUlOIl0sInN1YiI6ImFsaWNlQGV4YW1wbGUuY29tIiwiaWF0IjoxNzU1NjgyODU4LCJleHAiOjE3NTU2ODY0NTh9.v0J2V5qhZooh785Hune8IawoTLlkaw9P-ecx3gNbdd23l_qDESf7YqNito63Hnw_"
       );
       return headers;
     },

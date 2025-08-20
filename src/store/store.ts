@@ -5,6 +5,7 @@ import refundsSlice from "@/features/refunds/refundsSlice";
 import { authApi } from "@/services/authApi";
 import { usersApi } from "@/services/usersApi";
 import { paymentsApi } from "@/services/paymentsApi";
+import { refundsApi } from "@/services/refundsApi";
 import { configureStore } from "@reduxjs/toolkit";
 
 export const store = configureStore({
@@ -12,15 +13,17 @@ export const store = configureStore({
     [authApi.reducerPath]: authApi.reducer,
     [usersApi.reducerPath]: usersApi.reducer,
     [paymentsApi.reducerPath]: paymentsApi.reducer,
+    [refundsApi.reducerPath]: refundsApi.reducer,
     counter: counterSlice.reducer,
     payments: paymentsSlice.reducer,
-    refunds: refundsSlice,
+    refunds: refundsSlice.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
       .concat(authApi.middleware)
       .concat(usersApi.middleware)
-      .concat(paymentsApi.middleware),
+      .concat(paymentsApi.middleware)
+      .concat(refundsApi.middleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

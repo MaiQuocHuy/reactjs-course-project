@@ -9,22 +9,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { RefundRow } from "./RefundRow";
 import { RefundEmptyState } from "./RefundEmptyState";
 import { useAppSelector } from "@/hooks/redux";
+import { useGetRefundsQuery } from "@/services/refundsApi";
 
 export const RefundsTable = () => {
-  const {
-    filteredRefunds,
-    currentPage,
-    itemsPerPage,
-    loading,
-    searchQuery,
-    statusFilter,
-    dateRange,
-  } = useAppSelector((state) => state.refunds);
+  const { searchQuery, statusFilter, dateRange, currentPage, itemsPerPage } =
+    useAppSelector((state) => state.refunds);
 
-  // Calculate pagination
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedRefunds = filteredRefunds.slice(startIndex, endIndex);
+  const { data, isLoading, error } = useGetRefundsQuery({
+    page: currentPage,
+    size: itemsPerPage,
+  });
 
   // Check if there are any active filters
   const hasActiveFilters =
@@ -33,7 +27,7 @@ export const RefundsTable = () => {
     dateRange.from !== null ||
     dateRange.to !== null;
 
-  if (loading) {
+  if (isLoading) {
     return (
       <Card className="shadow-sm border-0 bg-card">
         <CardContent className="p-8">
@@ -51,7 +45,24 @@ export const RefundsTable = () => {
     );
   }
 
-  if (paginatedRefunds.length === 0) {
+  if (error) {
+    return (
+      <Card className="shadow-sm border-0 bg-card">
+        <CardContent className="p-8">
+          <div className="text-center">
+            <p className="text-red-500 font-medium">Failed to load refunds</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Please try again later
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const refunds = data?.data?.content || [];
+
+  if (refunds.length === 0) {
     return (
       <RefundEmptyState type={hasActiveFilters ? "no-results" : "no-data"} />
     );
@@ -64,34 +75,37 @@ export const RefundsTable = () => {
           <Table>
             <TableHeader>
               <TableRow className="border-border bg-muted/50">
-                <TableHead className="w-[100px] font-semibold">ID</TableHead>
-                <TableHead className="min-w-[180px] font-semibold">
-                  Student
+                <TableHead className="w-[100px] font-semibold">
+                  Refund ID
                 </TableHead>
-                <TableHead className="min-w-[200px] font-semibold">
-                  Course
+                <TableHead className="w-[100px] font-semibold">
+                  Payment ID
                 </TableHead>
                 <TableHead className="w-[120px] font-semibold">
-                  Amount
+                  Refund Amount
                 </TableHead>
-                <TableHead className="w-[100px] font-semibold">
-                  Payment Method
-                </TableHead>
-                <TableHead className="w-[100px] font-semibold">
-                  Status
+                <TableHead className="w-[120px] font-semibold">
+                  Payment Amount
                 </TableHead>
                 <TableHead className="min-w-[200px] font-semibold">
                   Reason
                 </TableHead>
-                <TableHead className="w-[140px] font-semibold">Date</TableHead>
+                <TableHead className="w-[100px] font-semibold">
+                  Status
+                </TableHead>
+                <TableHead className="w-[160px] font-semibold">Dates</TableHead>
                 <TableHead className="w-[60px] text-right font-semibold">
                   Actions
                 </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paginatedRefunds.map((refund) => (
-                <RefundRow key={refund.id} refund={refund} />
+              {refunds.map((refund, index) => (
+                <RefundRow
+                  key={refund.id}
+                  refund={refund}
+                  style={{ animationDelay: `${index * 50}ms` }}
+                />
               ))}
             </TableBody>
           </Table>

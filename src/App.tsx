@@ -14,6 +14,7 @@ import { PaymentsPage } from "./pages/payments";
 import { PaymentDetailPage } from "./pages/payments/PaymentDetailPage";
 import RefundsPage from "./pages/refunds";
 import { Toaster } from "@/components/ui/toaster";
+import { RefundDetailPage } from "./pages/refunds/RefundDetailPage";
 
 function App() {
   return (
@@ -69,6 +70,14 @@ function App() {
             element={
               <AdminLayout>
                 <RefundsPage />
+              </AdminLayout>
+            }
+          />
+          <Route
+            path="/admin/refunds/:id"
+            element={
+              <AdminLayout>
+                <RefundDetailPage />
               </AdminLayout>
             }
           />

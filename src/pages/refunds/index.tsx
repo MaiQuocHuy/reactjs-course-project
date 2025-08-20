@@ -1,20 +1,40 @@
-import { useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { RefundSearchBar } from "@/components/refunds/RefundSearchBar";
-import { RefundFilterBar } from "@/components/refunds/RefundFilterBar";
-import { RefundsTable } from "@/components/refunds/RefundsTable";
-import { Pagination } from "@/components/payments/Pagination";
-import { useAppDispatch, useAppSelector } from "@/hooks/redux";
-import { initializeFilters } from "@/features/refunds/refundsSlice";
+import {
+  RefundSearchBar,
+  RefundFilterBar,
+  RefundsTable,
+  RefundEmptyState,
+} from "@/components/refunds";
+import { useGetRefundsQuery } from "@/services/refundsApi";
+import { useAppSelector } from "@/hooks/redux";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const RefundsPage = () => {
-  const dispatch = useAppDispatch();
-  const { filteredRefunds, refunds } = useAppSelector((state) => state.refunds);
+  const { currentPage, itemsPerPage } = useAppSelector(
+    (state) => state.refunds
+  );
+  const { data, isLoading, error } = useGetRefundsQuery({
+    page: currentPage,
+    size: itemsPerPage,
+  });
 
-  // Initialize filters on component mount
-  useEffect(() => {
-    dispatch(initializeFilters());
-  }, [dispatch]);
+  if (error) {
+    return (
+      <div className="container mx-auto p-4 lg:p-6 space-y-6">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-red-600">
+            Error Loading Refunds
+          </h2>
+          <p className="text-muted-foreground mt-2">
+            Failed to load refunds. Please try again later.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const refunds = data?.data?.content || [];
+  const totalElements = data?.data?.page?.totalElements || 0;
 
   return (
     <div className="container mx-auto p-4 lg:p-6 space-y-6">
@@ -44,22 +64,29 @@ const RefundsPage = () => {
 
       {/* Refunds Table */}
       <div className="space-y-4">
-        <RefundsTable />
-
-        {/* Pagination */}
-        {filteredRefunds.length > 0 && (
+        {isLoading ? (
           <Card>
-            <CardContent className="p-4">
-              <Pagination />
+            <CardContent className="p-6">
+              <div className="space-y-4">
+                {[...Array(5)].map((_, i) => (
+                  <Skeleton key={i} className="h-16 w-full" />
+                ))}
+              </div>
             </CardContent>
           </Card>
+        ) : refunds.length === 0 ? (
+          <RefundEmptyState type="no-data" />
+        ) : (
+          <>
+            <RefundsTable />
+          </>
         )}
       </div>
 
       {/* Results Summary */}
-      {filteredRefunds.length > 0 && (
+      {refunds.length > 0 && (
         <div className="text-center text-sm text-muted-foreground">
-          Showing {filteredRefunds.length} of {refunds.length} total refunds
+          Showing {refunds.length} of {totalElements} total refunds
         </div>
       )}
     </div>
