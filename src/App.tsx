@@ -7,6 +7,7 @@ import {
 } from "react-router-dom";
 import LoginForm from "./components/LoginForm";
 import { AdminLayout } from "./components/admin/AdminLayout";
+import { DashboardPage } from "./pages/admin/DashboardPage";
 import { UsersListPage } from "./pages/admin/users";
 import { UserDetailPage } from "./pages/admin/users";
 import { PaymentsPage } from "./pages/payments";
@@ -16,13 +17,21 @@ import { Toaster } from "@/components/ui/toaster";
 
 function App() {
   return (
-    <>
+    <div className="h-screen w-screen m-0 p-0 overflow-hidden">
       <Router>
         <Routes>
           {/* Login route */}
           <Route path="/login" element={<LoginForm />} />
 
           {/* Admin routes */}
+          <Route
+            path="/admin"
+            element={
+              <AdminLayout>
+                <DashboardPage />
+              </AdminLayout>
+            }
+          />
           <Route
             path="/admin/users"
             element={
@@ -69,7 +78,7 @@ function App() {
         </Routes>
       </Router>
       <Toaster />
-    </>
+    </div>
   );
 }
 export default App;
