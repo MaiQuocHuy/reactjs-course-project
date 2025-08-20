@@ -14,6 +14,16 @@ import {
 } from "../../../components/ui/avatar";
 import { Badge } from "../../../components/ui/badge";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../../../components/ui/alert-dialog";
+import {
   Tabs,
   TabsContent,
   TabsList,
@@ -37,13 +47,19 @@ import {
 } from "lucide-react";
 import {
   useGetUserByIdQuery,
+  useUpdateUserMutation,
   useUpdateUserStatusMutation,
 } from "../../../services/usersApi";
+import { EditUserDialog } from "../../../components/admin/UserDialogs";
 
 export const UserDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [isBanUnbanLoading, setIsBanUnbanLoading] = useState(false);
+  const [showBanConfirm, setShowBanConfirm] = useState(false);
+  const [showUnbanConfirm, setShowUnbanConfirm] = useState(false);
 
   // Fetch user data using RTK Query
   const {
@@ -51,12 +67,14 @@ export const UserDetailPage: React.FC = () => {
     isLoading,
     isError,
     error,
+    refetch,
   } = useGetUserByIdQuery(id!, {
     skip: !id,
   });
 
   // Mutations for user actions
   const [updateUserStatus] = useUpdateUserStatusMutation();
+  const [updateUser] = useUpdateUserMutation();
 
   // Extract user data from API response
   const user = userResponse?.data;
@@ -131,8 +149,22 @@ export const UserDetailPage: React.FC = () => {
   }
 
   const handleEdit = () => {
-    console.log("Edit user:", user.id);
-    // TODO: Navigate to edit page or open edit modal
+    setEditDialogOpen(true);
+  };
+
+  const handleEditUser = async (userData: { name: string; bio?: string }) => {
+    if (user) {
+      try {
+        await updateUser({
+          id: user.id,
+          data: userData,
+        }).unwrap();
+        refetch(); // Refresh the data after successful update
+        console.log("User updated successfully");
+      } catch (error) {
+        console.error("Failed to update user:", error);
+      }
+    }
   };
 
   const handleAssignRole = async () => {
@@ -145,18 +177,34 @@ export const UserDetailPage: React.FC = () => {
   };
 
   const handleBanUnban = async () => {
+    if (!user) return;
+
+    setIsBanUnbanLoading(true);
     try {
       const newStatus = !user.isActive;
       await updateUserStatus({
         id: user.id,
         data: { isActive: newStatus },
       }).unwrap();
+      refetch(); // Refresh the data after successful update
       console.log(
         newStatus ? "User unbanned successfully" : "User banned successfully"
       );
     } catch (error) {
       console.error("Failed to update user status:", error);
+    } finally {
+      setIsBanUnbanLoading(false);
+      setShowBanConfirm(false);
+      setShowUnbanConfirm(false);
     }
+  };
+
+  const handleBanClick = () => {
+    setShowBanConfirm(true);
+  };
+
+  const handleUnbanClick = () => {
+    setShowUnbanConfirm(true);
   };
 
   const getRoleBadgeVariant = (role: string) => {
@@ -223,14 +271,30 @@ export const UserDetailPage: React.FC = () => {
             Assign Role
           </Button>
           {user.isActive ? (
-            <Button variant="destructive" onClick={handleBanUnban}>
-              <UserMinus className="mr-2 h-4 w-4" />
-              Ban User
+            <Button
+              variant="destructive"
+              onClick={handleBanClick}
+              disabled={isBanUnbanLoading}
+            >
+              {isBanUnbanLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <UserMinus className="mr-2 h-4 w-4" />
+              )}
+              {isBanUnbanLoading ? "Banning..." : "Ban User"}
             </Button>
           ) : (
-            <Button variant="default" onClick={handleBanUnban}>
-              <UserPlus className="mr-2 h-4 w-4" />
-              Unban User
+            <Button
+              variant="default"
+              onClick={handleUnbanClick}
+              disabled={isBanUnbanLoading}
+            >
+              {isBanUnbanLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <UserPlus className="mr-2 h-4 w-4" />
+              )}
+              {isBanUnbanLoading ? "Unbanning..." : "Unban User"}
             </Button>
           )}
         </div>
@@ -684,6 +748,78 @@ export const UserDetailPage: React.FC = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Edit User Dialog */}
+      <EditUserDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        user={user}
+        onConfirm={handleEditUser}
+      />
+
+      {/* Ban User Confirmation Dialog */}
+      <AlertDialog open={showBanConfirm} onOpenChange={setShowBanConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Ban User</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to ban <strong>{user?.name}</strong>? This
+              will prevent them from accessing the platform.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isBanUnbanLoading}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBanUnban}
+              disabled={isBanUnbanLoading}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isBanUnbanLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Banning...
+                </>
+              ) : (
+                "Ban User"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Unban User Confirmation Dialog */}
+      <AlertDialog open={showUnbanConfirm} onOpenChange={setShowUnbanConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Unban User</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to unban <strong>{user?.name}</strong>? This
+              will restore their access to the platform.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isBanUnbanLoading}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBanUnban}
+              disabled={isBanUnbanLoading}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {isBanUnbanLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Unbanning...
+                </>
+              ) : (
+                "Unban User"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
