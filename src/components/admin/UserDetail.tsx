@@ -113,7 +113,9 @@ export const UserDetail: React.FC<UserDetailProps> = ({
               <div>
                 <p className="font-medium">Joined</p>
                 <p className="text-muted-foreground">
-                  {formatDate(user.createdAt)}
+                  {user.createdAt
+                    ? formatDate(user.createdAt)
+                    : "Not available"}
                 </p>
               </div>
             </div>
@@ -131,7 +133,9 @@ export const UserDetail: React.FC<UserDetailProps> = ({
               <div>
                 <p className="font-medium">Last Updated</p>
                 <p className="text-muted-foreground">
-                  {formatDate(user.updatedAt)}
+                  {user.updatedAt
+                    ? formatDate(user.updatedAt)
+                    : "Not available"}
                 </p>
               </div>
             </div>
