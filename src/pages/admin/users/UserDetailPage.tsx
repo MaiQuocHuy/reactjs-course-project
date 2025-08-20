@@ -339,8 +339,8 @@ export const UserDetailPage: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {user.totalStudyTimeMinutes
-                    ? formatTime(user.totalStudyTimeMinutes)
+                  {user.totalStudyTimeSeconds
+                    ? formatTime(user.totalStudyTimeSeconds)
                     : "0m"}
                 </div>
                 <p className="text-xs text-muted-foreground">
