@@ -1,18 +1,18 @@
-import React from "react";
+import React from 'react';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../../components/ui/card";
-import { Button } from "../../components/ui/button";
-import { Badge } from "../../components/ui/badge";
+} from '../../components/ui/card';
+import { Button } from '../../components/ui/button';
+import { Badge } from '../../components/ui/badge';
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "../../components/ui/avatar";
+} from '../../components/ui/avatar';
 import {
   Users,
   CreditCard,
@@ -23,7 +23,17 @@ import {
   Activity,
   BookOpen,
   Eye,
-} from "lucide-react";
+} from 'lucide-react';
+import { Link } from 'react-router-dom';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
 import {
   Table,
   TableBody,
@@ -31,123 +41,123 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../../components/ui/table";
+} from '../../components/ui/table';
 
 export const DashboardPage: React.FC = () => {
   // Mock data for dashboard
   const stats = [
     {
-      title: "Total Users",
-      value: "2,543",
-      change: "+12%",
-      changeType: "positive" as const,
+      title: 'Total Users',
+      value: '2,543',
+      change: '+12%',
+      changeType: 'positive' as const,
       icon: Users,
     },
     {
-      title: "Total Revenue",
-      value: "$45,231",
-      change: "+8%",
-      changeType: "positive" as const,
+      title: 'Total Revenue',
+      value: '$45,231',
+      change: '+8%',
+      changeType: 'positive' as const,
       icon: DollarSign,
     },
     {
-      title: "Active Courses",
-      value: "128",
-      change: "+4%",
-      changeType: "positive" as const,
+      title: 'Active Courses',
+      value: '128',
+      change: '+4%',
+      changeType: 'positive' as const,
       icon: BookOpen,
     },
     {
-      title: "Pending Refunds",
-      value: "23",
-      change: "-2%",
-      changeType: "negative" as const,
+      title: 'Pending Refunds',
+      value: '23',
+      change: '-2%',
+      changeType: 'negative' as const,
       icon: RefreshCw,
     },
   ];
 
   const recentUsers = [
     {
-      id: "user-001",
-      name: "John Doe",
-      email: "john.doe@example.com",
-      role: "STUDENT",
-      status: "ACTIVE",
-      joinedAt: "2024-03-15",
-      avatar: "/api/placeholder/32/32",
+      id: 'user-001',
+      name: 'John Doe',
+      email: 'john.doe@example.com',
+      role: 'STUDENT',
+      status: 'ACTIVE',
+      joinedAt: '2024-03-15',
+      avatar: '/api/placeholder/32/32',
     },
     {
-      id: "user-002",
-      name: "Jane Smith",
-      email: "jane.smith@example.com",
-      role: "INSTRUCTOR",
-      status: "ACTIVE",
-      joinedAt: "2024-03-14",
-      avatar: "/api/placeholder/32/32",
+      id: 'user-002',
+      name: 'Jane Smith',
+      email: 'jane.smith@example.com',
+      role: 'INSTRUCTOR',
+      status: 'ACTIVE',
+      joinedAt: '2024-03-14',
+      avatar: '/api/placeholder/32/32',
     },
     {
-      id: "user-003",
-      name: "Bob Johnson",
-      email: "bob.johnson@example.com",
-      role: "STUDENT",
-      status: "BANNED",
-      joinedAt: "2024-03-13",
-      avatar: "/api/placeholder/32/32",
+      id: 'user-003',
+      name: 'Bob Johnson',
+      email: 'bob.johnson@example.com',
+      role: 'STUDENT',
+      status: 'BANNED',
+      joinedAt: '2024-03-13',
+      avatar: '/api/placeholder/32/32',
     },
   ];
 
   const recentPayments = [
     {
-      id: "pay-001",
-      user: "Alice Brown",
-      course: "React Masterclass",
-      amount: "$99.99",
-      status: "COMPLETED",
-      date: "2024-03-15",
+      id: 'pay-001',
+      user: 'Alice Brown',
+      course: 'React Masterclass',
+      amount: '$99.99',
+      status: 'COMPLETED',
+      date: '2024-03-15',
     },
     {
-      id: "pay-002",
-      user: "Charlie Wilson",
-      course: "Vue.js Fundamentals",
-      amount: "$79.99",
-      status: "PENDING",
-      date: "2024-03-15",
+      id: 'pay-002',
+      user: 'Charlie Wilson',
+      course: 'Vue.js Fundamentals',
+      amount: '$79.99',
+      status: 'PENDING',
+      date: '2024-03-15',
     },
     {
-      id: "pay-003",
-      user: "Diana Miller",
-      course: "Angular Advanced",
-      amount: "$129.99",
-      status: "FAILED",
-      date: "2024-03-14",
+      id: 'pay-003',
+      user: 'Diana Miller',
+      course: 'Angular Advanced',
+      amount: '$129.99',
+      status: 'FAILED',
+      date: '2024-03-14',
     },
   ];
 
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
-      case "ADMIN":
-        return "destructive";
-      case "INSTRUCTOR":
-        return "default";
-      case "STUDENT":
-        return "secondary";
+      case 'ADMIN':
+        return 'destructive';
+      case 'INSTRUCTOR':
+        return 'default';
+      case 'STUDENT':
+        return 'secondary';
       default:
-        return "outline";
+        return 'outline';
     }
   };
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
-      case "ACTIVE":
-      case "COMPLETED":
-        return "default";
-      case "BANNED":
-      case "FAILED":
-        return "destructive";
-      case "PENDING":
-        return "secondary";
+      case 'ACTIVE':
+      case 'COMPLETED':
+        return 'default';
+      case 'BANNED':
+      case 'FAILED':
+        return 'destructive';
+      case 'PENDING':
+        return 'secondary';
       default:
-        return "outline";
+        return 'outline';
     }
   };
 
@@ -176,16 +186,16 @@ export const DashboardPage: React.FC = () => {
               <CardContent>
                 <div className="text-2xl font-bold">{stat.value}</div>
                 <p className="text-xs text-muted-foreground flex items-center">
-                  {stat.changeType === "positive" ? (
+                  {stat.changeType === 'positive' ? (
                     <TrendingUp className="h-3 w-3 text-green-600 mr-1" />
                   ) : (
                     <TrendingDown className="h-3 w-3 text-red-600 mr-1" />
                   )}
                   <span
                     className={
-                      stat.changeType === "positive"
-                        ? "text-green-600"
-                        : "text-red-600"
+                      stat.changeType === 'positive'
+                        ? 'text-green-600'
+                        : 'text-red-600'
                     }
                   >
                     {stat.change}
@@ -198,8 +208,52 @@ export const DashboardPage: React.FC = () => {
         })}
       </div>
 
+      {/* Pending courses */}
+      
+
+      {/* Revenue statistics */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Overview of recent revenue</CardTitle>
+            </div>
+            <div className="text-right">
+              <div className="text-lg font-bold">+8% from last month</div>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col space-y-4">
+            {/* 3-month column chart (recharts) */}
+            <div className="w-full h-36">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={[
+                    { name: 'Jul', value: 700 },
+                    { name: 'Aug', value: 500 },
+                    { name: 'Sep', value: 900 },
+                  ]}
+                  margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="value" fill="#3b82f6" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="flex justify-end">
+              <Link to="/admin/revenues">
+                <Button size="sm">View more</Button>
+              </Link>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent Users */}
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -227,9 +281,9 @@ export const DashboardPage: React.FC = () => {
                       <AvatarImage src={user.avatar} alt={user.name} />
                       <AvatarFallback>
                         {user.name
-                          .split(" ")
+                          .split(' ')
                           .map((n) => n[0])
-                          .join("")}
+                          .join('')}
                       </AvatarFallback>
                     </Avatar>
                     <div>
