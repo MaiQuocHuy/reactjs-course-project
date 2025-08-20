@@ -8,6 +8,7 @@ export const mockUsers: User[] = [
     avatar: 'https://i.pravatar.cc/150?u=john',
     role: 'STUDENT',
     status: 'ACTIVE',
+    isActive: true,
     createdAt: '2024-01-15T08:30:00Z',
     updatedAt: '2024-08-10T14:22:00Z',
     lastLoginAt: '2024-08-15T09:15:00Z'
@@ -19,6 +20,7 @@ export const mockUsers: User[] = [
     avatar: 'https://i.pravatar.cc/150?u=jane',
     role: 'INSTRUCTOR',
     status: 'ACTIVE',
+    isActive: true,
     createdAt: '2024-02-20T10:45:00Z',
     updatedAt: '2024-08-12T11:30:00Z',
     lastLoginAt: '2024-08-16T16:45:00Z'
@@ -30,6 +32,7 @@ export const mockUsers: User[] = [
     avatar: 'https://i.pravatar.cc/150?u=mike',
     role: 'STUDENT',
     status: 'BANNED',
+    isActive: false,
     createdAt: '2024-03-10T12:00:00Z',
     updatedAt: '2024-07-25T09:00:00Z',
     lastLoginAt: '2024-07-20T14:30:00Z'
@@ -41,6 +44,7 @@ export const mockUsers: User[] = [
     avatar: 'https://i.pravatar.cc/150?u=sarah',
     role: 'ADMIN',
     status: 'ACTIVE',
+    isActive: true,
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-08-16T18:00:00Z',
     lastLoginAt: '2024-08-17T08:00:00Z'
@@ -51,6 +55,7 @@ export const mockUsers: User[] = [
     email: 'david.brown@example.com',
     role: 'STUDENT',
     status: 'INACTIVE',
+    isActive: false,
     createdAt: '2024-05-15T14:30:00Z',
     updatedAt: '2024-06-01T10:00:00Z'
   }
