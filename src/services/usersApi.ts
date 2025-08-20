@@ -8,14 +8,15 @@ const baseQueryWithRetry = retry(
     baseUrl: "http://localhost:8080/api/admin/v1",
     prepareHeaders: (headers) => {
       // Add authorization header if token exists
-      const token = localStorage.getItem('authToken');
+      // const token = localStorage.getItem('authToken');
+      const token = "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlcyI6WyJST0xFX0FETUlOIl0sInN1YiI6ImFsaWNlQGV4YW1wbGUuY29tIiwiaWF0IjoxNzU1Njc0MjA4LCJleHAiOjE3NTU2Nzc4MDh9.PfPGIdKtQ0omOgzyR-A6SSq5-3Lj_qsviHrrYYt3X_Hbx5wO_9GWkJHCa5QdgOIT";
+
       if (token) {
         headers.set('authorization', `Bearer ${token}`);
       } else {
         // For development, add a mock authorization or skip auth
         if (process.env.NODE_ENV === 'development') {
           console.warn('Development mode: No auth token found. Using mock auth.');
-          // You can add a mock token here for development
           // headers.set('authorization', 'Bearer mock-token');
         }
       }
@@ -33,9 +34,10 @@ const baseQueryWithRetry = retry(
 
 // API Response types based on Spring Boot backend
 export interface ApiResponse<T> {
-  status: string;
+  statusCode: number; // Changed from "status" to match actual API response
   message: string;
   data: T;
+  timestamp?: string; // Optional timestamp field
 }
 
 export interface AdminUserPageResponse {

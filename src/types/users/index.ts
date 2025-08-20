@@ -2,16 +2,32 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  avatar?: string;
-  thumbnailUrl?: string; // For Spring Boot API compatibility
   role: UserRole;
-  status: UserStatus;
-  isActive: boolean; // For Spring Boot API compatibility
+  thumbnailUrl?: string;
   bio?: string;
-  createdAt: string;
-  updatedAt: string;
+  isActive: boolean;
+  enrolledCourses?: EnrolledCourse[];
+  totalPayments?: number;
+  totalStudyTimeMinutes?: number;
+  // Optional fields for compatibility
+  avatar?: string;
+  status?: UserStatus;
+  createdAt?: string;
+  updatedAt?: string;
   lastLoginAt?: string;
 }
+
+export interface EnrolledCourse {
+  courseId: string;
+  courseTitle: string;
+  instructorName: string;
+  enrolledAt: string;
+  completionStatus: CourseCompletionStatus;
+  paidAmount: number;
+  totalTimeStudying: number;
+}
+
+export type CourseCompletionStatus = 'IN_PROGRESS' | 'COMPLETED';
 
 export type UserRole = 'ADMIN' | 'INSTRUCTOR' | 'STUDENT';
 
