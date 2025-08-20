@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { PaymentActions } from "./PaymentActions";
-import type { PaymentResponse } from "@/services/paymentsApi";
+import type { PaymentResponse } from "@/types/payments";
 
 interface PaymentRowProps {
   payment: PaymentResponse;
@@ -96,12 +96,26 @@ export const PaymentRow = ({ payment, style }: PaymentRowProps) => {
 
       {/* Date */}
       <TableCell>
-        <div className="text-sm">
-          <p>{formatDate(payment.createdAt)}</p>
-          {payment.paidAt && payment.status === "COMPLETED" && (
-            <p className="text-xs text-muted-foreground">
-              Paid: {formatDate(payment.paidAt)}
-            </p>
+        <div className="text-sm space-y-1">
+          <div>
+            <span className="text-xs text-muted-foreground">Created:</span>
+            <p className="font-medium">{formatDate(payment.createdAt)}</p>
+          </div>
+          {payment.paidAt && (
+            <div>
+              <span className="text-xs text-muted-foreground">Paid:</span>
+              <p className="text-green-600 font-medium">
+                {formatDate(payment.paidAt)}
+              </p>
+            </div>
+          )}
+          {payment.paidOutAt && (
+            <div>
+              <span className="text-xs text-muted-foreground">Paid Out:</span>
+              <p className="text-blue-600 font-medium">
+                {formatDate(payment.paidOutAt)}
+              </p>
+            </div>
           )}
         </div>
       </TableCell>

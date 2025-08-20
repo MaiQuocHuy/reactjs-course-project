@@ -98,8 +98,8 @@ export const PaymentsTable = () => {
                 <TableHead className="font-semibold text-xs uppercase tracking-wide text-center">
                   Status
                 </TableHead>
-                <TableHead className="font-semibold text-xs uppercase tracking-wide text-center">
-                  Date
+                <TableHead className="font-semibold text-xs uppercase tracking-wide text-center w-[160px]">
+                  Dates
                 </TableHead>
                 <TableHead className="w-[50px]"></TableHead>
               </TableRow>

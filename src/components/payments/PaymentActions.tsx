@@ -1,5 +1,11 @@
 import { useState } from "react";
-import { Eye, CheckCircle, XCircle, MoreHorizontal } from "lucide-react";
+import {
+  Eye,
+  CheckCircle,
+  XCircle,
+  MoreHorizontal,
+  DollarSign,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -19,8 +25,18 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useUpdatePaymentStatusMutation } from "@/services/paymentsApi";
-import type { PaymentResponse } from "@/services/paymentsApi";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  useUpdatePaymentStatusMutation,
+  usePaidOutPaymentMutation,
+} from "@/services/paymentsApi";
+import type { PaymentResponse } from "@/types/payments";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -30,12 +46,21 @@ interface PaymentActionsProps {
 
 export const PaymentActions = ({ payment }: PaymentActionsProps) => {
   const [updatePaymentStatus, { isLoading }] = useUpdatePaymentStatusMutation();
+  const [paidOutPayment, { isLoading: isPaidOutLoading }] =
+    usePaidOutPaymentMutation();
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean;
-    action: "COMPLETED" | "FAILED" | null;
+    action: "COMPLETED" | "FAILED" | "PAID_OUT" | null;
   }>({
     isOpen: false,
     action: null,
+  });
+  const [paidOutDialog, setPaidOutDialog] = useState<{
+    isOpen: boolean;
+    data: any;
+  }>({
+    isOpen: false,
+    data: null,
   });
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -51,31 +76,64 @@ export const PaymentActions = ({ payment }: PaymentActionsProps) => {
     });
   };
 
+  const handlePaidOut = () => {
+    setConfirmDialog({
+      isOpen: true,
+      action: "PAID_OUT",
+    });
+  };
+
   const confirmStatusUpdate = async () => {
     if (!confirmDialog.action) return;
 
     try {
-      await updatePaymentStatus({
-        id: payment.id,
-        status: confirmDialog.action,
-      }).unwrap();
+      if (confirmDialog.action === "PAID_OUT") {
+        const result = await paidOutPayment(payment.id).unwrap();
 
-      toast({
-        title: "Success",
-        description: `Payment status updated to ${confirmDialog.action.toLowerCase()}`,
-      });
+        // Show success dialog with auto-close after 3 seconds
+        setPaidOutDialog({
+          isOpen: true,
+          data: result.data,
+        });
+
+        // Auto close after 3 seconds
+        setTimeout(() => {
+          setPaidOutDialog({ isOpen: false, data: null });
+        }, 3000);
+
+        toast({
+          title: "Success",
+          description: result.message || "Payment paid out successfully",
+        });
+      } else {
+        await updatePaymentStatus({
+          id: payment.id,
+          status: confirmDialog.action,
+        }).unwrap();
+
+        toast({
+          title: "Success",
+          description: `Payment status updated to ${confirmDialog.action.toLowerCase()}`,
+        });
+      }
 
       setConfirmDialog({ isOpen: false, action: null });
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to update payment status",
+        description:
+          error?.message ||
+          `Failed to ${
+            confirmDialog.action === "PAID_OUT" ? "paid out" : "update"
+          } payment`,
         variant: "destructive",
       });
     }
   };
 
   const isPending = payment.status === "PENDING";
+  const isCompleted = payment.status === "COMPLETED";
+  const canPaidOut = isCompleted && !payment.paidOutAt;
 
   return (
     <>
@@ -84,7 +142,7 @@ export const PaymentActions = ({ payment }: PaymentActionsProps) => {
           <Button
             variant="ghost"
             className="h-8 w-8 p-0 hover:bg-muted transition-colors"
-            disabled={isLoading}
+            disabled={isLoading || isPaidOutLoading}
           >
             <span className="sr-only">Open menu</span>
             <MoreHorizontal className="h-4 w-4" />
@@ -119,6 +177,19 @@ export const PaymentActions = ({ payment }: PaymentActionsProps) => {
               </DropdownMenuItem>
             </>
           )}
+
+          {canPaidOut && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={handlePaidOut}
+                className="text-blue-600"
+              >
+                <DollarSign className="mr-2 h-4 w-4" />
+                Paid Out
+              </DropdownMenuItem>
+            </>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -130,11 +201,11 @@ export const PaymentActions = ({ payment }: PaymentActionsProps) => {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirm Status Update</AlertDialogTitle>
+            <AlertDialogTitle>Confirm Action</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to mark this payment as{" "}
-              {confirmDialog.action?.toLowerCase()}? This action cannot be
-              undone.
+              {confirmDialog.action === "PAID_OUT"
+                ? "Are you sure you want to paid out this payment? The instructor will receive their earnings."
+                : `Are you sure you want to mark this payment as ${confirmDialog.action?.toLowerCase()}? This action cannot be undone.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -145,6 +216,54 @@ export const PaymentActions = ({ payment }: PaymentActionsProps) => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Paid Out Success Dialog */}
+      <Dialog
+        open={paidOutDialog.isOpen}
+        onOpenChange={(open) => setPaidOutDialog({ isOpen: open, data: null })}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-green-600">
+              Payment Paid Out Successfully!
+            </DialogTitle>
+            <DialogDescription>
+              The payment has been processed and the instructor will receive
+              their earnings.
+            </DialogDescription>
+          </DialogHeader>
+          {paidOutDialog.data && (
+            <div className="space-y-3 pt-4">
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <span className="text-muted-foreground">Course:</span>
+                <span className="font-medium">
+                  {paidOutDialog.data.courseTitle}
+                </span>
+
+                <span className="text-muted-foreground">Instructor:</span>
+                <span className="font-medium">
+                  {paidOutDialog.data.instructorName}
+                </span>
+
+                <span className="text-muted-foreground">Amount:</span>
+                <span className="font-medium">
+                  ${paidOutDialog.data.amount}
+                </span>
+
+                <span className="text-muted-foreground">
+                  Instructor Earning:
+                </span>
+                <span className="font-medium text-green-600">
+                  ${paidOutDialog.data.instructorEarning}
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground bg-muted p-2 rounded">
+                {paidOutDialog.data.message}
+              </p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

@@ -152,7 +152,7 @@ export const PaymentDetailPage = () => {
       </div>
 
       {/* Payment Information Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* User Information */}
         <Card>
           <CardHeader>
@@ -212,7 +212,42 @@ export const PaymentDetailPage = () => {
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Instructor: {payment.course.instructor.name}
+                  Course ID: {payment.course.id}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Instructor Information */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <User className="h-5 w-5" />
+              Instructor Information
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-start space-x-3">
+              <Avatar className="h-12 w-12">
+                <AvatarImage
+                  src={payment.course.instructor.thumbnailUrl}
+                  alt={payment.course.instructor.name}
+                />
+                <AvatarFallback>
+                  {payment.course.instructor.name
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="font-medium">{payment.course.instructor.name}</p>
+                <p className="text-sm text-muted-foreground">
+                  {payment.course.instructor.email}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  ID: {payment.course.instructor.id}
                 </p>
               </div>
             </div>
@@ -229,7 +264,7 @@ export const PaymentDetailPage = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Payment Method */}
             <div className="space-y-2">
               <div className="flex items-center gap-2">
@@ -250,6 +285,17 @@ export const PaymentDetailPage = () => {
               </p>
             </div>
 
+            {/* Status */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Hash className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium">Status</span>
+              </div>
+              <Badge variant={getStatusVariant(payment.status)}>
+                {payment.status}
+              </Badge>
+            </div>
+
             {/* Created Date */}
             <div className="space-y-2">
               <div className="flex items-center gap-2">
@@ -258,6 +304,57 @@ export const PaymentDetailPage = () => {
               </div>
               <p className="text-sm">{formatDate(payment.createdAt)}</p>
             </div>
+
+            {/* Paid Date */}
+            {payment.paidAt && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-green-600" />
+                  <span className="text-sm font-medium">Paid At</span>
+                </div>
+                <p className="text-sm text-green-600">
+                  {formatDate(payment.paidAt)}
+                </p>
+              </div>
+            )}
+
+            {/* Paid Out Date */}
+            {payment.paidoutAt && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-blue-600" />
+                  <span className="text-sm font-medium">Paid Out At</span>
+                </div>
+                <p className="text-sm text-blue-600">
+                  {formatDate(payment.paidoutAt)}
+                </p>
+              </div>
+            )}
+
+            {/* Updated Date */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium">Updated</span>
+              </div>
+              <p className="text-sm">{formatDate(payment.updatedAt)}</p>
+            </div>
+
+            {/* Card Information */}
+            {payment.card && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <CreditCard className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">Card</span>
+                </div>
+                <p className="text-sm capitalize">
+                  {payment.card.brand} **** {payment.card.last4}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Expires: {payment.card.expMonth}/{payment.card.expYear}
+                </p>
+              </div>
+            )}
 
             {/* Transaction ID */}
             {payment.transactionId && (
