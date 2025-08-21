@@ -42,6 +42,7 @@ import {
   TableHeader,
   TableRow,
 } from '../../components/ui/table';
+import PendingCourses from '@/components/courses/PendingCourses';
 
 export const DashboardPage: React.FC = () => {
   // Mock data for dashboard
@@ -209,7 +210,7 @@ export const DashboardPage: React.FC = () => {
       </div>
 
       {/* Pending courses */}
-      
+      <PendingCourses/>
 
       {/* Revenue statistics */}
       <Card>

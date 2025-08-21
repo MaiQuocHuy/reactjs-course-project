@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,19 +11,7 @@ import NoCourseFound from '@/components/courses/NoCourseFound';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft} from 'lucide-react';
 import CourseStatistics from '@/components/courses/course-detail/course-content/CourseStatistics';
-import { z } from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 
-// Define the schema for form validation
-const rejectFormSchema = z.object({
-  reason: z
-    .string()
-    .min(10, { message: "Rejection reason must be at least 10 characters." })
-    .max(500, { message: "Rejection reason cannot exceed 500 characters." }),
-});
-
-type RejectFormValues = z.infer<typeof rejectFormSchema>;
 
 const CourseReviewDetailPage = () => {
   const navigate = useNavigate();

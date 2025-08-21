@@ -26,7 +26,7 @@ import { Button } from '@/components/ui/button';
 import { Check, X } from 'lucide-react';
 import { format } from 'date-fns';
 import type { CourseReview } from '@/types/courses-review';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import {
   AlertDialog,
@@ -94,6 +94,7 @@ const PendingCourses = () => {
   });
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleRetry = useCallback(() => {
     refetch();
@@ -167,7 +168,7 @@ const PendingCourses = () => {
   if (error) {
     return (
       <NoCourseFound
-        title="Failed to load courses"
+        title="Failed to load reviewed courses"
         description={String((error as any).error ?? 'Unknown error')}
         actionLabel="Try again"
         onAction={handleRetry}
@@ -176,14 +177,18 @@ const PendingCourses = () => {
   }
 
   if (!pendingCourses || pendingCourses.content.length === 0) {
-    return (
-      <NoCourseFound
-        title="No pending courses found"
-        description="There are no courses pending review at the moment."
-        actionLabel="Refresh"
-        onAction={handleRetry}
-      />
-    );
+    if (location.pathname === '/admin/courses') {
+      return (
+        <NoCourseFound
+          title="No pending courses found"
+          description="There are no courses pending review at the moment."
+          actionLabel="Refresh"
+          onAction={handleRetry}
+        />
+      );
+    } else {
+      return <></>;
+    }
   }
 
   const { content: courses, page: pagination } = pendingCourses;
@@ -280,7 +285,7 @@ const PendingCourses = () => {
                     >
                       <Check className="w-4 h-4 mr-1" /> Accept
                     </Button>
-                    
+
                     <Button
                       size="sm"
                       variant="destructive"

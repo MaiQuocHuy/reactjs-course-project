@@ -13,7 +13,7 @@ const baseQueryWithRetry = retry(
     baseUrl: `${import.meta.env.VITE_BACK_END_BASE_URL}/admin`,
     prepareHeaders: (headers) => {
       const token =
-        'eyJhbGciOiJIUzM4NCJ9.eyJyb2xlcyI6WyJST0xFX0FETUlOIl0sInN1YiI6ImFsaWNlQGV4YW1wbGUuY29tIiwiaWF0IjoxNzU1NzEzMzM5LCJleHAiOjE3NTU3MTY5Mzl9.1BjZvRkPHlEod6LFvpXy-eKLcZ7a-3sQPzrV7pgUwRYnzbyaFBpa3HcT8IB5ShM2';
+        'eyJhbGciOiJIUzM4NCJ9.eyJyb2xlcyI6WyJST0xFX0FETUlOIl0sInN1YiI6ImFsaWNlQGV4YW1wbGUuY29tIiwiaWF0IjoxNzU1NzQwOTkzLCJleHAiOjE3NTU3NDQ1OTN9.4DydCxWE3KIjnYMbM92h1JDwOJEYv5GGueqFX4AT9QgpbvvC66tKbWpo1s7H0kad';
       if (token) {
         headers.set('authorization', `Bearer ${token}`);
       } else {
