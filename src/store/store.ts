@@ -7,8 +7,6 @@ import refundsSlice from "@/features/refunds/refundsSlice";
 import { authApi } from "@/services/authApi";
 import { usersApi } from "@/services/usersApi";
 import { coursesApi } from "@/services/courses-api";
-
-import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "./authSlice";
 export const store = configureStore({
   reducer: {

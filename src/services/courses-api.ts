@@ -1,5 +1,6 @@
-import { createApi, fetchBaseQuery, retry } from '@reduxjs/toolkit/query/react';
+import { createApi } from '@reduxjs/toolkit/query/react';
 
+import { baseQueryWithReauth } from '@/lib/baseQueryWithReauth';
 import type { ApiResponse } from '@/types/common';
 import type { ApiCoursesResponse, Section } from '@/types/courses';
 import type {
@@ -7,35 +8,9 @@ import type {
   CourseReviewDetail,
 } from '@/types/courses-review';
 
-// Custom base query with retry and header preparation (mirrors usersApi pattern)
-const baseQueryWithRetry = retry(
-  fetchBaseQuery({
-    baseUrl: `${import.meta.env.VITE_BACK_END_BASE_URL}/admin`,
-    prepareHeaders: (headers) => {
-      const token =
-        'eyJhbGciOiJIUzM4NCJ9.eyJyb2xlcyI6WyJST0xFX0FETUlOIl0sInN1YiI6ImFsaWNlQGV4YW1wbGUuY29tIiwiaWF0IjoxNzU1NzQwOTkzLCJleHAiOjE3NTU3NDQ1OTN9.4DydCxWE3KIjnYMbM92h1JDwOJEYv5GGueqFX4AT9QgpbvvC66tKbWpo1s7H0kad';
-      if (token) {
-        headers.set('authorization', `Bearer ${token}`);
-      } else {
-        if (process.env.NODE_ENV === 'development') {
-          // Optionally set a mock token in development
-          // headers.set('authorization', 'Bearer mock-token');
-        }
-      }
-      headers.set('content-type', 'application/json');
-      headers.set('accept', 'application/json');
-      return headers;
-    },
-    credentials: 'include',
-  }),
-  {
-    maxRetries: 2,
-  }
-);
-
 export const coursesApi = createApi({
   reducerPath: 'coursesApi',
-  baseQuery: baseQueryWithRetry,
+  baseQuery: baseQueryWithReauth,
   tagTypes: ['Courses', 'PendingCourses'],
   endpoints: (builder) => ({
     // Get all active courses
@@ -65,7 +40,7 @@ export const coursesApi = createApi({
 
         const queryString = searchParams.toString();
         return {
-          url: `/courses${queryString ? `?${queryString}` : ''}`,
+          url: `/admin/courses${queryString ? `?${queryString}` : ''}`,
           method: 'GET',
         };
       },
@@ -84,7 +59,7 @@ export const coursesApi = createApi({
     // Get course detail
     getCourseById: builder.query<ApiResponse<Section[]>, string>({
       query: (id) => ({
-        url: `/courses/${id}`,
+        url: `/admin/courses/${id}`,
         method: 'GET',
       }),
       transformResponse: (response: any) => response.data,
@@ -122,7 +97,9 @@ export const coursesApi = createApi({
 
         const queryString = searchParams.toString();
         return {
-          url: `/courses/review-course${queryString ? `?${queryString}` : ''}`,
+          url: `/admin/courses/review-course${
+            queryString ? `?${queryString}` : ''
+          }`,
           method: 'GET',
         };
       },
@@ -145,7 +122,7 @@ export const coursesApi = createApi({
     // Get course detail
     getPendingCoursesById: builder.query<CourseReviewDetail, string>({
       query: (id) => ({
-        url: `/courses/review-course/${id}`,
+        url: `/admin/courses/review-course/${id}`,
         method: 'GET',
       }),
       transformResponse: (response: any) => {
@@ -167,7 +144,7 @@ export const coursesApi = createApi({
         }
 
         return {
-          url: `/courses/review-course/${id}`,
+          url: `/admin/courses/review-course/${id}`,
           method: 'PATCH',
           body: { status, ...(reason && { reason }) },
         };
