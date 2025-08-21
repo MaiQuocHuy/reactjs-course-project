@@ -9,7 +9,7 @@ const baseQueryWithRetry = retry(
     prepareHeaders: (headers) => {
       // Add authorization header if token exists
       // const token = localStorage.getItem('authToken');
-      const token = "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlcyI6WyJST0xFX0FETUlOIl0sInN1YiI6ImFsaWNlQGV4YW1wbGUuY29tIiwiaWF0IjoxNzU1Njc0MjA4LCJleHAiOjE3NTU2Nzc4MDh9.PfPGIdKtQ0omOgzyR-A6SSq5-3Lj_qsviHrrYYt3X_Hbx5wO_9GWkJHCa5QdgOIT";
+      const token = "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlcyI6WyJST0xFX0FETUlOIl0sInN1YiI6ImFsaWNlQGV4YW1wbGUuY29tIiwiaWF0IjoxNzU1Njc4ODI0LCJleHAiOjE3NTU2ODI0MjR9.xm94yHIbwdRwIspKAwx5olOkpeyYuQUPf9BYeAH3nGNpE3hOswBfPOeJuElNR23R";
 
       if (token) {
         headers.set('authorization', `Bearer ${token}`);
@@ -155,7 +155,7 @@ export const usersApi = createApi({
     >({
       query: ({ id, data }) => ({
         url: `/users/${id}/status`,
-        method: 'PATCH',
+        method: 'PUT',
         body: data,
       }),
     }),

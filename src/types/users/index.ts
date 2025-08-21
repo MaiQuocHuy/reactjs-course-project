@@ -8,7 +8,7 @@ export interface User {
   isActive: boolean;
   enrolledCourses?: EnrolledCourse[];
   totalPayments?: number;
-  totalStudyTimeMinutes?: number;
+  totalStudyTimeSeconds?: number; // Study time in seconds
   // Optional fields for compatibility
   avatar?: string;
   status?: UserStatus;
