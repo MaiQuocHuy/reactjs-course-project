@@ -5,11 +5,13 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
+import { Toaster } from "@/components/ui/sonner";
 import LoginForm from "./components/LoginForm";
 import { AdminLayout } from "./components/admin/AdminLayout";
 import { DashboardPage } from "./pages/admin/DashboardPage";
 import { UsersListPage } from "./pages/admin/users";
 import { UserDetailPage } from "./pages/admin/users";
+import { CategoriesListPage } from "./pages/admin/categories/CategoriesListPage";
 import { PaymentsPage } from "./pages/payments";
 import RefundsPage from "./pages/refunds";
 
@@ -47,6 +49,14 @@ function App() {
             }
           />
           <Route
+            path="/admin/categories"
+            element={
+              <AdminLayout>
+                <CategoriesListPage />
+              </AdminLayout>
+            }
+          />
+          <Route
             path="/admin/payments"
             element={
               <AdminLayout>
@@ -67,6 +77,7 @@ function App() {
           <Route path="/" element={<Navigate to="/admin" replace />} />
         </Routes>
       </Router>
+      <Toaster position="top-right" richColors />
     </div>
   );
 }
