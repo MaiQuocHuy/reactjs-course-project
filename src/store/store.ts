@@ -1,5 +1,4 @@
 // src/store.ts
-import { configureStore } from "@reduxjs/toolkit";
 
 // import counterSlice from "@/features/counter/counterSlice";
 import paymentsSlice from "@/features/payments/paymentsSlice";
@@ -18,7 +17,6 @@ export const store = configureStore({
     [coursesApi.reducerPath]: coursesApi.reducer,
     // counter: counterSlice.reducer,
     [categoriesApi.reducerPath]: categoriesApi.reducer,
-    counter: counterSlice.reducer,
     payments: paymentsSlice.reducer,
     refunds: refundsSlice,
   },
