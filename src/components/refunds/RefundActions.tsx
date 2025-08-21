@@ -64,14 +64,14 @@ export const RefundActions = ({ refund }: RefundActionsProps) => {
       const payload: {
         id: string;
         status: "COMPLETED" | "FAILED";
-        reason?: string;
+        rejectedReason?: string;
       } = {
         id: refund.id,
         status: confirmDialog.action,
       };
 
       if (confirmDialog.action === "FAILED" && failureReason.trim()) {
-        payload.reason = failureReason.trim();
+        payload.rejectedReason = failureReason.trim();
       }
 
       await updateRefundStatus(payload).unwrap();

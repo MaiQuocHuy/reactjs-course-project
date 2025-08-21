@@ -90,6 +90,9 @@ export const RefundsTable = () => {
                 <TableHead className="min-w-[200px] font-semibold">
                   Reason
                 </TableHead>
+                <TableHead className="min-w-[200px] font-semibold">
+                  Rejected Reason
+                </TableHead>
                 <TableHead className="w-[100px] font-semibold">
                   Status
                 </TableHead>

@@ -1,24 +1,15 @@
+import { baseQueryWithReauth } from "@/lib/baseQueryWithReauth";
 import type {
   PaidOutResponse,
   PaymentDetailApiResponse,
   PaymentsApiResponse,
   UpdatePaymentStatusResponse,
 } from "@/types/payments";
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { createApi } from "@reduxjs/toolkit/query/react";
 
 export const paymentsApi = createApi({
   reducerPath: "paymentsApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: "http://localhost:8080/api",
-    prepareHeaders: (headers) => {
-      // Hardcode bearer token as requested
-      headers.set(
-        "authorization",
-        "Bearer eyJhbGciOiJIUzM4NCJ9.eyJyb2xlcyI6WyJST0xFX0FETUlOIl0sInN1YiI6ImFsaWNlQGV4YW1wbGUuY29tIiwiaWF0IjoxNzU1NjgyODU4LCJleHAiOjE3NTU2ODY0NTh9.v0J2V5qhZooh785Hune8IawoTLlkaw9P-ecx3gNbdd23l_qDESf7YqNito63Hnw_"
-      );
-      return headers;
-    },
-  }),
+  baseQuery: baseQueryWithReauth,
   tagTypes: ["Payment"],
   endpoints: (builder) => ({
     getPayments: builder.query<

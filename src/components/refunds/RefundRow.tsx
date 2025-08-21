@@ -81,6 +81,18 @@ export const RefundRow = ({ refund, style }: RefundRowProps) => {
         </div>
       </TableCell>
 
+      {/* Rejected Reason */}
+      <TableCell>
+        <div className="min-w-0 max-w-[200px]">
+          <p
+            className="text-sm truncate"
+            title={refund.rejectedReason || undefined}
+          >
+            {refund.rejectedReason}
+          </p>
+        </div>
+      </TableCell>
+
       {/* Status */}
       <TableCell>
         <Badge variant={getStatusVariant(refund.status)}>{refund.status}</Badge>
