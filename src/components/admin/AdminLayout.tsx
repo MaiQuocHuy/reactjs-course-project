@@ -26,7 +26,8 @@ import {
   HandCoins,
   BookOpen 
 } from 'lucide-react';
-import { Input } from '../ui/input';
+import { Input } from "../ui/input";
+import { useLogoutMutation } from "@/services/authApi";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -52,7 +53,18 @@ const navigation: NavigationItem[] = [
 export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
+  const [logOut] = useLogoutMutation();
 
+  const handleLogout = async () => {
+    try {
+      await logOut().unwrap();
+      localStorage.removeItem("user");
+      localStorage.removeItem("accessToken");
+      window.location.href = "/login"; // Redirect to login after logout
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
   const isActive = (href: string) => {
     if (href === '/admin') {
       return location.pathname === '/admin';
@@ -84,9 +96,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">SE</span>
               </div>
-              <span className="text-xl font-bold text-gray-900">
-                Sybau Admin
-              </span>
+              <span className="text-xl font-bold text-gray-900">Sybau Admin</span>
             </div>
             <Button
               variant="ghost"
@@ -119,11 +129,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                   onClick={() => setSidebarOpen(false)}
                 >
                   <div className="flex items-center space-x-3">
-                    <Icon
-                      className={`h-5 w-5 ${
-                        active ? 'text-blue-600' : 'text-gray-400'
-                      }`}
-                    />
+                    <Icon className={`h-5 w-5 ${active ? "text-blue-600" : "text-gray-400"}`} />
                     <span>{item.name}</span>
                   </div>
                   {item.badge && (
@@ -147,12 +153,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                 <AvatarFallback>AD</AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">
-                  Admin User
-                </p>
-                <p className="text-xs text-gray-500 truncate">
-                  admin@sybau.edu
-                </p>
+                <p className="text-sm font-medium text-gray-900 truncate">Admin User</p>
+                <p className="text-xs text-gray-500 truncate">admin@sybau.edu</p>
               </div>
             </div>
           </div>
@@ -198,17 +200,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               {/* User menu */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="flex items-center space-x-3"
-                  >
+                  <Button variant="ghost" className="flex items-center space-x-3">
                     <Avatar className="h-8 w-8">
                       <AvatarImage src="/api/placeholder/32/32" />
                       <AvatarFallback>AD</AvatarFallback>
                     </Avatar>
-                    <span className="hidden sm:block text-sm font-medium">
-                      Admin User
-                    </span>
+                    <span className="hidden sm:block text-sm font-medium">Admin User</span>
                     <ChevronDown className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -219,7 +216,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                     <Settings className="mr-2 h-4 w-4" />
                     Settings
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleLogout}>
                     <LogOut className="mr-2 h-4 w-4" />
                     Log out
                   </DropdownMenuItem>
