@@ -16,6 +16,16 @@ import RevenuesPage from './pages/revenues/RevenuesPage';
 import CoursesPage from './pages/courses/CoursesPage';
 import CourseDetailPage from './pages/courses/course-detail/CourseDetailPage';
 import CourseReviewDetailPage from './pages/courses/course-detail/CourseReviewDetailPage';
+} from "react-router-dom";
+import { Toaster } from "@/components/ui/sonner";
+import LoginForm from "./components/LoginForm";
+import { AdminLayout } from "./components/admin/AdminLayout";
+import { DashboardPage } from "./pages/admin/DashboardPage";
+import { UsersListPage } from "./pages/admin/users";
+import { UserDetailPage } from "./pages/admin/users";
+import { CategoriesListPage } from "./pages/admin/categories/CategoriesListPage";
+import { PaymentsPage } from "./pages/payments";
+import RefundsPage from "./pages/refunds";
 
 function App() {
   return (
@@ -94,6 +104,14 @@ function App() {
 
           {/* Payments */}
           <Route
+            path="/admin/categories"
+            element={
+              <AdminLayout>
+                <CategoriesListPage />
+              </AdminLayout>
+            }
+          />
+          <Route
             path="/admin/payments"
             element={
               <AdminLayout>
@@ -116,6 +134,7 @@ function App() {
           <Route path="/" element={<Navigate to="/admin" replace />} />
         </Routes>
       </Router>
+      <Toaster position="top-right" richColors />
     </div>
   );
 }
