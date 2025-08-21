@@ -14,6 +14,16 @@ import {
 } from "../../../components/ui/avatar";
 import { Badge } from "../../../components/ui/badge";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../../../components/ui/alert-dialog";
+import {
   Tabs,
   TabsContent,
   TabsList,
@@ -27,39 +37,57 @@ import {
   UserPlus,
   Loader2,
   Mail,
-  Calendar,
   Activity,
   CreditCard,
   BookOpen,
   Clock,
   CheckCircle,
-  XCircle,
   AlertCircle,
+  User,
 } from "lucide-react";
 import {
   useGetUserByIdQuery,
+  useUpdateUserMutation,
   useUpdateUserStatusMutation,
 } from "../../../services/usersApi";
+import { EditUserDialog } from "../../../components/admin/UserDialogs";
 
 export const UserDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [isBanUnbanLoading, setIsBanUnbanLoading] = useState(false);
+  const [showBanConfirm, setShowBanConfirm] = useState(false);
+  const [showUnbanConfirm, setShowUnbanConfirm] = useState(false);
 
   // Fetch user data using RTK Query
   const {
     data: userResponse,
     isLoading,
     isError,
+    error,
+    refetch,
   } = useGetUserByIdQuery(id!, {
-    skip: !id, // Skip the query if no ID is provided
+    skip: !id,
   });
 
   // Mutations for user actions
   const [updateUserStatus] = useUpdateUserStatusMutation();
+  const [updateUser] = useUpdateUserMutation();
 
   // Extract user data from API response
   const user = userResponse?.data;
+
+  // Debug logging
+  console.log("UserDetailPage Debug:", {
+    id,
+    isLoading,
+    isError,
+    error,
+    userResponse,
+    user,
+  });
 
   // Loading state
   if (isLoading) {
@@ -75,16 +103,41 @@ export const UserDetailPage: React.FC = () => {
   }
 
   // Error state
-  if (isError || !user) {
+  if (isError) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
         <div className="text-center">
           <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold">Error Loading User</h2>
+          <p className="text-muted-foreground mt-2">
+            Failed to load user details:{" "}
+            {error ? JSON.stringify(error) : "Unknown error"}
+          </p>
+          <p className="text-sm text-muted-foreground mt-2">User ID: {id}</p>
+        </div>
+        <Button onClick={() => navigate("/admin/users")} className="mt-4">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Users
+        </Button>
+      </div>
+    );
+  }
+
+  // Check if user data is not available
+  if (!user) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+        <div className="text-center">
+          <AlertCircle className="h-16 w-16 text-orange-500 mx-auto mb-4" />
           <h2 className="text-2xl font-bold">User Not Found</h2>
           <p className="text-muted-foreground mt-2">
-            {isError
-              ? "Failed to load user details. Please try again."
-              : "The user you're looking for doesn't exist."}
+            The user you're looking for doesn't exist or the data structure is
+            unexpected.
+          </p>
+          <p className="text-sm text-muted-foreground mt-2">User ID: {id}</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Debug: userResponse ={" "}
+            {userResponse ? JSON.stringify(userResponse) : "undefined"}
           </p>
         </div>
         <Button onClick={() => navigate("/admin/users")} className="mt-4">
@@ -96,8 +149,22 @@ export const UserDetailPage: React.FC = () => {
   }
 
   const handleEdit = () => {
-    console.log("Edit user:", user.id);
-    // TODO: Navigate to edit page or open edit modal
+    setEditDialogOpen(true);
+  };
+
+  const handleEditUser = async (userData: { name: string; bio?: string }) => {
+    if (user) {
+      try {
+        await updateUser({
+          id: user.id,
+          data: userData,
+        }).unwrap();
+        refetch(); // Refresh the data after successful update
+        console.log("User updated successfully");
+      } catch (error) {
+        console.error("Failed to update user:", error);
+      }
+    }
   };
 
   const handleAssignRole = async () => {
@@ -110,39 +177,67 @@ export const UserDetailPage: React.FC = () => {
   };
 
   const handleBanUnban = async () => {
+    if (!user) return;
+
+    setIsBanUnbanLoading(true);
     try {
       const newStatus = !user.isActive;
       await updateUserStatus({
         id: user.id,
         data: { isActive: newStatus },
       }).unwrap();
+      refetch(); // Refresh the data after successful update
       console.log(
         newStatus ? "User unbanned successfully" : "User banned successfully"
       );
     } catch (error) {
       console.error("Failed to update user status:", error);
+    } finally {
+      setIsBanUnbanLoading(false);
+      setShowBanConfirm(false);
+      setShowUnbanConfirm(false);
     }
+  };
+
+  const handleBanClick = () => {
+    setShowBanConfirm(true);
+  };
+
+  const handleUnbanClick = () => {
+    setShowUnbanConfirm(true);
   };
 
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
       case "ADMIN":
-        return "destructive";
+        return "destructive" as const;
       case "INSTRUCTOR":
-        return "default";
+        return "default" as const;
       case "STUDENT":
-        return "secondary";
+        return "secondary" as const;
       default:
-        return "outline";
+        return "outline" as const;
     }
   };
 
-  const getStatusIcon = (isActive: boolean) => {
-    return isActive ? (
-      <CheckCircle className="h-4 w-4 text-green-600" />
-    ) : (
-      <XCircle className="h-4 w-4 text-red-600" />
-    );
+  const formatDate = (dateString: string) => {
+    try {
+      return new Date(dateString).toLocaleDateString();
+    } catch (error) {
+      console.error("Error parsing date:", dateString, error);
+      return dateString;
+    }
+  };
+
+  const formatTime = (seconds: number) => {
+    if (seconds === 0) return "0 minutes";
+    const hours = Math.floor(seconds / 3600); // 3600 seconds = 1 hour
+    const minutes = Math.floor((seconds % 3600) / 60); // remaining seconds to minutes
+
+    if (hours > 0) {
+      return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+    }
+    return minutes > 0 ? `${minutes}m` : "< 1m";
   };
 
   return (
@@ -176,14 +271,30 @@ export const UserDetailPage: React.FC = () => {
             Assign Role
           </Button>
           {user.isActive ? (
-            <Button variant="destructive" onClick={handleBanUnban}>
-              <UserMinus className="mr-2 h-4 w-4" />
-              Ban User
+            <Button
+              variant="destructive"
+              onClick={handleBanClick}
+              disabled={isBanUnbanLoading}
+            >
+              {isBanUnbanLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <UserMinus className="mr-2 h-4 w-4" />
+              )}
+              {isBanUnbanLoading ? "Banning..." : "Ban User"}
             </Button>
           ) : (
-            <Button variant="default" onClick={handleBanUnban}>
-              <UserPlus className="mr-2 h-4 w-4" />
-              Unban User
+            <Button
+              variant="default"
+              onClick={handleUnbanClick}
+              disabled={isBanUnbanLoading}
+            >
+              {isBanUnbanLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <UserPlus className="mr-2 h-4 w-4" />
+              )}
+              {isBanUnbanLoading ? "Unbanning..." : "Unban User"}
             </Button>
           )}
         </div>
@@ -199,10 +310,7 @@ export const UserDetailPage: React.FC = () => {
                 alt={user.name}
               />
               <AvatarFallback className="text-xl">
-                {user.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")}
+                <User className="h-8 w-8" />
               </AvatarFallback>
             </Avatar>
 
@@ -210,17 +318,18 @@ export const UserDetailPage: React.FC = () => {
               <div>
                 <h2 className="text-2xl font-bold">{user.name}</h2>
                 <p className="text-muted-foreground">ID: {user.id}</p>
+                {user.bio && (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {user.bio}
+                  </p>
+                )}
               </div>
 
               <div className="flex flex-wrap gap-2">
                 <Badge variant={getRoleBadgeVariant(user.role)}>
                   {user.role}
                 </Badge>
-                <Badge
-                  variant={user.isActive ? "default" : "destructive"}
-                  className="flex items-center gap-1"
-                >
-                  {getStatusIcon(user.isActive)}
+                <Badge variant={user.isActive ? "default" : "destructive"}>
                   {user.isActive ? "Active" : "Banned"}
                 </Badge>
               </div>
@@ -231,20 +340,11 @@ export const UserDetailPage: React.FC = () => {
                   <span>{user.email}</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <BookOpen className="h-4 w-4 text-muted-foreground" />
                   <span>
-                    Joined {new Date(user.createdAt).toLocaleDateString()}
+                    {user.enrolledCourses?.length || 0} courses enrolled
                   </span>
                 </div>
-                {user.lastLoginAt && (
-                  <div className="flex items-center space-x-2">
-                    <Activity className="h-4 w-4 text-muted-foreground" />
-                    <span>
-                      Last login{" "}
-                      {new Date(user.lastLoginAt).toLocaleDateString()}
-                    </span>
-                  </div>
-                )}
               </div>
             </div>
           </div>
@@ -270,7 +370,9 @@ export const UserDetailPage: React.FC = () => {
                 <BookOpen className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">0</div>
+                <div className="text-2xl font-bold">
+                  {user.enrolledCourses?.length || 0}
+                </div>
                 <p className="text-xs text-muted-foreground">
                   Total courses enrolled
                 </p>
@@ -285,7 +387,9 @@ export const UserDetailPage: React.FC = () => {
                 <CreditCard className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">$0</div>
+                <div className="text-2xl font-bold">
+                  ${user.totalPayments?.toFixed(2) || "0.00"}
+                </div>
                 <p className="text-xs text-muted-foreground">Lifetime value</p>
               </CardContent>
             </Card>
@@ -298,7 +402,11 @@ export const UserDetailPage: React.FC = () => {
                 <Clock className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">0h</div>
+                <div className="text-2xl font-bold">
+                  {user.totalStudyTimeSeconds
+                    ? formatTime(user.totalStudyTimeSeconds)
+                    : "0m"}
+                </div>
                 <p className="text-xs text-muted-foreground">
                   Total learning time
                 </p>
@@ -308,22 +416,31 @@ export const UserDetailPage: React.FC = () => {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
-                  Last Activity
+                  Completion Rate
                 </CardTitle>
                 <Activity className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {user.lastLoginAt
-                    ? new Date(user.lastLoginAt).toLocaleDateString()
-                    : "Never"}
+                  {user.enrolledCourses && user.enrolledCourses.length > 0
+                    ? Math.round(
+                        (user.enrolledCourses.filter(
+                          (c) => c.completionStatus === "COMPLETED"
+                        ).length /
+                          user.enrolledCourses.length) *
+                          100
+                      )
+                    : 0}
+                  %
                 </div>
-                <p className="text-xs text-muted-foreground">Last login date</p>
+                <p className="text-xs text-muted-foreground">
+                  Courses completed
+                </p>
               </CardContent>
             </Card>
           </div>
 
-          {/* Additional Info */}
+          {/* User Information */}
           <Card>
             <CardHeader>
               <CardTitle>User Information</CardTitle>
@@ -344,35 +461,32 @@ export const UserDetailPage: React.FC = () => {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">
-                    Phone Number
-                  </label>
-                  <p className="font-medium">Not provided</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">
-                    Registration Date
+                    Role
                   </label>
                   <p className="font-medium">
-                    {new Date(user.createdAt).toLocaleString()}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">
-                    Last Updated
-                  </label>
-                  <p className="font-medium">
-                    {new Date(user.updatedAt).toLocaleString()}
+                    <Badge variant={getRoleBadgeVariant(user.role)}>
+                      {user.role}
+                    </Badge>
                   </p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-muted-foreground">
                     Account Status
                   </label>
-                  <p className="font-medium flex items-center gap-2">
-                    {getStatusIcon(user.isActive)}
-                    {user.isActive ? "Active" : "Banned"}
+                  <p className="font-medium">
+                    <Badge variant={user.isActive ? "default" : "destructive"}>
+                      {user.isActive ? "Active" : "Banned"}
+                    </Badge>
                   </p>
                 </div>
+                {user.bio && (
+                  <div className="md:col-span-2">
+                    <label className="text-sm font-medium text-muted-foreground">
+                      Bio
+                    </label>
+                    <p className="font-medium">{user.bio}</p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -381,16 +495,92 @@ export const UserDetailPage: React.FC = () => {
         <TabsContent value="courses">
           <Card>
             <CardHeader>
-              <CardTitle>Enrolled Courses</CardTitle>
+              <CardTitle>
+                Enrolled Courses ({user.enrolledCourses?.length || 0})
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8">
-                <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No courses found</h3>
-                <p className="text-muted-foreground">
-                  This user hasn't enrolled in any courses yet.
-                </p>
-              </div>
+              {user.enrolledCourses && user.enrolledCourses.length > 0 ? (
+                <div className="space-y-4">
+                  {user.enrolledCourses.map((course) => (
+                    <div
+                      key={course.courseId}
+                      className="border rounded-lg p-4 space-y-3"
+                    >
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-lg">
+                            {course.courseTitle}
+                          </h3>
+                          <p className="text-muted-foreground">
+                            Instructor: {course.instructorName}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            Course ID: {course.courseId}
+                          </p>
+                        </div>
+                        <Badge
+                          variant={
+                            course.completionStatus === "COMPLETED"
+                              ? "default"
+                              : "secondary"
+                          }
+                          className="ml-4"
+                        >
+                          {course.completionStatus === "COMPLETED" ? (
+                            <>
+                              <CheckCircle className="w-3 h-3 mr-1" />
+                              Completed
+                            </>
+                          ) : (
+                            <>
+                              <Clock className="w-3 h-3 mr-1" />
+                              In Progress
+                            </>
+                          )}
+                        </Badge>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        <div>
+                          <span className="text-muted-foreground">
+                            Enrolled:
+                          </span>
+                          <p className="font-medium">
+                            {formatDate(course.enrolledAt)}
+                          </p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">
+                            Paid Amount:
+                          </span>
+                          <p className="font-medium">
+                            ${course.paidAmount.toFixed(2)}
+                          </p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">
+                            Study Time:
+                          </span>
+                          <p className="font-medium">
+                            {formatTime(course.totalTimeStudying)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">
+                    No courses found
+                  </h3>
+                  <p className="text-muted-foreground">
+                    This user hasn't enrolled in any courses yet.
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -399,17 +589,85 @@ export const UserDetailPage: React.FC = () => {
           <Card>
             <CardHeader>
               <CardTitle>Payment History</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Total Lifetime Value: $
+                {user.totalPayments?.toFixed(2) || "0.00"}
+              </p>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8">
-                <CreditCard className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">
-                  No payments found
-                </h3>
-                <p className="text-muted-foreground">
-                  This user hasn't made any payments yet.
-                </p>
-              </div>
+              {user.enrolledCourses && user.enrolledCourses.length > 0 ? (
+                <div className="space-y-4">
+                  {user.enrolledCourses
+                    .filter((course) => course.paidAmount > 0)
+                    .map((course) => (
+                      <div
+                        key={course.courseId}
+                        className="border rounded-lg p-4"
+                      >
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <h3 className="font-semibold">
+                              {course.courseTitle}
+                            </h3>
+                            <p className="text-muted-foreground text-sm">
+                              Instructor: {course.instructorName}
+                            </p>
+                            <p className="text-muted-foreground text-sm">
+                              Course ID: {course.courseId}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold text-lg">
+                              ${course.paidAmount.toFixed(2)}
+                            </p>
+                            <Badge variant="default" className="text-xs">
+                              <CheckCircle className="w-3 h-3 mr-1" />
+                              Paid
+                            </Badge>
+                          </div>
+                        </div>
+
+                        <div className="mt-3 pt-3 border-t">
+                          <div className="flex justify-between items-center text-sm">
+                            <span className="text-muted-foreground">
+                              Payment Date: {formatDate(course.enrolledAt)}
+                            </span>
+                            <span className="text-muted-foreground">
+                              Status:
+                              <span className="text-green-600 font-medium ml-1">
+                                Completed
+                              </span>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                  {user.enrolledCourses.filter(
+                    (course) => course.paidAmount > 0
+                  ).length === 0 && (
+                    <div className="text-center py-8">
+                      <CreditCard className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold mb-2">
+                        No payments found
+                      </h3>
+                      <p className="text-muted-foreground">
+                        This user hasn't made any payments yet.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <CreditCard className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">
+                    No payments found
+                  </h3>
+                  <p className="text-muted-foreground">
+                    This user hasn't made any payments yet.
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -418,21 +676,150 @@ export const UserDetailPage: React.FC = () => {
           <Card>
             <CardHeader>
               <CardTitle>Activity Log</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Recent learning activities and course enrollments
+              </p>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8">
-                <Activity className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">
-                  No activity found
-                </h3>
-                <p className="text-muted-foreground">
-                  No recent activity to display.
-                </p>
-              </div>
+              {user.enrolledCourses && user.enrolledCourses.length > 0 ? (
+                <div className="space-y-4">
+                  {[...user.enrolledCourses]
+                    .sort(
+                      (a, b) =>
+                        new Date(b.enrolledAt).getTime() -
+                        new Date(a.enrolledAt).getTime()
+                    )
+                    .map((course) => (
+                      <div
+                        key={course.courseId}
+                        className="flex items-start space-x-4 p-4 border rounded-lg"
+                      >
+                        <div className="flex-shrink-0">
+                          {course.completionStatus === "COMPLETED" ? (
+                            <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+                          ) : (
+                            <BookOpen className="h-5 w-5 text-blue-600 mt-0.5" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <p className="font-medium">
+                                {course.completionStatus === "COMPLETED"
+                                  ? "Completed course"
+                                  : "Enrolled in course"}
+                                : {course.courseTitle}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                Instructor: {course.instructorName}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                Paid: ${course.paidAmount.toFixed(2)}
+                              </p>
+                              {course.totalTimeStudying > 0 && (
+                                <p className="text-sm text-muted-foreground">
+                                  Study time:{" "}
+                                  {formatTime(course.totalTimeStudying)}
+                                </p>
+                              )}
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm text-muted-foreground">
+                                {formatDate(course.enrolledAt)}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Activity className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">
+                    No activity found
+                  </h3>
+                  <p className="text-muted-foreground">
+                    No recent activity to display.
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Edit User Dialog */}
+      <EditUserDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        user={user}
+        onConfirm={handleEditUser}
+      />
+
+      {/* Ban User Confirmation Dialog */}
+      <AlertDialog open={showBanConfirm} onOpenChange={setShowBanConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Ban User</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to ban <strong>{user?.name}</strong>? This
+              will prevent them from accessing the platform.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isBanUnbanLoading}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBanUnban}
+              disabled={isBanUnbanLoading}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isBanUnbanLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Banning...
+                </>
+              ) : (
+                "Ban User"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Unban User Confirmation Dialog */}
+      <AlertDialog open={showUnbanConfirm} onOpenChange={setShowUnbanConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Unban User</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to unban <strong>{user?.name}</strong>? This
+              will restore their access to the platform.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isBanUnbanLoading}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBanUnban}
+              disabled={isBanUnbanLoading}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {isBanUnbanLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Unbanning...
+                </>
+              ) : (
+                "Unban User"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

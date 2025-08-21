@@ -1,9 +1,7 @@
-"use client";
-
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useLoginMutation } from "@/services/authApi";
+import { useLoginAdminMutation } from "@/services/authApi";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,7 +15,8 @@ import {
 import { Mail, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
-import { increment } from "@/features/counter/counterSlice";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const schema = z.object({
   email: z.string().email("Email không hợp lệ"),
@@ -28,33 +27,75 @@ type FormValues = z.infer<typeof schema>;
 
 export default function LoginForm() {
   const counter = useAppSelector((state) => state.counter);
-  console.log("Counter value:", counter.value);
+  const auth = useAppSelector((state) => state.auth); // Get auth state
+
+  const navigate = useNavigate();
+
   const dispatch = useAppDispatch();
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      email: "",
-      password: "",
+      email: "alice@example.com",
+      password: "alice123",
     },
   });
 
-  //   dispatch(increment()); // Example usage of increment action
+  // Updated mutation hook
+  const [loginAdmin, { isLoading }] = useLoginAdminMutation();
 
-  const [login, { isLoading }] = useLoginMutation();
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (auth.isAuthenticated) {
+      toast.success(`Chào mừng ${auth.user?.name}!`);
+      navigate("/admin");
+    }
+  }, [auth.isAuthenticated, auth.user]);
 
   const onSubmit = async (data: FormValues) => {
     try {
-      const res = await login(data).unwrap();
-      dispatch(increment()); // Increment counter on successful login
+      const res = await loginAdmin(data).unwrap();
+
       toast.success(res.message || "Đăng nhập thành công");
+      navigate("/admin");
     } catch (err: any) {
-      toast.error("Đăng nhập thất bại");
+      console.error("Login error:", err);
+
+      // Handle different error cases
+      let errorMessage = "Đăng nhập thất bại";
+
+      if (err?.data?.message) {
+        errorMessage = err.data.message;
+      } else if (err?.status === 401) {
+        errorMessage = "Email hoặc mật khẩu không đúng";
+      } else if (err?.status === 500) {
+        errorMessage = "Lỗi server, vui lòng thử lại";
+      } else if (!navigator.onLine) {
+        errorMessage = "Không có kết nối internet";
+      }
+
+      toast.error(errorMessage);
     }
   };
 
+  // Show loading state if already authenticated
+  if (auth.isAuthenticated) {
+    return (
+      <div className="max-w-sm mx-auto mt-10 p-6 border rounded-xl shadow-sm">
+        <div className="text-center">
+          <p>Đã đăng nhập với tư cách {auth.user?.name}</p>
+          <p className="text-sm text-muted-foreground">Đang chuyển hướng...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-sm mx-auto mt-10 p-6 border rounded-xl shadow-sm space-y-4">
-      <h2 className="text-xl font-semibold text-center">Đăng nhập</h2>
+      <div className="text-center space-y-2">
+        <h2 className="text-xl font-semibold">Đăng nhập</h2>
+        <p className="text-sm text-muted-foreground">Đăng nhập với tài khoản admin của bạn</p>
+      </div>
+
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
@@ -71,6 +112,7 @@ export default function LoginForm() {
                       type="email"
                       placeholder="email@example.com"
                       className="pl-8"
+                      disabled={isLoading}
                     />
                   </div>
                 </FormControl>
@@ -78,6 +120,7 @@ export default function LoginForm() {
               </FormItem>
             )}
           />
+
           <FormField
             control={form.control}
             name="password"
@@ -92,6 +135,7 @@ export default function LoginForm() {
                       type="password"
                       placeholder="********"
                       className="pl-8"
+                      disabled={isLoading}
                     />
                   </div>
                 </FormControl>
@@ -99,6 +143,7 @@ export default function LoginForm() {
               </FormItem>
             )}
           />
+
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? "Đang đăng nhập..." : "Đăng nhập"}
           </Button>

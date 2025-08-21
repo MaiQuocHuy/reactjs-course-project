@@ -7,9 +7,10 @@ import { usersApi } from "@/services/usersApi";
 import { paymentsApi } from "@/services/paymentsApi";
 import { refundsApi } from "@/services/refundsApi";
 import { configureStore } from "@reduxjs/toolkit";
-
+import authReducer from "./authSlice";
 export const store = configureStore({
   reducer: {
+    auth: authReducer,
     [authApi.reducerPath]: authApi.reducer,
     [usersApi.reducerPath]: usersApi.reducer,
     [paymentsApi.reducerPath]: paymentsApi.reducer,

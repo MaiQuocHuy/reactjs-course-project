@@ -1,41 +1,14 @@
 // src/services/usersApi.ts
-import { createApi, fetchBaseQuery, retry } from "@reduxjs/toolkit/query/react";
+import { createApi } from "@reduxjs/toolkit/query/react";
 import type { User } from "../types/users";
-
-// Custom base query with retry logic
-const baseQueryWithRetry = retry(
-  fetchBaseQuery({ 
-    baseUrl: "http://localhost:8080/api/admin/v1",
-    prepareHeaders: (headers) => {
-      // Add authorization header if token exists
-      const token = localStorage.getItem('authToken');
-      if (token) {
-        headers.set('authorization', `Bearer ${token}`);
-      } else {
-        // For development, add a mock authorization or skip auth
-        if (process.env.NODE_ENV === 'development') {
-          console.warn('Development mode: No auth token found. Using mock auth.');
-          // You can add a mock token here for development
-          // headers.set('authorization', 'Bearer mock-token');
-        }
-      }
-      headers.set('content-type', 'application/json');
-      headers.set('accept', 'application/json');
-      return headers;
-    },
-    // Handle credentials for CORS
-    credentials: 'include',
-  }),
-  {
-    maxRetries: 2,
-  }
-);
+import { baseQueryWithReauth } from '@/lib/baseQueryWithReauth';
 
 // API Response types based on Spring Boot backend
 export interface ApiResponse<T> {
-  status: string;
+  statusCode: number; // Changed from "status" to match actual API response
   message: string;
   data: T;
+  timestamp?: string; // Optional timestamp field
 }
 
 export interface AdminUserPageResponse {
@@ -72,7 +45,7 @@ export interface UpdateUserStatusRequest {
 
 export const usersApi = createApi({
   reducerPath: "usersApi",
-  baseQuery: baseQueryWithRetry,
+  baseQuery: baseQueryWithReauth,
   tagTypes: ['User'],
   endpoints: (builder) => ({
     // GET /api/admin/v1/users - Get users with pagination and filters
@@ -99,7 +72,7 @@ export const usersApi = createApi({
 
         const queryString = searchParams.toString();
         return {
-          url: `/users${queryString ? `?${queryString}` : ''}`,
+          url: `/admin/v1/users${queryString ? `?${queryString}` : ''}`,
           method: 'GET',
         };
       },
@@ -108,7 +81,7 @@ export const usersApi = createApi({
     // GET /api/admin/v1/users/{id} - Get user by ID
     getUserById: builder.query<ApiResponse<User>, string>({
       query: (id) => ({
-        url: `/users/${id}`,
+        url: `/admin/v1/users/${id}`,
         method: 'GET',
       }),
     }),
@@ -116,7 +89,7 @@ export const usersApi = createApi({
     // POST /api/admin/v1/users - Create new user
     createUser: builder.mutation<ApiResponse<User>, CreateUserRequest>({
       query: (body) => ({
-        url: '/users',
+        url: '/admin/v1/users',
         method: 'POST',
         body,
       }),
@@ -128,7 +101,7 @@ export const usersApi = createApi({
       { id: string; data: UpdateUserRequest }
     >({
       query: ({ id, data }) => ({
-        url: `/users/${id}`,
+        url: `/admin/v1/users/${id}`,
         method: 'PUT',
         body: data,
       }),
@@ -140,7 +113,7 @@ export const usersApi = createApi({
       { id: string; data: UpdateUserRoleRequest }
     >({
       query: ({ id, data }) => ({
-        url: `/users/${id}/role`,
+        url: `/admin/v1/users/${id}/role`,
         method: 'PATCH',
         body: data,
       }),
@@ -152,8 +125,8 @@ export const usersApi = createApi({
       { id: string; data: UpdateUserStatusRequest }
     >({
       query: ({ id, data }) => ({
-        url: `/users/${id}/status`,
-        method: 'PATCH',
+        url: `/admin/v1/users/${id}/status`,
+        method: 'PUT',
         body: data,
       }),
     }),
@@ -161,7 +134,7 @@ export const usersApi = createApi({
     // DELETE /api/admin/v1/users/{id} - Delete user
     deleteUser: builder.mutation<ApiResponse<void>, string>({
       query: (id) => ({
-        url: `/users/${id}`,
+        url: `/admin/v1/users/${id}`,
         method: 'DELETE',
       }),
     }),
