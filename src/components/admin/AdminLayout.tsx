@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Button } from '../ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import React, { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { Button } from "../ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,8 +9,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '../ui/dropdown-menu';
-import { Badge } from '../ui/badge';
+} from "../ui/dropdown-menu";
+import { Badge } from "../ui/badge";
 import {
   Users,
   CreditCard,
@@ -24,8 +24,7 @@ import {
   X,
   ChevronDown,
   HandCoins,
-  BookOpen 
-} from 'lucide-react';
+  BookOpen,
   FolderOpen,
 } from "lucide-react";
 import { Input } from "../ui/input";
@@ -42,16 +41,6 @@ interface NavigationItem {
   icon: React.ElementType;
   badge?: number;
 }
-
-const navigation: NavigationItem[] = [
-  { name: 'Dashboard', href: '/admin', icon: Home },
-  { name: 'Users', href: '/admin/users', icon: Users, badge: 12 },
-  { name: 'Courses', href: '/admin/courses', icon: BookOpen, badge: 3 },
-  { name: 'Revenues', href: '/admin/revenues', icon: HandCoins, badge: 1 },
-  { name: 'Payments', href: '/admin/payments', icon: CreditCard, badge: 5 },
-  { name: 'Refunds', href: '/admin/refunds', icon: RefreshCw, badge: 2 },
-  { name: 'Settings', href: '/admin/settings', icon: Settings },
-];
 
 export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -71,6 +60,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       icon: FolderOpen,
       badge: categoriesCount,
     },
+    { name: "Courses", href: "/admin/courses", icon: BookOpen, badge: 3 },
+    { name: "Revenues", href: "/admin/revenues", icon: HandCoins, badge: 1 },
     { name: "Payments", href: "/admin/payments", icon: CreditCard, badge: 5 },
     { name: "Refunds", href: "/admin/refunds", icon: RefreshCw, badge: 2 },
     { name: "Settings", href: "/admin/settings", icon: Settings },
@@ -87,8 +78,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     }
   };
   const isActive = (href: string) => {
-    if (href === '/admin') {
-      return location.pathname === '/admin';
+    if (href === "/admin") {
+      return location.pathname === "/admin";
     }
     return location.pathname.startsWith(href);
   };
@@ -107,7 +98,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       <div
         className={`
         fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-xl transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 lg:flex lg:flex-shrink-0
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+        ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
       `}
       >
         <div className="flex flex-col h-full">
@@ -145,8 +136,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                     flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
                     ${
                       active
-                        ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-600'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                        ? "bg-blue-50 text-blue-700 border-r-2 border-blue-600"
+                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                     }
                   `}
                   onClick={() => setSidebarOpen(false)}
@@ -162,10 +153,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                   {item.badge && (
                     <Badge
                       variant={active ? "default" : "secondary"}
-                      className="h-5 text-xs"
-                    >
-                    <Badge
-                      variant={active ? 'default' : 'secondary'}
                       className="h-5 text-xs"
                     >
                       {item.badge}
@@ -212,7 +199,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               </Button>
 
               {/* Search */}
-              {!location.pathname.includes('/admin/revenues') && (
+              {!location.pathname.includes("/admin/revenues") && (
                 <div className="relative hidden sm:block">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input

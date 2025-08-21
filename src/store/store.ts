@@ -25,7 +25,6 @@ export const store = configureStore({
       .concat(authApi.middleware)
       .concat(usersApi.middleware)
       .concat(coursesApi.middleware)
-      .concat(usersApi.middleware)
       .concat(categoriesApi.middleware),
 });
 
