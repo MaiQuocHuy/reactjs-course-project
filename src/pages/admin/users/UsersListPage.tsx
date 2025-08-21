@@ -24,10 +24,13 @@ import {
   UnbanUserDialog,
   EditUserDialog,
   AssignRoleDialog,
+  AddUserDialog,
 } from "../../../components/admin/UserDialogs";
 import { Users, UserPlus, Download } from "lucide-react";
 import {
   useGetUsersQuery,
+  useCreateUserMutation,
+  useUpdateUserMutation,
   useUpdateUserStatusMutation,
   useUpdateUserRoleMutation,
 } from "../../../services/usersApi";
@@ -74,6 +77,8 @@ export const UsersListPage: React.FC = () => {
 
   const [updateUserStatus] = useUpdateUserStatusMutation();
   const [updateUserRole] = useUpdateUserRoleMutation();
+  const [updateUser] = useUpdateUserMutation();
+  const [createUser] = useCreateUserMutation();
 
   // State for dialogs
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -81,6 +86,7 @@ export const UsersListPage: React.FC = () => {
   const [unbanDialogOpen, setUnbanDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [assignRoleDialogOpen, setAssignRoleDialogOpen] = useState(false);
+  const [addUserDialogOpen, setAddUserDialogOpen] = useState(false);
 
   // Extract data from API response
   const users = usersResponse?.data?.users || [];
@@ -120,6 +126,10 @@ export const UsersListPage: React.FC = () => {
   // Handle user actions
   const handleViewUser = (userId: string) => {
     navigate(`/admin/users/${userId}`);
+  };
+
+  const handleAddUser = () => {
+    setAddUserDialogOpen(true);
   };
 
   const handleBanUser = (userId: string) => {
@@ -179,9 +189,18 @@ export const UsersListPage: React.FC = () => {
     setSelectedUser(null);
   };
 
-  const confirmEditUser = (_userData: Partial<User>) => {
-    // This would need a separate API call for updating user profile
-    // For now, just close the dialog
+  const confirmEditUser = async (userData: { name: string; bio?: string }) => {
+    if (selectedUser) {
+      try {
+        await updateUser({
+          id: selectedUser.id,
+          data: userData,
+        }).unwrap();
+        refetch(); // Refresh the data after successful update
+      } catch (error) {
+        console.error("Failed to update user:", error);
+      }
+    }
     setEditDialogOpen(false);
     setSelectedUser(null);
   };
@@ -200,6 +219,23 @@ export const UsersListPage: React.FC = () => {
     }
     setAssignRoleDialogOpen(false);
     setSelectedUser(null);
+  };
+
+  const confirmAddUser = async (userData: {
+    name: string;
+    email: string;
+    password: string;
+    role: "STUDENT" | "INSTRUCTOR";
+    bio?: string;
+  }) => {
+    try {
+      await createUser(userData).unwrap();
+      refetch(); // Refresh the data after successful creation
+      console.log("User created successfully");
+    } catch (error) {
+      console.error("Failed to create user:", error);
+    }
+    setAddUserDialogOpen(false);
   };
 
   // Generate pagination items
@@ -328,7 +364,7 @@ export const UsersListPage: React.FC = () => {
             <Download className="mr-2 h-4 w-4" />
             Export
           </Button>
-          <Button>
+          <Button onClick={handleAddUser}>
             <UserPlus className="mr-2 h-4 w-4" />
             Add User
           </Button>
@@ -477,6 +513,12 @@ export const UsersListPage: React.FC = () => {
         onOpenChange={setAssignRoleDialogOpen}
         user={selectedUser}
         onConfirm={confirmAssignRole}
+      />
+
+      <AddUserDialog
+        open={addUserDialogOpen}
+        onOpenChange={setAddUserDialogOpen}
+        onConfirm={confirmAddUser}
       />
     </div>
   );

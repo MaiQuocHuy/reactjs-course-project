@@ -126,7 +126,7 @@ export const usersApi = createApi({
     >({
       query: ({ id, data }) => ({
         url: `/admin/v1/users/${id}/status`,
-        method: 'PATCH',
+        method: 'PUT',
         body: data,
       }),
     }),
