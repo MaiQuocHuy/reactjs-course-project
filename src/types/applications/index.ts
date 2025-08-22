@@ -20,3 +20,9 @@ export interface Applicant {
   email: string;
   thumbnailUrl?: string
 }
+
+export interface ReviewApplicationRequest {
+  id: string; 
+  action: 'APPROVED' | 'REJECTED';
+  rejectionReason?: string | null;
+}

@@ -41,6 +41,7 @@ interface NavigationItem {
 const navigation: NavigationItem[] = [
   { name: "Dashboard", href: "/admin", icon: Home },
   { name: "Users", href: "/admin/users", icon: Users, badge: 12 },
+  { name: "Applications", href: "/admin/applications", icon: Users },
   { name: "Payments", href: "/admin/payments", icon: CreditCard, badge: 5 },
   { name: "Refunds", href: "/admin/refunds", icon: RefreshCw, badge: 2 },
   { name: "Settings", href: "/admin/settings", icon: Settings },

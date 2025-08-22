@@ -1,10 +1,5 @@
 import "./App.css";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import LoginForm from "./components/LoginForm";
 import { AdminLayout } from "./components/admin/AdminLayout";
 import { DashboardPage } from "./pages/admin/DashboardPage";
@@ -12,6 +7,8 @@ import { UsersListPage } from "./pages/admin/users";
 import { UserDetailPage } from "./pages/admin/users";
 import { PaymentsPage } from "./pages/payments";
 import RefundsPage from "./pages/refunds";
+import { ApplicationDetail } from "./components/ApplicationDetail/ApplicationDetail";
+import { ApplicationsListPage } from "./pages/ApplicationList";
 
 function App() {
   return (
@@ -59,6 +56,24 @@ function App() {
             element={
               <AdminLayout>
                 <RefundsPage />
+              </AdminLayout>
+            }
+          />
+
+          <Route
+            path="/admin/applications/:id"
+            element={
+              <AdminLayout>
+                <ApplicationDetail />
+              </AdminLayout>
+            }
+          />
+
+          <Route
+            path="/admin/applications"
+            element={
+              <AdminLayout>
+                <ApplicationsListPage />
               </AdminLayout>
             }
           />

@@ -1,192 +1,348 @@
-import { Check, X, ExternalLink, ArrowLeft } from "lucide-react";
+import { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { FilePreview } from "./FilePreview";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { FileText, Globe, Award, Paperclip, X, Check, ArrowLeft } from "lucide-react";
+import {
+  useGetApplicationByIdQuery,
+  useReviewApplicationMutation,
+} from "@/services/applicationsApi";
 import { ApplicationDetailSkeleton } from "./ApplicationDetailSkeleton";
+import { FileDisplay } from "./FileDisplay";
+import { getStatusVariant } from "../ApplicationsList/ApplicationsList";
 
-type FileItem = {
-  type: "image" | "pdf" | "docx";
-  url: string;
-  name: string;
-};
+export const ApplicationDetail = () => {
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [showApproveModal, setShowApproveModal] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState("");
+  const { id: applicationId } = useParams<{ id: string }>();
+  const navigate = useNavigate();
 
-export type Application = {
-  id: string;
-  name: string;
-  email: string;
-  status: "pending" | "approved" | "rejected";
-  submittedDate: string;
-  certificate: FileItem;
-  cv: FileItem;
-  portfolio: string;
-  supportingDocs: FileItem[];
-};
+  // If no applicationId is found in params, redirect back to applications list
+  if (!applicationId) {
+    navigate("/admin/applications");
+    return null;
+  }
 
-interface ApplicationDetailProps {
-  application: Application;
-  onBackToList: () => void;
-  isLoading?: boolean;
-}
+  const { data: application, isLoading, error } = useGetApplicationByIdQuery(applicationId);
+  const [reviewApplication, { isLoading: isReviewing }] = useReviewApplicationMutation();
 
-export function ApplicationDetail({
-  application,
-  onBackToList,
-  isLoading = false,
-}: ApplicationDetailProps) {
-  const getStatusBadge = (status: string) => {
-    const variants = {
-      pending: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
-      approved: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
-      rejected: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
-    };
-    return variants[status as keyof typeof variants] || variants.pending;
+  // Parse documents if they exist
+  const documents = application?.documents
+    ? typeof application.documents === "string"
+      ? (() => {
+          try {
+            return JSON.parse(application.documents);
+          } catch {
+            return null;
+          }
+        })()
+      : application.documents
+    : null;
+
+  // Format the submitted date
+  const formatDate = (dateString: string) => {
+    try {
+      return new Date(dateString).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch {
+      return dateString;
+    }
   };
 
-  const handleApprove = () => {
-    console.log("Approved application:", application.id);
-    // In real implementation, make API call
+  // Handle approve application
+  const handleApprove = async () => {
+    try {
+      await reviewApplication({
+        id: applicationId,
+        action: "APPROVED",
+      }).unwrap();
+
+      setShowApproveModal(false);
+      navigate("/admin/applications");
+    } catch (error) {
+      console.error("Failed to approve application:", error);
+    }
   };
 
-  const handleReject = () => {
-    console.log("Rejected application:", application.id);
-    // In real implementation, make API call
+  // Handle reject application
+  const handleReject = async () => {
+    if (!rejectionReason.trim()) {
+      return;
+    }
+
+    try {
+      await reviewApplication({
+        id: applicationId,
+        action: "REJECTED",
+        rejectionReason: rejectionReason.trim(),
+      }).unwrap();
+
+      setShowRejectModal(false);
+      setRejectionReason("");
+      navigate("/admin/applications");
+    } catch (error) {
+      console.error("Failed to reject application:", error);
+    }
   };
+
+  // Check if application is already reviewed
+  const isAlreadyReviewed = application?.status !== "PENDING";
 
   if (isLoading) {
-    return <ApplicationDetailSkeleton />;
+    return (
+      <div className="p-4 md:p-6 max-w-6xl mx-auto">
+        <ApplicationDetailSkeleton />
+      </div>
+    );
+  }
+
+  if (error || !application) {
+    return (
+      <div className="p-4 md:p-6 max-w-6xl mx-auto">
+        <div className="text-center py-12">
+          <div className="text-red-600 text-lg font-medium mb-2">Error loading application</div>
+          <div className="text-gray-500 mb-4">Please try again later</div>
+          <Button onClick={() => navigate("/admin/applications")} variant="outline">
+            Back to Applications
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="container mx-auto p-4 lg:p-6 max-w-6xl">
+    <div className="p-4 md:p-6 max-w-6xl mx-auto">
+      {/* Back Button */}
       <div className="mb-4">
         <Button
+          onClick={() => navigate("/admin/applications")}
           variant="ghost"
-          size="sm"
-          onClick={onBackToList}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+          className="flex items-center gap-2"
         >
           <ArrowLeft className="h-4 w-4" />
-          <span className="hidden sm:inline">Back</span>
+          Back to Applications
         </Button>
       </div>
 
       {/* Header */}
-      <div className="mb-6">
-        <Card>
-          <CardHeader>
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-              <div className="flex-1">
-                <CardTitle className="text-2xl">{application.name}</CardTitle>
-                <p className="text-muted-foreground">{application.email}</p>
-                <div className="flex items-center gap-4 mt-2">
-                  <Badge className={getStatusBadge(application.status)}>
-                    {application.status.charAt(0).toUpperCase() + application.status.slice(1)}
-                  </Badge>
-                  <p className="text-sm text-muted-foreground">
-                    Submitted: {new Date(application.submittedDate).toLocaleDateString()}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-3">
-                <Button
-                  onClick={handleApprove}
-                  className="bg-green-600 hover:bg-green-700 text-white w-24 h-10"
-                >
-                  <Check className="h-4 w-4 mr-2" />
-                  Approve
-                </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="destructive" className="w-24 h-10">
-                      <X className="h-4 w-4 mr-2" />
-                      Reject
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Reject Application</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Are you sure you want to reject this application from {application.name}?
-                        This action cannot be undone.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={handleReject}
-                        className="bg-red-600 hover:bg-red-700"
-                      >
-                        Reject Application
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
+      <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">{application.applicant.name}</h1>
+            <p className="text-gray-600">{application.applicant.email}</p>
+          </div>
+          <div className="flex flex-col items-start sm:items-end gap-2">
+            <div className="flex items-center gap-4">
+              <Badge variant={getStatusVariant(application.status)} className="text-sm capitalize">
+                {application.status}
+              </Badge>
+              <span className="text-sm text-gray-500">
+                Submitted: {formatDate(application.submittedAt)}
+              </span>
             </div>
-          </CardHeader>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Portfolio Section - moved to top */}
-        <div className="space-y-2">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Portfolio Link</h3>
-          <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-            <div className="flex items-center gap-3">
-              <ExternalLink className="h-5 w-5" />
-              <div>
-                <p className="font-medium text-sm">Portfolio Website</p>
-                <p className="text-xs text-muted-foreground">{application.portfolio}</p>
+            {/* Show rejection reason if application was rejected */}
+            {application.status === "REJECTED" && application.rejectionReason && (
+              <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg max-w-md">
+                <p className="text-sm font-medium text-red-800 mb-1">Rejection Reason:</p>
+                <p className="text-sm text-red-700">{application.rejectionReason}</p>
               </div>
-            </div>
-            <Button variant="outline" size="sm" asChild>
-              <a href={application.portfolio} target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="h-4 w-4 md:mr-2" />
-                <span className="hidden md:inline">Visit</span>
-              </a>
-            </Button>
+            )}
           </div>
         </div>
+      </div>
 
-        {/* CV Section */}
-        <div className="space-y-2">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">CV</h3>
-          <FilePreview file={application.cv} />
-        </div>
+      {/* Documents Section - Unified Display */}
+      <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+        <h2 className="text-xl font-bold text-gray-900 mb-6">Documents</h2>
 
-        {/* Certificate Section - removed (s) */}
-        <div className="space-y-2">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Certificate</h3>
-          <FilePreview file={application.certificate} />
-        </div>
-
-        {/* Supporting Documents Section - moved to last */}
-        {application.supportingDocs.length > 0 && (
-          <div className="space-y-2">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-              Supporting Document
-            </h3>
+        {documents ? (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Portfolio */}
             <div className="space-y-3">
-              {application.supportingDocs.map((doc, index) => (
-                <FilePreview key={index} file={doc} />
-              ))}
+              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <Globe className="h-5 w-5" />
+                Portfolio
+              </h3>
+              {documents.portfolio ? (
+                <FileDisplay file={documents.portfolio} label="Portfolio" />
+              ) : (
+                <div className="flex items-center justify-center p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
+                  <p className="text-gray-500 text-sm">No portfolio provided</p>
+                </div>
+              )}
             </div>
+
+            {/* CV */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                CV
+              </h3>
+              {documents.cv ? (
+                <FileDisplay file={documents.cv} label="Curriculum Vitae" />
+              ) : (
+                <div className="flex items-center justify-center p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
+                  <p className="text-gray-500 text-sm">No CV uploaded</p>
+                </div>
+              )}
+            </div>
+
+            {/* Certificate */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <Award className="h-5 w-5" />
+                Certificate
+              </h3>
+              {documents.certificate ? (
+                <FileDisplay file={documents.certificate} label="Certificate" />
+              ) : (
+                <div className="flex items-center justify-center p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
+                  <p className="text-gray-500 text-sm">No certificate uploaded</p>
+                </div>
+              )}
+            </div>
+
+            {/* Other Documents */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <Paperclip className="h-5 w-5" />
+                Other Documents
+              </h3>
+              {documents.other ? (
+                <FileDisplay file={documents.other} label="Other Document" />
+              ) : (
+                <div className="flex items-center justify-center p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
+                  <p className="text-gray-500 text-sm">No other documents uploaded</p>
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <FileText className="h-16 w-16 mx-auto text-gray-400 mb-4" />
+            <p className="text-gray-500">No documents available for this application</p>
           </div>
         )}
       </div>
+
+      {/* Action Buttons - Only show if status is PENDING */}
+      {!isAlreadyReviewed && (
+        <div className="flex justify-end gap-3">
+          <Button
+            onClick={() => setShowRejectModal(true)}
+            variant="destructive"
+            className="flex items-center gap-2 h-10 px-6"
+            disabled={isReviewing}
+          >
+            <X className="h-4 w-4" />
+            Reject
+          </Button>
+          <Button
+            onClick={() => setShowApproveModal(true)}
+            className="flex items-center gap-2 h-10 px-6 bg-green-600 hover:bg-green-700"
+            disabled={isReviewing}
+          >
+            <Check className="h-4 w-4" />
+            Approve
+          </Button>
+        </div>
+      )}
+
+      {/* Approve Confirmation Modal */}
+      <Dialog open={showApproveModal} onOpenChange={setShowApproveModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Approval</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to approve this application? This will grant the applicant
+              instructor access.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowApproveModal(false)}
+              disabled={isReviewing}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleApprove}
+              className="bg-green-600 hover:bg-green-700"
+              disabled={isReviewing}
+            >
+              {isReviewing ? "Approving..." : "Approve Application"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reject Modal */}
+      <Dialog open={showRejectModal} onOpenChange={setShowRejectModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reject Application</DialogTitle>
+            <DialogDescription>
+              Please provide a reason for rejecting this application. This will help the applicant
+              understand what needs to be improved.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="rejectionReason" className="text-sm font-medium text-gray-700">
+                Rejection Reason *
+              </label>
+              <Textarea
+                id="rejectionReason"
+                placeholder="Please explain why this application is being rejected..."
+                value={rejectionReason}
+                onChange={(e) => setRejectionReason(e.target.value)}
+                className="mt-1 min-h-[100px]"
+                required
+              />
+              {rejectionReason.trim() === "" && (
+                <p className="text-sm text-red-600 mt-1">Rejection reason is required</p>
+              )}
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowRejectModal(false);
+                setRejectionReason("");
+              }}
+              disabled={isReviewing}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleReject}
+              disabled={isReviewing || !rejectionReason.trim()}
+            >
+              {isReviewing ? "Rejecting..." : "Reject Application"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
-}
+};
