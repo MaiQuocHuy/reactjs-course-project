@@ -105,24 +105,20 @@ export const PaymentRow = ({ payment, style }: PaymentRowProps) => {
         <div className="text-sm space-y-1 flex gap-2">
           <div>
             <div>
-              <span className="text-xs text-muted-foreground">Created:</span>
+              <span className="font-medium">Created:</span>
               <p className="font-medium">{formatDate(payment.createdAt)}</p>
             </div>
           </div>
           {payment.paidAt && (
             <div>
-              <span className="text-xs text-muted-foreground">Paid:</span>
-              <p className="text-green-600 font-medium">
-                {formatDate(payment.paidAt)}
-              </p>
+              <span className="font-medium">Paid:</span>
+              <p className="font-medium">{formatDate(payment.paidAt)}</p>
             </div>
           )}
           {payment.paidOutAt && (
             <div>
-              <span className="text-xs text-muted-foreground">Paid Out:</span>
-              <p className="text-blue-600 font-medium">
-                {formatDate(payment.paidOutAt)}
-              </p>
+              <span className="font-medium">Paid Out:</span>
+              <p className="font-medium">{formatDate(payment.paidOutAt)}</p>
             </div>
           )}
         </div>

@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { RefundActions } from "./RefundActions";
 import type { RefundResponse } from "@/services/refundsApi";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 interface RefundRowProps {
   refund: RefundResponse;
@@ -46,51 +47,62 @@ export const RefundRow = ({ refund, style }: RefundRowProps) => {
     <TableRow className="hover:bg-muted/50" style={style}>
       {/* Refund ID */}
       <TableCell>
-        <div className="font-mono text-xs bg-muted px-2 py-1 rounded inline-block">
-          {formatRefundId(refund.id)}
-        </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="font-mono text-xs bg-muted px-2 py-1 rounded inline-block">
+              {formatRefundId(refund.id)}
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>{refund.id}</TooltipContent>
+        </Tooltip>
       </TableCell>
 
       {/* Payment ID */}
       <TableCell>
-        <div className="font-mono text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded inline-block">
-          {formatRefundId(refund.payment.id)}
-        </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="font-mono text-xs bg-muted px-2 py-1 rounded inline-block">
+              {formatRefundId(refund.payment.id)}
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>{refund.payment.id}</TooltipContent>
+        </Tooltip>
       </TableCell>
 
       {/* Refund Amount */}
-      <TableCell>
-        <span className="font-medium text-green-600">
-          {formatCurrency(refund.amount)}
-        </span>
+      <TableCell className="text-end">
+        <span className="font-medium">{formatCurrency(refund.amount)}</span>
       </TableCell>
 
       {/* Payment Amount */}
-      <TableCell>
-        <span className="font-medium text-muted-foreground">
+      <TableCell className="text-end">
+        <span className="font-medium">
           {formatCurrency(refund.payment.amount)}
         </span>
       </TableCell>
 
       {/* Reason */}
       <TableCell>
-        <div className="min-w-0 max-w-[200px]">
-          <p className="text-sm truncate" title={refund.reason}>
-            {refund.reason}
-          </p>
-        </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="min-w-0 max-w-[200px]">
+              <p className="text-sm truncate">{refund.reason}</p>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>{refund.reason}</TooltipContent>
+        </Tooltip>
       </TableCell>
 
       {/* Rejected Reason */}
       <TableCell>
-        <div className="min-w-0 max-w-[200px]">
-          <p
-            className="text-sm truncate"
-            title={refund.rejectedReason || undefined}
-          >
-            {refund.rejectedReason}
-          </p>
-        </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="min-w-0 max-w-[200px]">
+              <p className="text-sm truncate">{refund.rejectedReason}</p>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>{refund.rejectedReason}</TooltipContent>
+        </Tooltip>
       </TableCell>
 
       {/* Status */}
@@ -100,18 +112,16 @@ export const RefundRow = ({ refund, style }: RefundRowProps) => {
 
       {/* Dates */}
       <TableCell className="w-[160px]">
-        <div className="text-sm">
-          <p className="font-medium">Requested:</p>
-          <p className="text-xs text-muted-foreground mb-1">
-            {formatDate(refund.requestedAt)}
-          </p>
+        <div className="text-sm flex gap-2">
+          <div>
+            <p className="font-medium">Requested:</p>
+            <p className="font-medium">{formatDate(refund.requestedAt)}</p>
+          </div>
           {refund.processedAt && (
-            <>
+            <div>
               <p className="font-medium">Processed:</p>
-              <p className="text-xs text-muted-foreground">
-                {formatDate(refund.processedAt)}
-              </p>
-            </>
+              <p className="font-medium">{formatDate(refund.processedAt)}</p>
+            </div>
           )}
         </div>
       </TableCell>

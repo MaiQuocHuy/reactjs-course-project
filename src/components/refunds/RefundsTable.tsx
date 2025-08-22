@@ -69,35 +69,37 @@ export const RefundsTable = () => {
   }
 
   return (
-    <Card className="shadow-sm border-0 bg-card">
+    <Card className="shadow-sm border-0 bg-card py-0">
       <CardContent className="p-0">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow className="border-border bg-muted/50">
-                <TableHead className="w-[100px] font-semibold">
+                <TableHead className="font-semibold text-xs uppercase tracking-wide">
                   Refund ID
                 </TableHead>
-                <TableHead className="w-[100px] font-semibold">
+                <TableHead className="font-semibold text-xs uppercase tracking-wide">
                   Payment ID
                 </TableHead>
-                <TableHead className="w-[120px] font-semibold">
-                  Refund Amount
+                <TableHead className="font-semibold text-xs uppercase tracking-wide text-end">
+                  Refund
                 </TableHead>
-                <TableHead className="w-[120px] font-semibold">
-                  Payment Amount
+                <TableHead className="font-semibold text-xs uppercase tracking-wide text-end">
+                  Payment
                 </TableHead>
-                <TableHead className="min-w-[200px] font-semibold">
+                <TableHead className="font-semibold text-xs uppercase tracking-wide">
                   Reason
                 </TableHead>
-                <TableHead className="min-w-[200px] font-semibold">
+                <TableHead className="font-semibold text-xs uppercase tracking-wide">
                   Rejected Reason
                 </TableHead>
-                <TableHead className="w-[100px] font-semibold">
+                <TableHead className="font-semibold text-xs uppercase tracking-wide">
                   Status
                 </TableHead>
-                <TableHead className="w-[160px] font-semibold">Dates</TableHead>
-                <TableHead className="w-[60px] text-right font-semibold">
+                <TableHead className="font-semibold text-xs uppercase tracking-wide">
+                  Dates
+                </TableHead>
+                <TableHead className="font-semibold text-xs uppercase tracking-wide">
                   Actions
                 </TableHead>
               </TableRow>

@@ -15,6 +15,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useGetRefundByIdQuery } from "@/services/refundsApi";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const getStatusVariant = (status: string) => {
   switch (status) {
@@ -154,7 +159,7 @@ export const RefundDetailPage = () => {
       </div>
 
       {/* Refund Information Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* User Information */}
         <Card>
           <CardHeader>
@@ -214,50 +219,50 @@ export const RefundDetailPage = () => {
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Instructor: {refund.payment.course.instructor.name}
+                  Course ID: {refund.payment.course.id}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Instructor Information */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <User className="h-5 w-5" />
+              Instructor Information
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-start space-x-3">
+              <Avatar className="h-12 w-12">
+                <AvatarImage
+                  src={refund.payment.course.instructor.thumbnailUrl}
+                  alt={refund.payment.course.instructor.name}
+                />
+                <AvatarFallback>
+                  {refund.payment.course.instructor.name
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="font-medium">
+                  {refund.payment.course.instructor.name}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {refund.payment.course.instructor.email}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  ID: {refund.payment.course.instructor.id}
                 </p>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
-
-      {/* Instructor Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <User className="h-5 w-5" />
-            Instructor Information
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-start space-x-3">
-            <Avatar className="h-12 w-12">
-              <AvatarImage
-                src={refund.payment.course.instructor.thumbnailUrl}
-                alt={refund.payment.course.instructor.name}
-              />
-              <AvatarFallback>
-                {refund.payment.course.instructor.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="font-medium">
-                {refund.payment.course.instructor.name}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {refund.payment.course.instructor.email}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                ID: {refund.payment.course.instructor.id}
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Original Payment Details */}
       <Card>
@@ -343,27 +348,6 @@ export const RefundDetailPage = () => {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Refund Amount */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium">Refund Amount</span>
-              </div>
-              <p className="text-sm font-semibold">
-                {formatCurrency(refund.amount)}
-              </p>
-            </div>
-
-            {/* Refund Status */}
-            <div className="space-y-2">
-              <span className="text-sm font-medium">Refund Status</span>
-              <div>
-                <Badge variant={getStatusVariant(refund.status)}>
-                  {refund.status}
-                </Badge>
-              </div>
-            </div>
-
             {/* Requested Date */}
             <div className="space-y-2">
               <div className="flex items-center gap-2">
@@ -406,7 +390,7 @@ export const RefundDetailPage = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {/* Transaction ID */}
               {refund.payment.transactionId && (
                 <div className="space-y-2">
@@ -427,16 +411,23 @@ export const RefundDetailPage = () => {
                     <Hash className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm font-medium">Stripe Session</span>
                   </div>
-                  <p className="text-xs font-mono break-all">
-                    {refund.payment.stripeSessionId}
-                  </p>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <p className="text-xs font-mono text-ellipsis overflow-hidden whitespace-nowrap">
+                        {refund.payment.stripeSessionId}
+                      </p>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {refund.payment.stripeSessionId}
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
               )}
 
               {/* Receipt URL */}
               {refund.payment.receiptUrl && (
                 <div className="space-y-2">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
                     <Hash className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm font-medium">Receipt</span>
                   </div>
