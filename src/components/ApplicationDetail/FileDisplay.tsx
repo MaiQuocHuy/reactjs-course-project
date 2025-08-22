@@ -3,47 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Eye, Download, FileText, X, ExternalLink, Github, Linkedin } from "lucide-react";
 
-// Type definitions for documents
-// type DocumentsType = {
-//   [key: string]: string | undefined;
-// };
-
-// Component để hiển thị tất cả documents
-// export const DocumentsDisplay = ({ documents }: { documents: DocumentsType | undefined }) => {
-//   if (!documents || Object.keys(documents).length === 0) {
-//     return (
-//       <div className="p-4 bg-gray-50 rounded-lg text-center">
-//         <FileText className="h-8 w-8 mx-auto text-gray-400 mb-2" />
-//         <p className="text-gray-500">No documents available</p>
-//       </div>
-//     );
-//   }
-
-//   // Labels cho từng loại document
-//   const documentLabels: Record<string, string> = {
-//     cv: "CV/Resume",
-//     other: "Other Document",
-//     portfolio: "Portfolio",
-//     certificate: "Certificate",
-//   };
-
-//   return (
-//     <div className="space-y-4">
-//       {Object.entries(documents).map(([key, url]) => {
-//         if (!url) return null;
-
-//         return (
-//           <FileDisplay
-//             key={key}
-//             file={url}
-//             label={documentLabels[key] || key.charAt(0).toUpperCase() + key.slice(1)}
-//           />
-//         );
-//       })}
-//     </div>
-//   );
-// };
-
 // Component FileDisplay đã được cải thiện
 export const FileDisplay = ({
   file,
@@ -154,7 +113,7 @@ export const FileDisplay = ({
 
       // File type detection by extension
       const imageExts = ["jpg", "jpeg", "png", "gif", "webp", "svg", "bmp"];
-      const documentExts = ["pdf", "doc", "docx", "txt", "rtf"];
+      const documentExts = ["pdf", "doc", "txt", "rtf"];
       const spreadsheetExts = ["xls", "xlsx", "csv"];
       const presentationExts = ["ppt", "pptx"];
       const videoExts = ["mp4", "avi", "mov", "wmv", "flv", "webm"];
@@ -211,7 +170,7 @@ export const FileDisplay = ({
   const canPreview = isImage || isPDF || isVideo || isAudio || isDocx;
 
   // Helper function to handle file opening/downloading
-  const handleFileOpen = () => {
+  const handleFileDownload = () => {
     if (fileInfo.url) {
       // For Cloudinary files, add fl_attachment to force download
       if (fileInfo.url.includes("cloudinary.com") && !isExternal) {
@@ -232,12 +191,6 @@ export const FileDisplay = ({
     setDocxError(false);
     setLoading(true);
     setPreviewOpen(true);
-  };
-
-  // Helper function to get optimized Cloudinary URL for preview
-  const getPreviewUrl = (originalUrl: string) => {
-    if (!originalUrl.includes("cloudinary.com")) return originalUrl;
-    return originalUrl;
   };
 
   // Helper function to get Google Docs Viewer URL for DOCX files
@@ -305,7 +258,7 @@ export const FileDisplay = ({
     );
   }
 
-  const previewUrl = getPreviewUrl(fileInfo.url);
+  const previewUrl = fileInfo.url;
   const docxPreviewUrl = isDocx ? getDocxPreviewUrl(fileInfo.url) : null;
 
   return (
@@ -361,7 +314,7 @@ export const FileDisplay = ({
         </Button>
 
         <Button
-          onClick={handleFileOpen}
+          onClick={handleFileDownload}
           variant="outline"
           size="sm"
           className="hidden sm:flex items-center gap-2"
@@ -369,7 +322,7 @@ export const FileDisplay = ({
           <Download className="h-4 w-4" />
           Download
         </Button>
-        <Button onClick={handleFileOpen} variant="outline" size="sm" className="sm:hidden p-2">
+        <Button onClick={handleFileDownload} variant="outline" size="sm" className="sm:hidden p-2">
           <Download className="h-4 w-4" />
         </Button>
       </div>
@@ -412,7 +365,11 @@ export const FileDisplay = ({
                   style={{ maxWidth: "100%" }}
                 />
                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-3 sm:mt-4 w-full sm:w-auto">
-                  <Button onClick={handleFileOpen} variant="outline" className="w-full sm:w-auto">
+                  <Button
+                    onClick={handleFileDownload}
+                    variant="outline"
+                    className="w-full sm:w-auto"
+                  >
                     <Download className="h-4 w-4 mr-2" />
                     Download
                   </Button>
@@ -446,7 +403,11 @@ export const FileDisplay = ({
                   />
                 </div>
                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-3 sm:mt-4 justify-center">
-                  <Button onClick={handleFileOpen} variant="outline" className="w-full sm:w-auto">
+                  <Button
+                    onClick={handleFileDownload}
+                    variant="outline"
+                    className="w-full sm:w-auto"
+                  >
                     <Download className="h-4 w-4 mr-2" />
                     Download PDF
                   </Button>
@@ -483,7 +444,11 @@ export const FileDisplay = ({
                   />
                 </div>
                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-3 sm:mt-4 justify-center">
-                  <Button onClick={handleFileOpen} variant="outline" className="w-full sm:w-auto">
+                  <Button
+                    onClick={handleFileDownload}
+                    variant="outline"
+                    className="w-full sm:w-auto"
+                  >
                     <Download className="h-4 w-4 mr-2" />
                     Download DOCX
                   </Button>
@@ -516,7 +481,11 @@ export const FileDisplay = ({
                   Your browser does not support the video tag.
                 </video>
                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-3 sm:mt-4 w-full sm:w-auto">
-                  <Button onClick={handleFileOpen} variant="outline" className="w-full sm:w-auto">
+                  <Button
+                    onClick={handleFileDownload}
+                    variant="outline"
+                    className="w-full sm:w-auto"
+                  >
                     <Download className="h-4 w-4 mr-2" />
                     Download
                   </Button>
@@ -539,7 +508,11 @@ export const FileDisplay = ({
                   </audio>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-3 sm:mt-4 w-full sm:w-auto">
-                  <Button onClick={handleFileOpen} variant="outline" className="w-full sm:w-auto">
+                  <Button
+                    onClick={handleFileDownload}
+                    variant="outline"
+                    className="w-full sm:w-auto"
+                  >
                     <Download className="h-4 w-4 mr-2" />
                     Download
                   </Button>
@@ -562,7 +535,7 @@ export const FileDisplay = ({
                 </p>
                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center max-w-md mx-auto">
                   <Button
-                    onClick={handleFileOpen}
+                    onClick={handleFileDownload}
                     className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
                   >
                     <Download className="h-4 w-4 mr-2" />
@@ -591,7 +564,7 @@ export const FileDisplay = ({
                 </p>
                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center max-w-md mx-auto">
                   <Button
-                    onClick={handleFileOpen}
+                    onClick={handleFileDownload}
                     className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
                   >
                     <Download className="h-4 w-4 mr-2" />
