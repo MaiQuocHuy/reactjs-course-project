@@ -5,10 +5,10 @@ import { baseQueryWithReauth } from '@/lib/baseQueryWithReauth';
 
 // API Response types based on Spring Boot backend
 export interface ApiResponse<T> {
-  statusCode: number; // Changed from "status" to match actual API response
+  statusCode: number; 
   message: string;
   data: T;
-  timestamp?: string; // Optional timestamp field
+  timestamp?: string; 
 }
 
 export interface AdminUserPageResponse {

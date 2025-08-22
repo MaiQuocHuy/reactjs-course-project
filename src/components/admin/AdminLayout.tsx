@@ -23,9 +23,14 @@ import {
   Menu,
   X,
   ChevronDown,
+  HandCoins,
+  BookOpen,
+  FolderOpen,
+  FileUser,
 } from "lucide-react";
 import { Input } from "../ui/input";
 import { useLogoutMutation } from "@/services/authApi";
+import { useGetAllCategoriesDropdownQuery } from "@/services/categoriesApi";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -38,19 +43,31 @@ interface NavigationItem {
   badge?: number;
 }
 
-const navigation: NavigationItem[] = [
-  { name: "Dashboard", href: "/admin", icon: Home },
-  { name: "Users", href: "/admin/users", icon: Users, badge: 12 },
-  { name: "Applications", href: "/admin/applications", icon: Users },
-  { name: "Payments", href: "/admin/payments", icon: CreditCard, badge: 5 },
-  { name: "Refunds", href: "/admin/refunds", icon: RefreshCw, badge: 2 },
-  { name: "Settings", href: "/admin/settings", icon: Settings },
-];
-
 export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const [logOut] = useLogoutMutation();
+
+  // Get categories count
+  const { data: categoriesData } = useGetAllCategoriesDropdownQuery();
+  const categoriesCount = categoriesData?.data?.length || 0;
+
+  const navigation: NavigationItem[] = [
+    { name: "Dashboard", href: "/admin", icon: Home },
+    { name: "Users", href: "/admin/users", icon: Users, badge: 12 },
+    { name: "Applications", href: "/admin/applications", icon: FileUser },
+    {
+      name: "Categories",
+      href: "/admin/categories",
+      icon: FolderOpen,
+      badge: categoriesCount,
+    },
+    { name: "Courses", href: "/admin/courses", icon: BookOpen, badge: 3 },
+    { name: "Revenues", href: "/admin/revenues", icon: HandCoins, badge: 1 },
+    { name: "Payments", href: "/admin/payments", icon: CreditCard, badge: 5 },
+    { name: "Refunds", href: "/admin/refunds", icon: RefreshCw, badge: 2 },
+    { name: "Settings", href: "/admin/settings", icon: Settings },
+  ];
 
   const handleLogout = async () => {
     try {
@@ -171,13 +188,15 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               </Button>
 
               {/* Search */}
-              <div className="relative hidden sm:block">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  placeholder="Search users, payments..."
-                  className="pl-10 w-80 bg-gray-50 border-0 focus:bg-white"
-                />
-              </div>
+              {!location.pathname.includes("/admin/revenues") && (
+                <div className="relative hidden sm:block">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    placeholder="Search users, payments..."
+                    className="pl-10 w-80 bg-gray-50 border-0 focus:bg-white"
+                  />
+                </div>
+              )}
             </div>
 
             <div className="flex items-center space-x-4">

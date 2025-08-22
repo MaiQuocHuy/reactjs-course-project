@@ -1,9 +1,12 @@
 // src/store.ts
-import counterSlice from "@/features/counter/counterSlice";
+
+// import counterSlice from "@/features/counter/counterSlice";
 import paymentsSlice from "@/features/payments/paymentsSlice";
 import refundsSlice from "@/features/refunds/refundsSlice";
 import { authApi } from "@/services/authApi";
 import { usersApi } from "@/services/usersApi";
+import { coursesApi } from "@/services/courses-api";
+import { categoriesApi } from "@/services/categoriesApi";
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "./authSlice";
 import { applicationsApi } from "@/services/applicationsApi";
@@ -13,7 +16,9 @@ export const store = configureStore({
     [authApi.reducerPath]: authApi.reducer,
     [usersApi.reducerPath]: usersApi.reducer,
     [applicationsApi.reducerPath]: applicationsApi.reducer,
-    counter: counterSlice.reducer,
+    [coursesApi.reducerPath]: coursesApi.reducer,
+    // counter: counterSlice.reducer,
+    [categoriesApi.reducerPath]: categoriesApi.reducer,
     payments: paymentsSlice.reducer,
     refunds: refundsSlice,
   },
@@ -21,7 +26,9 @@ export const store = configureStore({
     getDefaultMiddleware()
       .concat(authApi.middleware)
       .concat(usersApi.middleware)
-      .concat(applicationsApi.middleware),
+      .concat(applicationsApi.middleware)
+      .concat(coursesApi.middleware)
+      .concat(categoriesApi.middleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;
