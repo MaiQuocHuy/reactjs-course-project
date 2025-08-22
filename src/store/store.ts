@@ -30,7 +30,7 @@ export const store = configureStore({
       .concat(usersApi.middleware)
       .concat(paymentsApi.middleware)
       .concat(refundsApi.middleware)
-      .concat(coursesApi.middleware),
+      .concat(coursesApi.middleware)
       .concat(categoriesApi.middleware),
 });
 

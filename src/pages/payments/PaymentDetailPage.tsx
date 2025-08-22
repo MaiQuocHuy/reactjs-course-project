@@ -5,7 +5,6 @@ import {
   BookOpen,
   CreditCard,
   Calendar,
-  DollarSign,
   Hash,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,6 +13,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useGetPaymentByIdQuery } from "@/services/paymentsApi";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const getStatusVariant = (status: "PENDING" | "COMPLETED" | "FAILED") => {
   switch (status) {
@@ -274,27 +278,21 @@ export const PaymentDetailPage = () => {
               <p className="text-sm capitalize">{payment.paymentMethod}</p>
             </div>
 
-            {/* Amount */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium">Amount</span>
+            {/* Card Information */}
+            {payment.card && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <CreditCard className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">Card</span>
+                </div>
+                <p className="text-sm capitalize">
+                  {payment.card.brand} **** {payment.card.last4}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Expires: {payment.card.expMonth}/{payment.card.expYear}
+                </p>
               </div>
-              <p className="text-sm">
-                {formatCurrency(payment.amount, payment.currency)}
-              </p>
-            </div>
-
-            {/* Status */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Hash className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium">Status</span>
-              </div>
-              <Badge variant={getStatusVariant(payment.status)}>
-                {payment.status}
-              </Badge>
-            </div>
+            )}
 
             {/* Created Date */}
             <div className="space-y-2">
@@ -309,12 +307,10 @@ export const PaymentDetailPage = () => {
             {payment.paidAt && (
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-green-600" />
+                  <Calendar className="h-4 w-4" />
                   <span className="text-sm font-medium">Paid At</span>
                 </div>
-                <p className="text-sm text-green-600">
-                  {formatDate(payment.paidAt)}
-                </p>
+                <p className="text-sm">{formatDate(payment.paidAt)}</p>
               </div>
             )}
 
@@ -322,37 +318,10 @@ export const PaymentDetailPage = () => {
             {payment.paidoutAt && (
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-blue-600" />
+                  <Calendar className="h-4 w-4" />
                   <span className="text-sm font-medium">Paid Out At</span>
                 </div>
-                <p className="text-sm text-blue-600">
-                  {formatDate(payment.paidoutAt)}
-                </p>
-              </div>
-            )}
-
-            {/* Updated Date */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium">Updated</span>
-              </div>
-              <p className="text-sm">{formatDate(payment.updatedAt)}</p>
-            </div>
-
-            {/* Card Information */}
-            {payment.card && (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <CreditCard className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium">Card</span>
-                </div>
-                <p className="text-sm capitalize">
-                  {payment.card.brand} **** {payment.card.last4}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Expires: {payment.card.expMonth}/{payment.card.expYear}
-                </p>
+                <p className="text-sm">{formatDate(payment.paidoutAt)}</p>
               </div>
             )}
 
@@ -374,13 +343,20 @@ export const PaymentDetailPage = () => {
                   <Hash className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium">Stripe Session</span>
                 </div>
-                <p className="text-xs font-mono">{payment.stripeSessionId}</p>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <p className="text-xs font-mono text-ellipsis overflow-hidden whitespace-nowrap">
+                      {payment.stripeSessionId}
+                    </p>
+                  </TooltipTrigger>
+                  <TooltipContent>{payment.stripeSessionId}</TooltipContent>
+                </Tooltip>
               </div>
             )}
 
             {/* Receipt URL */}
             {payment.receiptUrl && (
-              <div className="space-y-2">
+              <div className="space-y-1">
                 <div className="flex items-center gap-2">
                   <Hash className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium">Receipt</span>
@@ -389,7 +365,7 @@ export const PaymentDetailPage = () => {
                   href={payment.receiptUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-blue-600 hover:underline"
+                  className="text-sm text-blue-600 hover:underline "
                 >
                   View Receipt
                 </a>

@@ -84,7 +84,7 @@ export const Pagination = () => {
 
   if (totalPages <= 1) {
     return (
-      <div className="flex items-center justify-between px-4 py-6 bg-card border-t border-border/50">
+      <div className="flex items-center justify-between px-4 py-6 bg-card border-border/50">
         <div className="flex items-center space-x-2">
           <p className="text-sm text-muted-foreground">
             Showing{" "}
@@ -118,7 +118,7 @@ export const Pagination = () => {
   }
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between space-y-4 sm:space-y-0 px-4 py-6 bg-card border-t border-border/50">
+    <div className="flex flex-col sm:flex-row items-center justify-between space-y-4 sm:space-y-0 px-4 py-6 bg-card border-border/50">
       <div className="flex items-center space-x-2">
         <p className="text-sm text-muted-foreground">
           Showing{" "}

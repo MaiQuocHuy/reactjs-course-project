@@ -105,11 +105,20 @@ function App() {
               </AdminLayout>
             }
           />
+
           <Route
             path="/admin/payments"
             element={
               <AdminLayout>
                 <PaymentsPage />
+              </AdminLayout>
+            }
+          />
+          <Route
+            path="/admin/payments/:id"
+            element={
+              <AdminLayout>
+                <PaymentDetailPage />
               </AdminLayout>
             }
           />

@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { PaymentActions } from "./PaymentActions";
 import type { PaymentResponse } from "@/types/payments";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 interface PaymentRowProps {
   payment: PaymentResponse;
@@ -45,9 +46,14 @@ export const PaymentRow = ({ payment, style }: PaymentRowProps) => {
     <TableRow className="hover:bg-muted/50" style={style}>
       {/* Payment ID */}
       <TableCell>
-        <div className="font-mono text-xs bg-muted px-2 py-1 rounded inline-block">
-          {formatPaymentId(payment.id)}
-        </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="font-mono text-xs bg-muted px-2 py-1 rounded inline-block">
+              {formatPaymentId(payment.id)}
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>{payment.id}</TooltipContent>
+        </Tooltip>
       </TableCell>
 
       {/* User */}
@@ -72,7 +78,7 @@ export const PaymentRow = ({ payment, style }: PaymentRowProps) => {
       </TableCell>
 
       {/* Amount */}
-      <TableCell>
+      <TableCell className="text-end">
         <span className="font-medium">
           {formatCurrency(payment.amount, payment.currency)}
         </span>
@@ -96,10 +102,12 @@ export const PaymentRow = ({ payment, style }: PaymentRowProps) => {
 
       {/* Date */}
       <TableCell>
-        <div className="text-sm space-y-1">
+        <div className="text-sm space-y-1 flex gap-2">
           <div>
-            <span className="text-xs text-muted-foreground">Created:</span>
-            <p className="font-medium">{formatDate(payment.createdAt)}</p>
+            <div>
+              <span className="text-xs text-muted-foreground">Created:</span>
+              <p className="font-medium">{formatDate(payment.createdAt)}</p>
+            </div>
           </div>
           {payment.paidAt && (
             <div>
@@ -122,7 +130,7 @@ export const PaymentRow = ({ payment, style }: PaymentRowProps) => {
 
       {/* Actions */}
       <TableCell>
-        <div className="flex justify-end">
+        <div className="flex">
           <PaymentActions payment={payment} />
         </div>
       </TableCell>

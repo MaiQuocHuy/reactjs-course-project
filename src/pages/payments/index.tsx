@@ -32,7 +32,7 @@ export const PaymentsPage = () => {
       </div>
 
       {/* Search and Filters */}
-      <Card>
+      <Card className="py-0">
         <CardContent className="p-6">
           <div className="flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between">
             <SearchBar />
@@ -49,8 +49,8 @@ export const PaymentsPage = () => {
 
         {/* Pagination */}
         {totalElements > 0 && (
-          <Card>
-            <CardContent className="p-4">
+          <Card className="py-0">
+            <CardContent className="px-4">
               <Pagination />
             </CardContent>
           </Card>

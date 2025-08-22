@@ -122,7 +122,7 @@ export const PaymentActions = ({ payment }: PaymentActionsProps) => {
       toast({
         title: "Error",
         description:
-          error?.message ||
+          error?.data.message ||
           `Failed to ${
             confirmDialog.action === "PAID_OUT" ? "paid out" : "update"
           } payment`,

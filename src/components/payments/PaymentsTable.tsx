@@ -74,34 +74,36 @@ export const PaymentsTable = () => {
   }
 
   return (
-    <Card className="shadow-sm border-0 bg-card">
+    <Card className="shadow-sm border-0 bg-card py-0">
       <CardContent className="p-0">
         <div className="rounded-lg overflow-hidden border border-border/50">
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/50 hover:bg-muted/70 transition-colors">
-                <TableHead className="font-semibold text-xs uppercase tracking-wide text-center">
+                <TableHead className="font-semibold text-xs uppercase tracking-wide">
                   Payment ID
                 </TableHead>
-                <TableHead className="font-semibold text-xs uppercase tracking-wide text-center">
+                <TableHead className="font-semibold text-xs uppercase tracking-wide">
                   User
                 </TableHead>
-                <TableHead className="font-semibold text-xs uppercase tracking-wide text-center">
+                <TableHead className="font-semibold text-xs uppercase tracking-wide">
                   Course
                 </TableHead>
-                <TableHead className="font-semibold text-xs uppercase tracking-wide text-center">
+                <TableHead className="font-semibold text-xs uppercase tracking-wide text-end">
                   Amount
                 </TableHead>
-                <TableHead className="font-semibold text-xs uppercase tracking-wide text-center">
+                <TableHead className="font-semibold text-xs uppercase tracking-wide">
                   Method
                 </TableHead>
-                <TableHead className="font-semibold text-xs uppercase tracking-wide text-center">
+                <TableHead className="font-semibold text-xs uppercase tracking-wide">
                   Status
                 </TableHead>
-                <TableHead className="font-semibold text-xs uppercase tracking-wide text-center w-[160px]">
+                <TableHead className="font-semibold text-xs uppercase tracking-wide w-[160px]">
                   Dates
                 </TableHead>
-                <TableHead className="w-[50px]"></TableHead>
+                <TableHead className="font-semibold text-xs uppercase tracking-wide">
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
