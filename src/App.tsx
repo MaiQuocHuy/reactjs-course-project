@@ -17,8 +17,9 @@ import RevenuesPage from "./pages/revenues/RevenuesPage";
 import CoursesPage from "./pages/courses/CoursesPage";
 import CourseDetailPage from "./pages/courses/course-detail/CourseDetailPage";
 import CourseReviewDetailPage from "./pages/courses/course-detail/CourseReviewDetailPage";
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "@/components/ui/sonner";
 import { RefundDetailPage } from "./pages/refunds/RefundDetailPage";
+import { CategoriesListPage } from "./pages/admin/categories/CategoriesListPage";
 
 function App() {
   return (
@@ -97,6 +98,14 @@ function App() {
 
           {/* Payments */}
           <Route
+            path="/admin/categories"
+            element={
+              <AdminLayout>
+                <CategoriesListPage />
+              </AdminLayout>
+            }
+          />
+          <Route
             path="/admin/payments"
             element={
               <AdminLayout>
@@ -125,7 +134,7 @@ function App() {
           <Route path="/" element={<Navigate to="/admin/users" replace />} />
         </Routes>
       </Router>
-      <Toaster />
+      <Toaster position="top-right" richColors />
     </div>
   );
 }

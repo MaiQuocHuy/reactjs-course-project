@@ -5,10 +5,10 @@ import { baseQueryWithReauth } from '@/lib/baseQueryWithReauth';
 
 // API Response types based on Spring Boot backend
 export interface ApiResponse<T> {
-  statusCode: number; // Changed from "status" to match actual API response
+  statusCode: number; 
   message: string;
   data: T;
-  timestamp?: string; // Optional timestamp field
+  timestamp?: string; 
 }
 
 export interface AdminUserPageResponse {
@@ -72,7 +72,7 @@ export const usersApi = createApi({
 
         const queryString = searchParams.toString();
         return {
-          url: `/admin/v1/users${queryString ? `?${queryString}` : ''}`,
+          url: `/admin/users${queryString ? `?${queryString}` : ''}`,
           method: 'GET',
         };
       },
@@ -81,7 +81,7 @@ export const usersApi = createApi({
     // GET /api/admin/v1/users/{id} - Get user by ID
     getUserById: builder.query<ApiResponse<User>, string>({
       query: (id) => ({
-        url: `/admin/v1/users/${id}`,
+        url: `/admin/users/${id}`,
         method: 'GET',
       }),
     }),
@@ -89,7 +89,7 @@ export const usersApi = createApi({
     // POST /api/admin/v1/users - Create new user
     createUser: builder.mutation<ApiResponse<User>, CreateUserRequest>({
       query: (body) => ({
-        url: '/admin/v1/users',
+        url: '/admin/users',
         method: 'POST',
         body,
       }),
@@ -101,7 +101,7 @@ export const usersApi = createApi({
       { id: string; data: UpdateUserRequest }
     >({
       query: ({ id, data }) => ({
-        url: `/admin/v1/users/${id}`,
+        url: `/admin/users/${id}`,
         method: 'PUT',
         body: data,
       }),
@@ -113,7 +113,7 @@ export const usersApi = createApi({
       { id: string; data: UpdateUserRoleRequest }
     >({
       query: ({ id, data }) => ({
-        url: `/admin/v1/users/${id}/role`,
+        url: `/admin/users/${id}/role`,
         method: 'PATCH',
         body: data,
       }),
@@ -125,7 +125,7 @@ export const usersApi = createApi({
       { id: string; data: UpdateUserStatusRequest }
     >({
       query: ({ id, data }) => ({
-        url: `/admin/v1/users/${id}/status`,
+        url: `/admin/users/${id}/status`,
         method: 'PUT',
         body: data,
       }),
@@ -134,7 +134,7 @@ export const usersApi = createApi({
     // DELETE /api/admin/v1/users/{id} - Delete user
     deleteUser: builder.mutation<ApiResponse<void>, string>({
       query: (id) => ({
-        url: `/admin/v1/users/${id}`,
+        url: `/admin/users/${id}`,
         method: 'DELETE',
       }),
     }),

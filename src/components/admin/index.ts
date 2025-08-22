@@ -9,3 +9,12 @@ export {
   EditUserDialog, 
   AssignRoleDialog 
 } from './UserDialogs';
+
+// Category components
+export { CategoryTable } from './CategoryTable';
+export {
+  AddCategoryDialog,
+  EditCategoryDialog,
+  ViewCategoryDialog,
+  DeleteCategoryDialog,
+} from './CategoryDialogs';

@@ -1,5 +1,4 @@
 // src/store.ts
-import { configureStore } from "@reduxjs/toolkit";
 
 // import counterSlice from "@/features/counter/counterSlice";
 import paymentsSlice from "@/features/payments/paymentsSlice";
@@ -9,6 +8,8 @@ import { usersApi } from "@/services/usersApi";
 import { paymentsApi } from "@/services/paymentsApi";
 import { refundsApi } from "@/services/refundsApi";
 import { coursesApi } from "@/services/courses-api";
+import { categoriesApi } from "@/services/categoriesApi";
+import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "./authSlice";
 export const store = configureStore({
   reducer: {
@@ -19,6 +20,7 @@ export const store = configureStore({
     [refundsApi.reducerPath]: refundsApi.reducer,
     [coursesApi.reducerPath]: coursesApi.reducer,
     // counter: counterSlice.reducer,
+    [categoriesApi.reducerPath]: categoriesApi.reducer,
     payments: paymentsSlice.reducer,
     refunds: refundsSlice.reducer,
   },
@@ -29,6 +31,7 @@ export const store = configureStore({
       .concat(paymentsApi.middleware)
       .concat(refundsApi.middleware)
       .concat(coursesApi.middleware),
+      .concat(categoriesApi.middleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;
