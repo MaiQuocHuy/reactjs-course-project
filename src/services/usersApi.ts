@@ -78,7 +78,7 @@ export const usersApi = createApi({
       },
     }),
 
-    // GET /api/admin/v1/users/{id} - Get user by ID
+    // GET /api/admin/users/{id} - Get user by ID
     getUserById: builder.query<ApiResponse<User>, string>({
       query: (id) => ({
         url: `/admin/users/${id}`,
@@ -86,7 +86,7 @@ export const usersApi = createApi({
       }),
     }),
 
-    // POST /api/admin/v1/users - Create new user
+    // POST /api/admin/users - Create new user
     createUser: builder.mutation<ApiResponse<User>, CreateUserRequest>({
       query: (body) => ({
         url: '/admin/users',
@@ -95,7 +95,7 @@ export const usersApi = createApi({
       }),
     }),
 
-    // PUT /api/admin/v1/users/{id} - Update user profile
+    // PUT /api/admin/users/{id} - Update user profile
     updateUser: builder.mutation<
       ApiResponse<User>,
       { id: string; data: UpdateUserRequest }
@@ -107,7 +107,7 @@ export const usersApi = createApi({
       }),
     }),
 
-    // PATCH /api/admin/v1/users/{id}/role - Update user role
+    // PATCH /api/admin/users/{id}/role - Update user role
     updateUserRole: builder.mutation<
       ApiResponse<User>,
       { id: string; data: UpdateUserRoleRequest }
@@ -119,7 +119,7 @@ export const usersApi = createApi({
       }),
     }),
 
-    // PATCH /api/admin/v1/users/{id}/status - Update user status (ban/unban)
+    // PATCH /api/admin/users/{id}/status - Update user status (ban/unban)
     updateUserStatus: builder.mutation<
       ApiResponse<User>,
       { id: string; data: UpdateUserStatusRequest }
@@ -131,7 +131,7 @@ export const usersApi = createApi({
       }),
     }),
 
-    // DELETE /api/admin/v1/users/{id} - Delete user
+    // DELETE /api/admin/users/{id} - Delete user
     deleteUser: builder.mutation<ApiResponse<void>, string>({
       query: (id) => ({
         url: `/admin/users/${id}`,
