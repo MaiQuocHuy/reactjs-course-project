@@ -17,12 +17,12 @@ interface RefundRowProps {
 
 export const RefundRow = ({ refund, style }: RefundRowProps) => {
   return (
-    <TableRow className="hover:bg-muted/50" style={style}>
+    <TableRow className="hover:bg-gray-200" style={style}>
       {/* Refund ID */}
       <TableCell>
         <Tooltip>
           <TooltipTrigger asChild>
-            <div className="font-mono text-xs bg-muted px-2 py-1 rounded inline-block">
+            <div className="font-mono text-xs bg-gray-200 px-2 py-1 rounded inline-block">
               {formatPaymentId(refund.id)}
             </div>
           </TooltipTrigger>

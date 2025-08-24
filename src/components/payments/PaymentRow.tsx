@@ -17,12 +17,12 @@ interface PaymentRowProps {
 
 export const PaymentRow = ({ payment, style }: PaymentRowProps) => {
   return (
-    <TableRow className="hover:bg-muted/50" style={style}>
+    <TableRow className="hover:bg-gray-200" style={style}>
       {/* Payment ID */}
       <TableCell>
         <Tooltip>
           <TooltipTrigger asChild>
-            <div className="font-mono text-xs bg-muted px-2 py-1 rounded inline-block">
+            <div className="font-mono text-xs bg-gray-200 px-2 py-1 rounded inline-block">
               {formatPaymentId(payment.id)}
             </div>
           </TooltipTrigger>
