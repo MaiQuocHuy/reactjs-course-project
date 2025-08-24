@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { useUpdateRefundStatusMutation } from "@/services/refundsApi";
 import { useNavigate } from "react-router-dom";
 import type { RefundResponse } from "@/types/refunds";
@@ -40,7 +40,6 @@ export const RefundActions = ({ refund }: RefundActionsProps) => {
     action: null,
   });
   const [failureReason, setFailureReason] = useState("");
-  const { toast } = useToast();
   const navigate = useNavigate();
 
   const handleViewDetails = () => {
@@ -76,19 +75,14 @@ export const RefundActions = ({ refund }: RefundActionsProps) => {
 
       await updateRefundStatus(payload).unwrap();
 
-      toast({
-        title: "Success",
-        description: `Refund status updated to ${confirmDialog.action.toLowerCase()}`,
-      });
+      toast.success(
+        `Refund status updated to ${confirmDialog.action.toLowerCase()}`
+      );
 
       setConfirmDialog({ isOpen: false, action: null });
       setFailureReason("");
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error?.message || "Failed to update refund status",
-        variant: "destructive",
-      });
+      toast.error(error?.message || "Failed to update refund status");
     }
   };
 

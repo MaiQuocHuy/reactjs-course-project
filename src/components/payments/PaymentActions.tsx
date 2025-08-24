@@ -38,7 +38,7 @@ import {
 } from "@/services/paymentsApi";
 import type { PaymentResponse } from "@/types/payments";
 import { useNavigate } from "react-router-dom";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 
 interface PaymentActionsProps {
   payment: PaymentResponse;
@@ -62,7 +62,6 @@ export const PaymentActions = ({ payment }: PaymentActionsProps) => {
     isOpen: false,
     data: null,
   });
-  const { toast } = useToast();
   const navigate = useNavigate();
 
   const handleViewDetails = () => {
@@ -95,39 +94,25 @@ export const PaymentActions = ({ payment }: PaymentActionsProps) => {
           isOpen: true,
           data: result.data,
         });
-
-        // Auto close after 3 seconds
-        setTimeout(() => {
-          setPaidOutDialog({ isOpen: false, data: null });
-        }, 3000);
-
-        toast({
-          title: "Success",
-          description: result.message || "Payment paid out successfully",
-        });
       } else {
         await updatePaymentStatus({
           id: payment.id,
           status: confirmDialog.action,
         }).unwrap();
 
-        toast({
-          title: "Success",
-          description: `Payment status updated to ${confirmDialog.action.toLowerCase()}`,
-        });
+        toast.success(
+          `Payment status updated to ${confirmDialog.action.toLowerCase()}`
+        );
       }
 
       setConfirmDialog({ isOpen: false, action: null });
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description:
-          error?.data.message ||
+      toast.error(
+        error?.data.message ||
           `Failed to ${
             confirmDialog.action === "PAID_OUT" ? "paid out" : "update"
-          } payment`,
-        variant: "destructive",
-      });
+          } payment`
+      );
     }
   };
 
