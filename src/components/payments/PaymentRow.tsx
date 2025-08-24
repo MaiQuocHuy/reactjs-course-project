@@ -60,7 +60,7 @@ export const PaymentRow = ({ payment, style }: PaymentRowProps) => {
       <TableCell>
         <div className="flex items-center space-x-3">
           <div className="min-w-0">
-            <p className="font-medium text-sm truncate">{payment.user.name}</p>
+            <p className=" text-sm truncate">{payment.user.name}</p>
           </div>
         </div>
       </TableCell>
@@ -68,10 +68,7 @@ export const PaymentRow = ({ payment, style }: PaymentRowProps) => {
       {/* Course */}
       <TableCell>
         <div className="min-w-0">
-          <p
-            className="font-medium text-sm truncate"
-            title={payment.course.title}
-          >
+          <p className=" text-sm truncate" title={payment.course.title}>
             {payment.course.title}
           </p>
         </div>
@@ -79,7 +76,7 @@ export const PaymentRow = ({ payment, style }: PaymentRowProps) => {
 
       {/* Amount */}
       <TableCell className="text-end">
-        <span className="font-medium">
+        <span className="">
           {formatCurrency(payment.amount, payment.currency)}
         </span>
       </TableCell>
@@ -87,9 +84,7 @@ export const PaymentRow = ({ payment, style }: PaymentRowProps) => {
       {/* Payment Method */}
       <TableCell>
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium capitalize">
-            {payment.paymentMethod}
-          </span>
+          <span className="text-sm capitalize">{payment.paymentMethod}</span>
         </div>
       </TableCell>
 
@@ -105,20 +100,20 @@ export const PaymentRow = ({ payment, style }: PaymentRowProps) => {
         <div className="text-sm space-y-1 flex gap-2">
           <div>
             <div>
-              <span className="font-medium">Created:</span>
-              <p className="font-medium">{formatDate(payment.createdAt)}</p>
+              <span className="">Created:</span>
+              <p className="">{formatDate(payment.createdAt)}</p>
             </div>
           </div>
           {payment.paidAt && (
             <div>
-              <span className="font-medium">Paid:</span>
-              <p className="font-medium">{formatDate(payment.paidAt)}</p>
+              <span className="">Paid:</span>
+              <p className="">{formatDate(payment.paidAt)}</p>
             </div>
           )}
           {payment.paidOutAt && (
             <div>
-              <span className="font-medium">Paid Out:</span>
-              <p className="font-medium">{formatDate(payment.paidOutAt)}</p>
+              <span className="">Paid Out:</span>
+              <p className="">{formatDate(payment.paidOutAt)}</p>
             </div>
           )}
         </div>

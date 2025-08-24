@@ -71,14 +71,12 @@ export const RefundRow = ({ refund, style }: RefundRowProps) => {
 
       {/* Refund Amount */}
       <TableCell className="text-end">
-        <span className="font-medium">{formatCurrency(refund.amount)}</span>
+        <span className="">{formatCurrency(refund.amount)}</span>
       </TableCell>
 
       {/* Payment Amount */}
       <TableCell className="text-end">
-        <span className="font-medium">
-          {formatCurrency(refund.payment.amount)}
-        </span>
+        <span className="">{formatCurrency(refund.payment.amount)}</span>
       </TableCell>
 
       {/* Reason */}
@@ -114,13 +112,13 @@ export const RefundRow = ({ refund, style }: RefundRowProps) => {
       <TableCell className="w-[160px]">
         <div className="text-sm flex gap-2">
           <div>
-            <p className="font-medium">Requested:</p>
-            <p className="font-medium">{formatDate(refund.requestedAt)}</p>
+            <p className="">Requested:</p>
+            <p className="">{formatDate(refund.requestedAt)}</p>
           </div>
           {refund.processedAt && (
             <div>
-              <p className="font-medium">Processed:</p>
-              <p className="font-medium">{formatDate(refund.processedAt)}</p>
+              <p className="">Processed:</p>
+              <p className="">{formatDate(refund.processedAt)}</p>
             </div>
           )}
         </div>
