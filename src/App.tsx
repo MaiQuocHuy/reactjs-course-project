@@ -1,21 +1,22 @@
-import './App.css';
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from 'react-router-dom';
-import LoginForm from './components/LoginForm';
-import { AdminLayout } from './components/admin/AdminLayout';
-import { DashboardPage } from './pages/admin/DashboardPage';
-import { UsersListPage } from './pages/admin/users';
-import { UserDetailPage } from './pages/admin/users';
-import { PaymentsPage } from './pages/payments';
-import RefundsPage from './pages/refunds';
-import RevenuesPage from './pages/revenues/RevenuesPage';
-import CoursesPage from './pages/courses/CoursesPage';
-import CourseDetailPage from './pages/courses/course-detail/CourseDetailPage';
-import CourseReviewDetailPage from './pages/courses/course-detail/CourseReviewDetailPage';
+import "./App.css";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import LoginForm from "./components/LoginForm";
+import { AdminLayout } from "./components/admin/AdminLayout";
+import { DashboardPage } from "./pages/admin/DashboardPage";
+import { UsersListPage } from "./pages/admin/users";
+import { UserDetailPage } from "./pages/admin/users";
+import { PaymentsPage } from "./pages/payments";
+import { PaymentDetailPage } from "./pages/payments/PaymentDetailPage";
+import RefundsPage from "./pages/refunds";
+import { ApplicationDetail } from "./components/ApplicationDetail/ApplicationDetail";
+import { ApplicationsListPage } from "./pages/ApplicationList";
+import RevenuesPage from "./pages/revenues/RevenuesPage";
+import CoursesPage from "./pages/courses/CoursesPage";
+import CourseDetailPage from "./pages/courses/course-detail/CourseDetailPage";
+import CourseReviewDetailPage from "./pages/courses/course-detail/CourseReviewDetailPage";
+import { Toaster } from "@/components/ui/sonner";
+import { RefundDetailPage } from "./pages/refunds/RefundDetailPage";
+import { CategoriesListPage } from "./pages/admin/categories/CategoriesListPage";
 
 function App() {
   return (
@@ -102,6 +103,15 @@ function App() {
 
           {/* Payments */}
           <Route
+            path="/admin/categories"
+            element={
+              <AdminLayout>
+                <CategoriesListPage />
+              </AdminLayout>
+            }
+          />
+
+          <Route
             path="/admin/payments"
             element={
               <AdminLayout>
@@ -109,8 +119,14 @@ function App() {
               </AdminLayout>
             }
           />
-
-          {/* Refunds */}
+          <Route
+            path="/admin/payments/:id"
+            element={
+              <AdminLayout>
+                <PaymentDetailPage />
+              </AdminLayout>
+            }
+          />
           <Route
             path="/admin/refunds"
             element={
@@ -119,11 +135,38 @@ function App() {
               </AdminLayout>
             }
           />
+          <Route
+            path="/admin/refunds/:id"
+            element={
+              <AdminLayout>
+                <RefundDetailPage />
+              </AdminLayout>
+            }
+          />
+
+          <Route
+            path="/admin/applications/:id"
+            element={
+              <AdminLayout>
+                <ApplicationDetail />
+              </AdminLayout>
+            }
+          />
+
+          <Route
+            path="/admin/applications"
+            element={
+              <AdminLayout>
+                <ApplicationsListPage />
+              </AdminLayout>
+            }
+          />
 
           {/* Default redirect */}
-          <Route path="/" element={<Navigate to="/admin" replace />} />
+          <Route path="/" element={<Navigate to="/admin/users" replace />} />
         </Routes>
       </Router>
+      <Toaster position="top-right" richColors />
     </div>
   );
 }

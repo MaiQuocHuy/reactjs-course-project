@@ -1,20 +1,42 @@
-import { useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { RefundSearchBar } from "@/components/refunds/RefundSearchBar";
-import { RefundFilterBar } from "@/components/refunds/RefundFilterBar";
-import { RefundsTable } from "@/components/refunds/RefundsTable";
-import { Pagination } from "@/components/payments/Pagination";
-import { useAppDispatch, useAppSelector } from "@/hooks/redux";
-import { initializeFilters } from "@/features/refunds/refundsSlice";
+import { SearchBar, FilterBar, Pagination } from "@/components/shared";
+import { RefundsTable } from "@/components/refunds";
+import { useGetRefundsQuery } from "@/services/refundsApi";
+import { useAppSelector, useAppDispatch } from "@/hooks/redux";
+import {
+  setRefundsSearchQuery,
+  setRefundsStatusFilter,
+  setRefundsDateRange,
+  setRefundsCurrentPage,
+  setRefundsItemsPerPage,
+  clearRefundsFilters,
+} from "@/features/shared/searchFilterSlice";
 
 const RefundsPage = () => {
   const dispatch = useAppDispatch();
-  const { filteredRefunds, refunds } = useAppSelector((state) => state.refunds);
+  const { searchQuery, statusFilter, dateRange, currentPage, itemsPerPage } =
+    useAppSelector((state) => state.searchFilter.refunds);
 
-  // Initialize filters on component mount
-  useEffect(() => {
-    dispatch(initializeFilters());
-  }, [dispatch]);
+  const { data, error } = useGetRefundsQuery({
+    page: currentPage,
+    size: itemsPerPage,
+  });
+
+  if (error) {
+    return (
+      <div className="container mx-auto p-4 lg:p-6 space-y-6">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-red-600">
+            Error Loading Refunds
+          </h2>
+          <p className="text-muted-foreground mt-2">
+            Failed to load refunds. Please try again later.
+          </p>
+        </div>
+      </div>
+    );
+  }
+  const totalElements = data?.data?.page?.totalElements || 0;
 
   return (
     <div className="container mx-auto p-4 lg:p-6 space-y-6">
@@ -32,11 +54,26 @@ const RefundsPage = () => {
 
       {/* Search and Filters */}
       <Card>
-        <CardContent className="p-6">
+        <CardContent className="px-6">
           <div className="flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between">
-            <RefundSearchBar />
+            <SearchBar
+              placeholder="Search by refund id, user, or reason..."
+              searchQuery={searchQuery}
+              onSearchChange={(query) => dispatch(setRefundsSearchQuery(query))}
+            />
             <div className="lg:flex-1 lg:max-w-none">
-              <RefundFilterBar />
+              <FilterBar
+                statusFilter={statusFilter}
+                dateRange={dateRange}
+                searchQuery={searchQuery}
+                onStatusFilterChange={(status) =>
+                  dispatch(setRefundsStatusFilter(status))
+                }
+                onDateRangeChange={(range) =>
+                  dispatch(setRefundsDateRange(range))
+                }
+                onClearFilters={() => dispatch(clearRefundsFilters())}
+              />
             </div>
           </div>
         </CardContent>
@@ -47,21 +84,22 @@ const RefundsPage = () => {
         <RefundsTable />
 
         {/* Pagination */}
-        {filteredRefunds.length > 0 && (
-          <Card>
-            <CardContent className="p-4">
-              <Pagination />
+        {totalElements > 0 && (
+          <Card className="py-0">
+            <CardContent className="px-4">
+              <Pagination
+                currentPage={currentPage}
+                itemsPerPage={itemsPerPage}
+                pageInfo={data?.data?.page || null}
+                onPageChange={(page) => dispatch(setRefundsCurrentPage(page))}
+                onItemsPerPageChange={(items) =>
+                  dispatch(setRefundsItemsPerPage(items))
+                }
+              />
             </CardContent>
           </Card>
         )}
       </div>
-
-      {/* Results Summary */}
-      {filteredRefunds.length > 0 && (
-        <div className="text-center text-sm text-muted-foreground">
-          Showing {filteredRefunds.length} of {refunds.length} total refunds
-        </div>
-      )}
     </div>
   );
 };

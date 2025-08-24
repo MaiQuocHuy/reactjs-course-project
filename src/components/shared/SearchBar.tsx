@@ -1,37 +1,50 @@
 import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useAppDispatch, useAppSelector } from "@/hooks/redux";
-import { setSearchQuery } from "@/features/refunds/refundsSlice";
 import { useDebounce } from "@/hooks/useDebounce";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
-export const RefundSearchBar = () => {
-  const dispatch = useAppDispatch();
-  const searchQuery = useAppSelector((state) => state.refunds.searchQuery);
+interface SearchBarProps {
+  placeholder?: string;
+  searchQuery: string;
+  onSearchChange: (query: string) => void;
+}
+
+export const SearchBar = ({
+  placeholder = "Search...",
+  searchQuery,
+  onSearchChange,
+}: SearchBarProps) => {
   const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery);
   const debouncedSearchQuery = useDebounce(localSearchQuery, 300);
 
-  // Update Redux when debounced value changes
+  // Keep a ref to the latest onSearchChange so parent inline handlers
+  // don't trigger the effect unexpectedly (they may change identity each render).
+  const onSearchChangeRef = useRef(onSearchChange);
   useEffect(() => {
-    dispatch(setSearchQuery(debouncedSearchQuery));
-  }, [debouncedSearchQuery, dispatch]);
+    onSearchChangeRef.current = onSearchChange;
+  }, [onSearchChange]);
 
-  // Sync local state with Redux state (for external updates)
+  // Update parent when debounced value changes
+  useEffect(() => {
+    onSearchChangeRef.current(debouncedSearchQuery);
+  }, [debouncedSearchQuery]);
+
+  // Sync local state with external updates
   useEffect(() => {
     setLocalSearchQuery(searchQuery);
   }, [searchQuery]);
 
   const handleClear = () => {
     setLocalSearchQuery("");
-    dispatch(setSearchQuery(""));
+    onSearchChange("");
   };
 
   return (
     <div className="relative flex-1 max-w-sm">
       <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
       <Input
-        placeholder="Search by user, course, or reason..."
+        placeholder={placeholder}
         value={localSearchQuery}
         onChange={(e) => setLocalSearchQuery(e.target.value)}
         className="pl-10 pr-10 transition-all duration-200 focus:shadow-md focus:ring-2 focus:ring-primary/20"

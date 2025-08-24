@@ -5,10 +5,10 @@ import { baseQueryWithReauth } from '@/lib/baseQueryWithReauth';
 
 // API Response types based on Spring Boot backend
 export interface ApiResponse<T> {
-  statusCode: number; // Changed from "status" to match actual API response
+  statusCode: number; 
   message: string;
   data: T;
-  timestamp?: string; // Optional timestamp field
+  timestamp?: string; 
 }
 
 export interface AdminUserPageResponse {
@@ -72,69 +72,69 @@ export const usersApi = createApi({
 
         const queryString = searchParams.toString();
         return {
-          url: `/admin/v1/users${queryString ? `?${queryString}` : ''}`,
+          url: `/admin/users${queryString ? `?${queryString}` : ''}`,
           method: 'GET',
         };
       },
     }),
 
-    // GET /api/admin/v1/users/{id} - Get user by ID
+    // GET /api/admin/users/{id} - Get user by ID
     getUserById: builder.query<ApiResponse<User>, string>({
       query: (id) => ({
-        url: `/admin/v1/users/${id}`,
+        url: `/admin/users/${id}`,
         method: 'GET',
       }),
     }),
 
-    // POST /api/admin/v1/users - Create new user
+    // POST /api/admin/users - Create new user
     createUser: builder.mutation<ApiResponse<User>, CreateUserRequest>({
       query: (body) => ({
-        url: '/admin/v1/users',
+        url: '/admin/users',
         method: 'POST',
         body,
       }),
     }),
 
-    // PUT /api/admin/v1/users/{id} - Update user profile
+    // PUT /api/admin/users/{id} - Update user profile
     updateUser: builder.mutation<
       ApiResponse<User>,
       { id: string; data: UpdateUserRequest }
     >({
       query: ({ id, data }) => ({
-        url: `/admin/v1/users/${id}`,
+        url: `/admin/users/${id}`,
         method: 'PUT',
         body: data,
       }),
     }),
 
-    // PATCH /api/admin/v1/users/{id}/role - Update user role
+    // PATCH /api/admin/users/{id}/role - Update user role
     updateUserRole: builder.mutation<
       ApiResponse<User>,
       { id: string; data: UpdateUserRoleRequest }
     >({
       query: ({ id, data }) => ({
-        url: `/admin/v1/users/${id}/role`,
+        url: `/admin/users/${id}/role`,
         method: 'PATCH',
         body: data,
       }),
     }),
 
-    // PATCH /api/admin/v1/users/{id}/status - Update user status (ban/unban)
+    // PATCH /api/admin/users/{id}/status - Update user status (ban/unban)
     updateUserStatus: builder.mutation<
       ApiResponse<User>,
       { id: string; data: UpdateUserStatusRequest }
     >({
       query: ({ id, data }) => ({
-        url: `/admin/v1/users/${id}/status`,
+        url: `/admin/users/${id}/status`,
         method: 'PUT',
         body: data,
       }),
     }),
 
-    // DELETE /api/admin/v1/users/{id} - Delete user
+    // DELETE /api/admin/users/{id} - Delete user
     deleteUser: builder.mutation<ApiResponse<void>, string>({
       query: (id) => ({
-        url: `/admin/v1/users/${id}`,
+        url: `/admin/users/${id}`,
         method: 'DELETE',
       }),
     }),
