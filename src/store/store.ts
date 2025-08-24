@@ -30,6 +30,9 @@ export const store = configureStore({
     getDefaultMiddleware()
       .concat(authApi.middleware)
       .concat(usersApi.middleware)
+      .concat(paymentsApi.middleware)
+      .concat(refundsApi.middleware)
+      .concat(applicationsApi.middleware)
       .concat(coursesApi.middleware)
       .concat(categoriesApi.middleware),
 });
