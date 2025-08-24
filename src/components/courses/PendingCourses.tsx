@@ -69,7 +69,6 @@ const PendingCourses = () => {
   );
   const [showAcceptDialog, setShowAcceptDialog] = useState(false);
   const [showRejectDialog, setShowRejectDialog] = useState(false);
-  const [showAllRows, setShowAllRows] = useState(false);
 
   // Form setup for rejection reason
   const form = useForm<RejectFormValues>({
@@ -203,9 +202,9 @@ const PendingCourses = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-2">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-800">Pending Courses</h2>
+        <h2 className="text-lg font-bold text-gray-800">Pending Courses</h2>
         <Button onClick={handleRetry} variant="outline" className="px-4">
           Refresh
         </Button>
@@ -239,7 +238,9 @@ const PendingCourses = () => {
             {courses
               .slice(
                 0,
-                location.pathname == '/admin/courses' ? courses.length : 3
+                location.pathname.includes('/admin/pending-courses')
+                  ? courses.length
+                  : 3
               )
               .map((course: CourseReview, index: number) => (
                 <TableRow
@@ -333,21 +334,20 @@ const PendingCourses = () => {
                 </TableRow>
               ))}
 
-            {location.pathname !== '/admin/courses' && (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center py-4">
-                  <Button
-                    onClick={() => navigate('/admin/courses')}
-                    variant="outline"
-                    className="mx-auto cursor-pointer"
-                  >
-                    {showAllRows
-                      ? 'View Less'
-                      : `View All (${courses.length - 3} more)`}
-                  </Button>
-                </TableCell>
-              </TableRow>
-            )}
+            {!location.pathname.includes('/admin/pending-courses') &&
+              courses.length > 3 && (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-4">
+                    <Button
+                      onClick={() => navigate('/admin/pending-courses')}
+                      variant="outline"
+                      className="mx-auto cursor-pointer"
+                    >
+                      {`View All (${courses.length - 3} more)`}
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              )}
           </TableBody>
         </Table>
       </div>

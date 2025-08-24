@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Card,
   CardContent,
@@ -17,14 +17,12 @@ import {
   Users,
   CreditCard,
   RefreshCw,
-  TrendingUp,
-  TrendingDown,
-  DollarSign,
   Activity,
-  BookOpen,
   Eye,
+  DollarSign,
+  BookOpen,
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   BarChart,
   Bar,
@@ -43,96 +41,80 @@ import {
   TableRow,
 } from '../../components/ui/table';
 import PendingCourses from '@/components/courses/PendingCourses';
+import { useGetUsersQuery } from '@/services/usersApi';
+import { useAppSelector } from '@/hooks/redux';
+import { useGetAllCoursesQuery } from '@/services/courses-api';
+
+interface Stats {
+  title: string;
+  value: string;
+  icon: React.ElementType;
+}
 
 export const DashboardPage: React.FC = () => {
-  // Mock data for dashboard
-  const stats = [
-    {
-      title: 'Total Users',
-      value: '2,543',
-      change: '+12%',
-      changeType: 'positive' as const,
-      icon: Users,
-    },
-    {
-      title: 'Total Revenue',
-      value: '$45,231',
-      change: '+8%',
-      changeType: 'positive' as const,
-      icon: DollarSign,
-    },
-    {
-      title: 'Active Courses',
-      value: '128',
-      change: '+4%',
-      changeType: 'positive' as const,
-      icon: BookOpen,
-    },
-    {
-      title: 'Pending Refunds',
-      value: '23',
-      change: '-2%',
-      changeType: 'negative' as const,
-      icon: RefreshCw,
-    },
-  ];
+  // Initialize stats with default structure to avoid array index issues
+  const [stats, setStats] = useState<Stats[]>([
+    { title: 'Total Users', value: '0', icon: Users },
+    { title: 'Total Revenue', value: '$0', icon: DollarSign },
+    { title: 'Total Courses', value: '0', icon: BookOpen },
+    { title: 'Pending Refunds', value: '0', icon: RefreshCw },
+  ]);
 
-  const recentUsers = [
-    {
-      id: 'user-001',
-      name: 'John Doe',
-      email: 'john.doe@example.com',
-      role: 'STUDENT',
-      status: 'ACTIVE',
-      joinedAt: '2024-03-15',
-      avatar: '/api/placeholder/32/32',
-    },
-    {
-      id: 'user-002',
-      name: 'Jane Smith',
-      email: 'jane.smith@example.com',
-      role: 'INSTRUCTOR',
-      status: 'ACTIVE',
-      joinedAt: '2024-03-14',
-      avatar: '/api/placeholder/32/32',
-    },
-    {
-      id: 'user-003',
-      name: 'Bob Johnson',
-      email: 'bob.johnson@example.com',
-      role: 'STUDENT',
-      status: 'BANNED',
-      joinedAt: '2024-03-13',
-      avatar: '/api/placeholder/32/32',
-    },
-  ];
+  const { data: users, isLoading: isLoadingUsers } = useGetUsersQuery({});
+  const { data: courses, isLoading: isLoadingCourses } = useGetAllCoursesQuery(
+    {}
+  );
+  const { payments, loading: isLoadingPayments } = useAppSelector(
+    (state) => state.payments
+  );
+  const { refunds, loading: isLoadingRefunds } = useAppSelector(
+    (state) => state.refunds
+  );
 
-  const recentPayments = [
-    {
-      id: 'pay-001',
-      user: 'Alice Brown',
-      course: 'React Masterclass',
-      amount: '$99.99',
-      status: 'COMPLETED',
-      date: '2024-03-15',
-    },
-    {
-      id: 'pay-002',
-      user: 'Charlie Wilson',
-      course: 'Vue.js Fundamentals',
-      amount: '$79.99',
-      status: 'PENDING',
-      date: '2024-03-15',
-    },
-    {
-      id: 'pay-003',
-      user: 'Diana Miller',
-      course: 'Angular Advanced',
-      amount: '$129.99',
-      status: 'FAILED',
-      date: '2024-03-14',
-    },
-  ];
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const newStats = [...stats];
+
+    if (users && users.data.users.length > 0) {
+      newStats[0] = {
+        title: 'Total Users',
+        value: users.data.users.length.toString(),
+        icon: Users,
+      };
+    }
+
+    if (payments && payments.length > 0) {
+      const totalRevenue = payments.reduce(
+        (acc, payment) => acc + payment.amount,
+        0
+      );
+      newStats[1] = {
+        title: 'Total Revenue',
+        value: `$${Math.round(totalRevenue * 0.3 * 100) / 100}`,
+        icon: DollarSign,
+      };
+    }
+
+    if (courses && courses.data.content.length > 0) {
+      newStats[2] = {
+        title: 'Total Courses',
+        value: courses.data.content.length.toString(),
+        icon: BookOpen,
+      };
+    }
+
+    if (refunds && refunds.length > 0) {
+      newStats[3] = {
+        title: 'Pending Refunds',
+        value: refunds.length.toString(),
+        icon: RefreshCw,
+      };
+    }
+
+    // Set the entire new array at once to ensure React detects the change
+    setStats(newStats);
+  }, [users, refunds, payments, courses]);
 
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
@@ -162,6 +144,24 @@ export const DashboardPage: React.FC = () => {
     }
   };
 
+  if (
+    isLoadingUsers ||
+    isLoadingCourses ||
+    isLoadingPayments ||
+    isLoadingRefunds
+  ) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-12 w-12 rounded-full border-4 border-t-primary border-r-transparent border-b-primary border-l-transparent animate-spin"></div>
+          <p className="text-lg font-medium text-muted-foreground">
+            Loading dashboard data...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -177,7 +177,7 @@ export const DashboardPage: React.FC = () => {
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (
-            <Card key={stat.title}>
+            <Card key={stat.title} className="gap-3">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
                   {stat.title}
@@ -186,7 +186,7 @@ export const DashboardPage: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stat.value}</div>
-                <p className="text-xs text-muted-foreground flex items-center">
+                {/* <p className="text-xs text-muted-foreground flex items-center">
                   {stat.changeType === 'positive' ? (
                     <TrendingUp className="h-3 w-3 text-green-600 mr-1" />
                   ) : (
@@ -202,7 +202,7 @@ export const DashboardPage: React.FC = () => {
                     {stat.change}
                   </span>
                   <span className="ml-1">from last month</span>
-                </p>
+                </p> */}
               </CardContent>
             </Card>
           );
@@ -210,7 +210,7 @@ export const DashboardPage: React.FC = () => {
       </div>
 
       {/* Pending courses */}
-      <PendingCourses/>
+      <PendingCourses />
 
       {/* Revenue statistics */}
       <Card>
@@ -219,35 +219,148 @@ export const DashboardPage: React.FC = () => {
             <div>
               <CardTitle>Overview of recent revenue</CardTitle>
             </div>
-            <div className="text-right">
-              <div className="text-lg font-bold">+8% from last month</div>
-            </div>
+            {payments && payments.length > 0 && (
+              <div className="text-right">
+                <div className="text-lg font-bold">
+                  {(() => {
+                    const currentDate = new Date();
+                    const currentMonth = currentDate.getMonth();
+                    const lastMonth =
+                      currentMonth === 0 ? 11 : currentMonth - 1;
+
+                    // Get current month revenue
+                    const currentMonthRevenue = payments
+                      .filter((payment) => {
+                        if (!payment.createdAt) return false;
+                        const paymentDate = payment.createdAt
+                          ? new Date(String(payment.createdAt))
+                          : null;
+                        return (
+                          paymentDate &&
+                          paymentDate.getMonth() === currentMonth &&
+                          paymentDate.getFullYear() ===
+                            currentDate.getFullYear()
+                        );
+                      })
+                      .reduce((acc, payment) => acc + payment.amount, 0);
+
+                    // Get last month revenue
+                    const lastMonthRevenue = payments
+                      .filter((payment) => {
+                        const paymentDate = payment.createdAt
+                          ? new Date(String(payment.createdAt))
+                          : null;
+                        return (
+                          paymentDate &&
+                          paymentDate.getMonth() === lastMonth &&
+                          (lastMonth === 11
+                            ? paymentDate.getFullYear() ===
+                              currentDate.getFullYear() - 1
+                            : paymentDate.getFullYear() ===
+                              currentDate.getFullYear())
+                        );
+                      })
+                      .reduce((acc, payment) => acc + payment.amount, 0);
+
+                    // Calculate percentage change
+                    const percentageChange =
+                      lastMonthRevenue === 0
+                        ? '100%'
+                        : `${(
+                            ((currentMonthRevenue - lastMonthRevenue) /
+                              lastMonthRevenue) *
+                            100
+                          ).toFixed(0)}%`;
+
+                    const prefix =
+                      currentMonthRevenue >= lastMonthRevenue ? '+' : '';
+                    return `${prefix}${percentageChange} from last month`;
+                  })()}
+                </div>
+              </div>
+            )}
           </div>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col space-y-4">
-            {/* 3-month column chart (recharts) */}
+            {/* Monthly revenue chart (recharts) */}
             <div className="w-full h-36">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
-                  data={[
-                    { name: 'Jul', value: 700 },
-                    { name: 'Aug', value: 500 },
-                    { name: 'Sep', value: 900 },
-                  ]}
+                  data={(() => {
+                    if (!payments || payments.length === 0) {
+                      return [{ name: 'No Data', value: 0 }];
+                    }
+
+                    const monthNames = [
+                      'Jan',
+                      'Feb',
+                      'Mar',
+                      'Apr',
+                      'May',
+                      'Jun',
+                      'Jul',
+                      'Aug',
+                      'Sep',
+                      'Oct',
+                      'Nov',
+                      'Dec',
+                    ];
+
+                    // Get the current date to determine the last 3 months
+                    const currentDate = new Date();
+                    const currentMonth = currentDate.getMonth();
+
+                    // Calculate the last 3 months (including current)
+                    const last3Months = [];
+                    for (let i = 2; i >= 0; i--) {
+                      const monthIndex = (currentMonth - i + 12) % 12;
+                      last3Months.push({
+                        index: monthIndex,
+                        name: monthNames[monthIndex],
+                        year:
+                          currentMonth - i < 0
+                            ? currentDate.getFullYear() - 1
+                            : currentDate.getFullYear(),
+                      });
+                    }
+
+                    // Calculate revenue for each month
+                    return last3Months.map((month) => {
+                      const monthlyRevenue = payments
+                        .filter((payment) => {
+                          const paymentDate = payment.createdAt
+                            ? new Date(String(payment.createdAt))
+                            : null;
+                          return (
+                            paymentDate &&
+                            paymentDate.getMonth() === month.index &&
+                            paymentDate.getFullYear() === month.year
+                          );
+                        })
+                        .reduce((acc, payment) => acc + payment.amount, 0);
+
+                      return {
+                        name: month.name,
+                        value: Math.round(monthlyRevenue * 0.3 * 100) / 100, // Platform gets 30% of payment
+                      };
+                    });
+                  })()}
                   margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
                   <YAxis />
-                  <Tooltip />
+                  <Tooltip formatter={(value) => [`$${value}`, 'Revenue']} />
                   <Bar dataKey="value" fill="#3b82f6" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
             <div className="flex justify-end">
               <Link to="/admin/revenues">
-                <Button size="sm">View more</Button>
+                <Button size="sm" className="cursor-pointer">
+                  View more
+                </Button>
               </Link>
             </div>
           </div>
@@ -255,117 +368,146 @@ export const DashboardPage: React.FC = () => {
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Recent Users</CardTitle>
-                <CardDescription>
-                  Latest user registrations on your platform
-                </CardDescription>
-              </div>
-              <Button variant="outline" size="sm">
-                <Eye className="h-4 w-4 mr-2" />
-                View All
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {recentUsers.map((user) => (
-                <div
-                  key={user.id}
-                  className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
-                >
-                  <div className="flex items-center space-x-3">
-                    <Avatar className="h-9 w-9">
-                      <AvatarImage src={user.avatar} alt={user.name} />
-                      <AvatarFallback>
-                        {user.name
-                          .split(' ')
-                          .map((n) => n[0])
-                          .join('')}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="text-sm font-medium">{user.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {user.email}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Badge
-                      variant={getRoleBadgeVariant(user.role)}
-                      className="text-xs"
-                    >
-                      {user.role}
-                    </Badge>
-                    <Badge
-                      variant={getStatusBadgeVariant(user.status)}
-                      className="text-xs"
-                    >
-                      {user.status}
-                    </Badge>
-                  </div>
+        {/* Recent Students */}
+        {users && users?.data?.users?.length > 0 && (
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Recent Users</CardTitle>
+                  <CardDescription>
+                    Latest user registrations on your platform
+                  </CardDescription>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Recent Payments */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Recent Payments</CardTitle>
-                <CardDescription>Latest payment transactions</CardDescription>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="cursor-pointer"
+                  onClick={() => navigate('/admin/users')}
+                >
+                  <Eye className="h-4 w-4 mr-2" />
+                  View All
+                </Button>
               </div>
-              <Button variant="outline" size="sm">
-                <Eye className="h-4 w-4 mr-2" />
-                View All
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>User</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {recentPayments.map((payment) => (
-                  <TableRow key={payment.id}>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">{payment.user}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {payment.course}
-                        </p>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {users.data.users
+                  .slice(
+                    0,
+                    users.data.users.length > 5 ? 5 : users.data.users.length
+                  )
+                  .map((user) => (
+                    <div
+                      key={user.id}
+                      className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <Avatar className="h-9 w-9">
+                          <AvatarImage src={user.avatar} alt={user.name} />
+                          <AvatarFallback>
+                            {user.name
+                              .split(' ')
+                              .map((n: string) => n[0])
+                              .join('')}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="text-sm font-medium">{user.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {user.email}
+                          </p>
+                        </div>
                       </div>
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      {payment.amount}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={getStatusBadgeVariant(payment.status)}>
-                        {payment.status}
-                      </Badge>
-                    </TableCell>
+                      <div className="flex items-center space-x-2">
+                        <Badge
+                          variant={getRoleBadgeVariant(user.role)}
+                          className="text-xs"
+                        >
+                          {user.role}
+                        </Badge>
+                        <Badge
+                          variant={getStatusBadgeVariant(
+                            user.isActive ? 'ACTIVE' : 'INACTIVE'
+                          )}
+                          className="text-xs"
+                        >
+                          {user.isActive ? 'ACTIVE' : 'INACTIVE'}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+        {/* Recent Payments */}
+        {payments && payments.length > 0 && (
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Recent Payments</CardTitle>
+                  <CardDescription>Latest payment transactions</CardDescription>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="cursor-pointer"
+                  onClick={() => navigate('/admin/payments')}
+                >
+                  <Eye className="h-4 w-4 mr-2" />
+                  View All
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>User</TableHead>
+                    <TableHead>Amount</TableHead>
+                    <TableHead>Method</TableHead>
+                    <TableHead>Status</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+                </TableHeader>
+                <TableBody>
+                  {payments
+                    .slice(0, payments.length > 5 ? 5 : payments.length)
+                    .map((payment) => (
+                      <TableRow key={payment.id}>
+                        <TableCell>
+                          <div>
+                            <p className="font-medium">{payment.user.name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {payment.course.title}
+                            </p>
+                          </div>
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          {payment.amount}
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          {payment.paymentMethod}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={getStatusBadgeVariant(payment.status)}
+                          >
+                            {payment.status}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Quick Actions */}
-      <Card>
+      {/* <Card>
         <CardHeader>
           <CardTitle>Quick Actions</CardTitle>
           <CardDescription>Common administrative tasks</CardDescription>
@@ -390,7 +532,7 @@ export const DashboardPage: React.FC = () => {
             </Button>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* System Status */}
       <Card>

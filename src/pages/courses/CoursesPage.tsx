@@ -1,14 +1,26 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import ActiveCourses from '../../components/courses/ActiveCourses';
 import PendingCourses from '@/components/courses/PendingCourses';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 type CourseTab = 'published' | 'pending';
 
 export default function CoursesPage() {
+  // Navigation and location hooks
+  const navigate = useNavigate();
+  const location = useLocation();
+  
   // Local UI state
   const [activeTab, setActiveTab] = useState<CourseTab>('published');
 
-  // const 
+  // Update activeTab based on the current URL path
+  useEffect(() => {
+    if (location.pathname.includes('/pending-courses')) {
+      setActiveTab('pending');
+    } else {
+      setActiveTab('published');
+    }
+  }, [location.pathname]);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -28,7 +40,7 @@ export default function CoursesPage() {
               <div className="border-b border-gray-200">
                 <nav className="flex -mb-px">
                   <button
-                    onClick={() => setActiveTab('published')}
+                    onClick={() => navigate('/admin/courses')}
                     className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${
                       activeTab === 'published'
                         ? 'border-indigo-500 text-indigo-600'
@@ -38,7 +50,7 @@ export default function CoursesPage() {
                     Published & Approved Courses
                   </button>
                   <button
-                    onClick={() => setActiveTab('pending')}
+                    onClick={() => navigate('/admin/pending-courses')}
                     className={`py-4 px-6 text-center border-b-2 font-medium text-sm ${
                       activeTab === 'pending'
                         ? 'border-indigo-500 text-indigo-600'
