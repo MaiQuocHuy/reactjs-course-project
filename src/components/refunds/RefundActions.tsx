@@ -23,8 +23,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { useUpdateRefundStatusMutation } from "@/services/refundsApi";
-import type { RefundResponse } from "@/services/refundsApi";
 import { useNavigate } from "react-router-dom";
+import type { RefundResponse } from "@/types/refunds";
 
 interface RefundActionsProps {
   refund: RefundResponse;

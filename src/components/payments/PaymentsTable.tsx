@@ -7,9 +7,10 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
 import { PaymentRow } from "./PaymentRow";
-import { EmptyState } from "./EmptyState";
-import { useAppSelector } from "@/hooks/redux";
+import { EmptyState } from "../shared/EmptyState";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { useGetPaymentsQuery } from "@/services/paymentsApi";
+import { clearPaymentsFilters } from "@/features/shared/searchFilterSlice";
 
 export const PaymentsTable = () => {
   const {
@@ -20,6 +21,8 @@ export const PaymentsTable = () => {
     currentPage,
     itemsPerPage,
   } = useAppSelector((state) => state.searchFilter.payments);
+
+  const dispatch = useAppDispatch();
 
   const { data, isLoading, error } = useGetPaymentsQuery({
     page: currentPage,
@@ -75,6 +78,7 @@ export const PaymentsTable = () => {
     if (searchQuery) {
       const searchLower = searchQuery.toLowerCase();
       const matchesSearch =
+        payment.id?.toLowerCase().includes(searchLower) ||
         payment.user?.name?.toLowerCase().includes(searchLower) ||
         payment.course?.title?.toLowerCase().includes(searchLower) ||
         payment.user?.name?.toLowerCase().includes(searchLower);
@@ -112,7 +116,12 @@ export const PaymentsTable = () => {
   });
 
   if (filteredPayments.length === 0) {
-    return <EmptyState type={hasActiveFilters ? "no-results" : "no-data"} />;
+    return (
+      <EmptyState
+        type={hasActiveFilters ? "no-results" : "no-data"}
+        clearFilters={() => dispatch(clearPaymentsFilters())}
+      />
+    );
   }
 
   return (

@@ -7,9 +7,10 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
 import { RefundRow } from "./RefundRow";
-import { RefundEmptyState } from "./RefundEmptyState";
-import { useAppSelector } from "@/hooks/redux";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { useGetRefundsQuery } from "@/services/refundsApi";
+import { EmptyState } from "../shared/EmptyState";
+import { clearRefundsFilters } from "@/features/shared/searchFilterSlice";
 
 export const RefundsTable = () => {
   const { searchQuery, statusFilter, dateRange, currentPage, itemsPerPage } =
@@ -19,6 +20,8 @@ export const RefundsTable = () => {
     page: currentPage,
     size: itemsPerPage,
   });
+
+  const dispatch = useAppDispatch();
 
   // Check if there are any active filters
   const hasActiveFilters =
@@ -69,6 +72,7 @@ export const RefundsTable = () => {
       const searchLower = searchQuery.toLowerCase();
       const matchesSearch =
         refund.id.toLowerCase().includes(searchLower) ||
+        refund.payment.user.name.toLowerCase().includes(searchLower) ||
         refund.payment?.id?.toLowerCase().includes(searchLower) ||
         refund.reason?.toLowerCase().includes(searchLower);
       if (!matchesSearch) return false;
@@ -95,7 +99,10 @@ export const RefundsTable = () => {
 
   if (filteredRefunds.length === 0) {
     return (
-      <RefundEmptyState type={hasActiveFilters ? "no-results" : "no-data"} />
+      <EmptyState
+        type={hasActiveFilters ? "no-results" : "no-data"}
+        clearFilters={() => dispatch(clearRefundsFilters())}
+      />
     );
   }
 
@@ -110,7 +117,7 @@ export const RefundsTable = () => {
                   Refund ID
                 </TableHead>
                 <TableHead className="font-semibold text-xs uppercase tracking-wide">
-                  Payment ID
+                  User
                 </TableHead>
                 <TableHead className="font-semibold text-xs uppercase tracking-wide text-end">
                   Refund
@@ -130,7 +137,7 @@ export const RefundsTable = () => {
                 <TableHead className="font-semibold text-xs uppercase tracking-wide">
                   Dates
                 </TableHead>
-                <TableHead className="font-semibold text-xs uppercase tracking-wide">
+                <TableHead className="font-semibold text-xs uppercase tracking-wide ">
                   Actions
                 </TableHead>
               </TableRow>

@@ -12,6 +12,13 @@ export interface PaymentCourse {
   thumbnailUrl: string;
 }
 
+export interface PaymentCard {
+  brand: string;
+  last4: string;
+  expMonth: number;
+  expYear: number;
+}
+
 export interface PaymentCourseDetail extends PaymentCourse {
   instructor: {
     id: string;
@@ -50,12 +57,7 @@ export interface PaymentDetailResponse {
   transactionId: string | null;
   stripeSessionId: string | null;
   receiptUrl: string | null;
-  card: {
-    brand: string;
-    last4: string;
-    expMonth: number;
-    expYear: number;
-  } | null;
+  card: PaymentCard | null;
   course: PaymentCourseDetail;
 }
 

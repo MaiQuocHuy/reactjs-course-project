@@ -1,8 +1,8 @@
 import { Badge } from "@/components/ui/badge";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { RefundActions } from "./RefundActions";
-import type { RefundResponse } from "@/services/refundsApi";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import type { RefundResponse } from "@/types/refunds";
 
 interface RefundRowProps {
   refund: RefundResponse;
@@ -57,16 +57,9 @@ export const RefundRow = ({ refund, style }: RefundRowProps) => {
         </Tooltip>
       </TableCell>
 
-      {/* Payment ID */}
+      {/* User */}
       <TableCell>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div className="font-mono text-xs bg-muted px-2 py-1 rounded inline-block">
-              {formatRefundId(refund.payment.id)}
-            </div>
-          </TooltipTrigger>
-          <TooltipContent>{refund.payment.id}</TooltipContent>
-        </Tooltip>
+        <span>{refund.payment.user?.name}</span>
       </TableCell>
 
       {/* Refund Amount */}

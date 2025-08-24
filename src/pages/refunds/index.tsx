@@ -1,6 +1,11 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { SearchBar, FilterBar, Pagination } from "@/components/shared";
-import { RefundsTable, RefundEmptyState } from "@/components/refunds";
+import {
+  SearchBar,
+  FilterBar,
+  Pagination,
+  EmptyState,
+} from "@/components/shared";
+import { RefundsTable } from "@/components/refunds";
 import { useGetRefundsQuery } from "@/services/refundsApi";
 import { useAppSelector, useAppDispatch } from "@/hooks/redux";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -60,7 +65,7 @@ const RefundsPage = () => {
         <CardContent className="px-6">
           <div className="flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between">
             <SearchBar
-              placeholder="Search by user, course, or reason..."
+              placeholder="Search by refund id, user, or reason..."
               searchQuery={searchQuery}
               onSearchChange={(query) => dispatch(setRefundsSearchQuery(query))}
             />
@@ -95,7 +100,7 @@ const RefundsPage = () => {
             </CardContent>
           </Card>
         ) : refunds.length === 0 ? (
-          <RefundEmptyState type="no-data" />
+          <EmptyState type="no-data" />
         ) : (
           <>
             <RefundsTable />

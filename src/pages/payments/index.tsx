@@ -50,7 +50,7 @@ export const PaymentsPage = () => {
         <CardContent className="p-6">
           <div className="flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between">
             <SearchBar
-              placeholder="Search by user name or course title..."
+              placeholder="Search by payment id, user name or course title..."
               searchQuery={searchQuery}
               onSearchChange={(query) =>
                 dispatch(setPaymentsSearchQuery(query))
