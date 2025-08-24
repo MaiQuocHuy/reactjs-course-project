@@ -3,6 +3,7 @@ import type {
   PaidOutResponse,
   PaymentDetailApiResponse,
   PaymentsApiResponse,
+  PaymentStatisticsResponse,
   UpdatePaymentStatusResponse,
 } from "@/types/payments";
 import { createApi } from "@reduxjs/toolkit/query/react";
@@ -25,6 +26,10 @@ export const paymentsApi = createApi({
     getPaymentById: builder.query<PaymentDetailApiResponse, string>({
       query: (id) => `/admin/payments/${id}`,
       providesTags: (_result, _error, id) => [{ type: "Payment", id }],
+    }),
+    getPaymentStatistics: builder.query<PaymentStatisticsResponse, void>({
+      query: () => `/admin/payments/statistics`,
+      providesTags: ["Payment"],
     }),
     updatePaymentStatus: builder.mutation<
       UpdatePaymentStatusResponse,
@@ -50,6 +55,7 @@ export const paymentsApi = createApi({
 export const {
   useGetPaymentsQuery,
   useGetPaymentByIdQuery,
+  useGetPaymentStatisticsQuery,
   useUpdatePaymentStatusMutation,
   usePaidOutPaymentMutation,
 } = paymentsApi;

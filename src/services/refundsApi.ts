@@ -2,6 +2,7 @@ import { baseQueryWithReauth } from "@/lib/baseQueryWithReauth";
 import type {
   RefundDetailApiResponse,
   RefundsApiResponse,
+  RefundStatisticsResponse,
   UpdateRefundStatusResponse,
 } from "@/types/refunds";
 import { createApi } from "@reduxjs/toolkit/query/react";
@@ -25,6 +26,10 @@ export const refundsApi = createApi({
       query: (id) => `/admin/refund/${id}`,
       providesTags: (_result, _error, id) => [{ type: "Refund", id }],
     }),
+    getRefundStatistics: builder.query<RefundStatisticsResponse, void>({
+      query: () => `/admin/refund/statistics`,
+      providesTags: ["Refund"],
+    }),
     updateRefundStatus: builder.mutation<
       UpdateRefundStatusResponse,
       { id: string; status: "COMPLETED" | "FAILED"; rejectedReason?: string }
@@ -42,5 +47,6 @@ export const refundsApi = createApi({
 export const {
   useGetRefundsQuery,
   useGetRefundByIdQuery,
+  useGetRefundStatisticsQuery,
   useUpdateRefundStatusMutation,
 } = refundsApi;

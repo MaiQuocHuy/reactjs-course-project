@@ -71,3 +71,17 @@ export interface UpdateRefundStatusResponse {
   };
   timestamp: string;
 }
+
+export interface RefundStatistics {
+  total: number;
+  completed: number;
+  pending: number;
+  failed: number;
+}
+
+export interface RefundStatisticsResponse {
+  statusCode: number;
+  message: string;
+  data: RefundStatistics;
+  timestamp: string;
+}

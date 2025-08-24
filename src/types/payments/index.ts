@@ -157,3 +157,18 @@ export interface Payment {
   createdAt?: string;
   updatedAt?: string;
 }
+
+export interface PaymentStatistics {
+  total: number;
+  completed: number;
+  pending: number;
+  failed: number;
+  refunded: number;
+}
+
+export interface PaymentStatisticsResponse {
+  statusCode: number;
+  message: string;
+  data: PaymentStatistics;
+  timestamp: string;
+}
