@@ -1,10 +1,5 @@
 import "./App.css";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import LoginForm from "./components/LoginForm";
 import { AdminLayout } from "./components/admin/AdminLayout";
 import { DashboardPage } from "./pages/admin/DashboardPage";
@@ -13,6 +8,8 @@ import { UserDetailPage } from "./pages/admin/users";
 import { PaymentsPage } from "./pages/payments";
 import { PaymentDetailPage } from "./pages/payments/PaymentDetailPage";
 import RefundsPage from "./pages/refunds";
+import { ApplicationDetail } from "./components/ApplicationDetail/ApplicationDetail";
+import { ApplicationsListPage } from "./pages/ApplicationList";
 import RevenuesPage from "./pages/revenues/RevenuesPage";
 import CoursesPage from "./pages/courses/CoursesPage";
 import CourseDetailPage from "./pages/courses/course-detail/CourseDetailPage";
@@ -135,6 +132,24 @@ function App() {
             element={
               <AdminLayout>
                 <RefundDetailPage />
+              </AdminLayout>
+            }
+          />
+
+          <Route
+            path="/admin/applications/:id"
+            element={
+              <AdminLayout>
+                <ApplicationDetail />
+              </AdminLayout>
+            }
+          />
+
+          <Route
+            path="/admin/applications"
+            element={
+              <AdminLayout>
+                <ApplicationsListPage />
               </AdminLayout>
             }
           />

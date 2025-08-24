@@ -11,6 +11,7 @@ import { coursesApi } from "@/services/courses-api";
 import { categoriesApi } from "@/services/categoriesApi";
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "./authSlice";
+import { applicationsApi } from "@/services/applicationsApi";
 export const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -18,6 +19,7 @@ export const store = configureStore({
     [usersApi.reducerPath]: usersApi.reducer,
     [paymentsApi.reducerPath]: paymentsApi.reducer,
     [refundsApi.reducerPath]: refundsApi.reducer,
+    [applicationsApi.reducerPath]: applicationsApi.reducer,
     [coursesApi.reducerPath]: coursesApi.reducer,
     // counter: counterSlice.reducer,
     [categoriesApi.reducerPath]: categoriesApi.reducer,
@@ -28,8 +30,6 @@ export const store = configureStore({
     getDefaultMiddleware()
       .concat(authApi.middleware)
       .concat(usersApi.middleware)
-      .concat(paymentsApi.middleware)
-      .concat(refundsApi.middleware)
       .concat(coursesApi.middleware)
       .concat(categoriesApi.middleware),
 });
