@@ -13,88 +13,27 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useGetRefundByIdQuery } from "@/services/refundsApi";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-
-const getStatusVariant = (status: string) => {
-  switch (status) {
-    case "COMPLETED":
-      return "default" as const;
-    case "PENDING":
-      return "secondary" as const;
-    case "FAILED":
-      return "destructive" as const;
-    default:
-      return "secondary" as const;
-  }
-};
-
-const formatCurrency = (amount: number, currency = "USD") => {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: currency,
-  }).format(amount);
-};
-
-const formatDate = (dateString: string | null) => {
-  if (!dateString) return "N/A";
-  return new Date(dateString).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
+import { DetailsLoadingSkeleton } from "@/components/shared/LoadingSkeleton";
+import {
+  formatCurrency,
+  formatDateTime,
+  getStatusVariant,
+} from "@/lib/paymentUtils";
+import { DetailsLoadingError } from "@/components/shared/LoadingError";
 
 export const RefundDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { data, isLoading, error } = useGetRefundByIdQuery(id!);
+  const { data, isLoading, error, refetch } = useGetRefundByIdQuery(id!);
 
   if (isLoading) {
-    return (
-      <div className="container mx-auto p-4 lg:p-6 space-y-6">
-        {/* Back button skeleton */}
-        <Skeleton className="h-10 w-24" />
-
-        {/* Header skeleton */}
-        <div className="space-y-2">
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-4 w-64" />
-        </div>
-
-        {/* Content skeletons */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <Skeleton className="h-6 w-32" />
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Skeleton className="h-16 w-full" />
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-4 w-32" />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <Skeleton className="h-6 w-32" />
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Skeleton className="h-16 w-full" />
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-4 w-32" />
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
+    return <DetailsLoadingSkeleton />;
   }
 
   if (error || !data) {
@@ -108,18 +47,7 @@ export const RefundDetailPage = () => {
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Refunds
         </Button>
-
-        <Card>
-          <CardContent className="p-8 text-center">
-            <div className="text-red-500 mb-2">
-              <Hash className="h-12 w-12 mx-auto" />
-            </div>
-            <h3 className="text-lg font-semibold mb-2">Refund Not Found</h3>
-            <p className="text-muted-foreground">
-              The refund you're looking for doesn't exist or has been removed.
-            </p>
-          </CardContent>
-        </Card>
+        <DetailsLoadingError onRetry={() => refetch()} />
       </div>
     );
   }
@@ -321,7 +249,9 @@ export const RefundDetailPage = () => {
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm font-medium">Payment Created</span>
               </div>
-              <p className="text-sm">{formatDate(refund.payment.createdAt)}</p>
+              <p className="text-sm">
+                {formatDateTime(refund.payment.createdAt)}
+              </p>
             </div>
 
             {/* Payment Paid */}
@@ -331,7 +261,9 @@ export const RefundDetailPage = () => {
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium">Paid At</span>
                 </div>
-                <p className="text-sm">{formatDate(refund.payment.paidAt)}</p>
+                <p className="text-sm">
+                  {formatDateTime(refund.payment.paidAt)}
+                </p>
               </div>
             )}
           </div>
@@ -354,7 +286,7 @@ export const RefundDetailPage = () => {
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm font-medium">Requested At</span>
               </div>
-              <p className="text-sm">{formatDate(refund.requestedAt)}</p>
+              <p className="text-sm">{formatDateTime(refund.requestedAt)}</p>
             </div>
 
             {/* Processed Date */}
@@ -364,7 +296,7 @@ export const RefundDetailPage = () => {
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium">Processed At</span>
                 </div>
-                <p className="text-sm">{formatDate(refund.processedAt)}</p>
+                <p className="text-sm">{formatDateTime(refund.processedAt)}</p>
               </div>
             )}
 

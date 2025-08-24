@@ -3,43 +3,17 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { PaymentActions } from "./PaymentActions";
 import type { PaymentResponse } from "@/types/payments";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import {
+  formatCurrency,
+  formatDate,
+  formatPaymentId,
+  getStatusVariant,
+} from "@/lib/paymentUtils";
 
 interface PaymentRowProps {
   payment: PaymentResponse;
   style?: React.CSSProperties;
 }
-
-const getStatusVariant = (status: PaymentResponse["status"]) => {
-  switch (status) {
-    case "COMPLETED":
-      return "default" as const;
-    case "PENDING":
-      return "secondary" as const;
-    case "FAILED":
-      return "destructive" as const;
-    default:
-      return "secondary" as const;
-  }
-};
-
-const formatCurrency = (amount: number, currency = "USD") => {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: currency,
-  }).format(amount);
-};
-
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-};
-
-const formatPaymentId = (id: string) => {
-  return id.slice(0, 8).toUpperCase();
-};
 
 export const PaymentRow = ({ payment, style }: PaymentRowProps) => {
   return (

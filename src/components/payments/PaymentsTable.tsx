@@ -11,6 +11,8 @@ import { EmptyState } from "../shared/EmptyState";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { useGetPaymentsQuery } from "@/services/paymentsApi";
 import { clearPaymentsFilters } from "@/features/shared/searchFilterSlice";
+import { TableLoadingSkeleton } from "../shared/LoadingSkeleton";
+import { TableLoadingError } from "../shared/LoadingError";
 
 export const PaymentsTable = () => {
   const {
@@ -24,7 +26,7 @@ export const PaymentsTable = () => {
 
   const dispatch = useAppDispatch();
 
-  const { data, isLoading, error } = useGetPaymentsQuery({
+  const { data, isLoading, error, refetch } = useGetPaymentsQuery({
     page: currentPage,
     size: itemsPerPage,
   });
@@ -38,36 +40,11 @@ export const PaymentsTable = () => {
     dateRange.to !== null;
 
   if (isLoading) {
-    return (
-      <Card className="shadow-sm border-0 bg-card">
-        <CardContent className="p-8">
-          <div className="flex flex-col items-center justify-center space-y-4">
-            <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent"></div>
-            <div className="text-center">
-              <p className="text-sm font-medium">Loading payments...</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Please wait while we fetch the payment data
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
+    return <TableLoadingSkeleton />;
   }
 
   if (error) {
-    return (
-      <Card className="shadow-sm border-0 bg-card">
-        <CardContent className="p-8">
-          <div className="text-center">
-            <p className="text-red-500 font-medium">Failed to load payments</p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Please try again later
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    );
+    return <TableLoadingError onRetry={refetch} />;
   }
 
   const allPayments = data?.data?.content || [];

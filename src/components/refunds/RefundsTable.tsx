@@ -11,12 +11,14 @@ import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { useGetRefundsQuery } from "@/services/refundsApi";
 import { EmptyState } from "../shared/EmptyState";
 import { clearRefundsFilters } from "@/features/shared/searchFilterSlice";
+import { TableLoadingSkeleton } from "../shared/LoadingSkeleton";
+import { TableLoadingError } from "../shared/LoadingError";
 
 export const RefundsTable = () => {
   const { searchQuery, statusFilter, dateRange, currentPage, itemsPerPage } =
     useAppSelector((state) => state.searchFilter.refunds);
 
-  const { data, isLoading, error } = useGetRefundsQuery({
+  const { data, isLoading, error, refetch } = useGetRefundsQuery({
     page: currentPage,
     size: itemsPerPage,
   });
@@ -31,36 +33,11 @@ export const RefundsTable = () => {
     dateRange.to !== null;
 
   if (isLoading) {
-    return (
-      <Card className="shadow-sm border-0 bg-card">
-        <CardContent className="p-8">
-          <div className="flex flex-col items-center justify-center space-y-4">
-            <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent"></div>
-            <div className="text-center">
-              <p className="text-sm font-medium">Loading refunds...</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Please wait while we fetch the refund data
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
+    return <TableLoadingSkeleton />;
   }
 
   if (error) {
-    return (
-      <Card className="shadow-sm border-0 bg-card">
-        <CardContent className="p-8">
-          <div className="text-center">
-            <p className="text-red-500 font-medium">Failed to load refunds</p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Please try again later
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    );
+    return <TableLoadingError onRetry={() => refetch()} />;
   }
 
   const allRefunds = data?.data?.content || [];
@@ -109,10 +86,10 @@ export const RefundsTable = () => {
   return (
     <Card className="shadow-sm border-0 bg-card py-0">
       <CardContent className="p-0">
-        <div className="overflow-x-auto">
+        <div className="rounded-lg overflow-hidden border border-border/50">
           <Table>
             <TableHeader>
-              <TableRow className="border-border bg-muted/50">
+              <TableRow className="bg-muted/50 hover:bg-muted/70 transition-colors">
                 <TableHead className="font-semibold text-xs uppercase tracking-wide">
                   Refund ID
                 </TableHead>

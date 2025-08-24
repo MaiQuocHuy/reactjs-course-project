@@ -3,44 +3,17 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { RefundActions } from "./RefundActions";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import type { RefundResponse } from "@/types/refunds";
+import {
+  formatCurrency,
+  formatDate,
+  formatPaymentId,
+  getStatusVariant,
+} from "@/lib/paymentUtils";
 
 interface RefundRowProps {
   refund: RefundResponse;
   style?: React.CSSProperties;
 }
-
-const getStatusVariant = (status: string) => {
-  switch (status) {
-    case "COMPLETED":
-      return "default" as const;
-    case "PENDING":
-      return "secondary" as const;
-    case "FAILED":
-      return "destructive" as const;
-    default:
-      return "secondary" as const;
-  }
-};
-
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(amount);
-};
-
-const formatDate = (dateString: string | null) => {
-  if (!dateString) return "N/A";
-  return new Date(dateString).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-};
-
-const formatRefundId = (id: string) => {
-  return id.slice(0, 8).toUpperCase();
-};
 
 export const RefundRow = ({ refund, style }: RefundRowProps) => {
   return (
@@ -50,7 +23,7 @@ export const RefundRow = ({ refund, style }: RefundRowProps) => {
         <Tooltip>
           <TooltipTrigger asChild>
             <div className="font-mono text-xs bg-muted px-2 py-1 rounded inline-block">
-              {formatRefundId(refund.id)}
+              {formatPaymentId(refund.id)}
             </div>
           </TooltipTrigger>
           <TooltipContent>{refund.id}</TooltipContent>

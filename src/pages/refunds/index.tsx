@@ -1,14 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  SearchBar,
-  FilterBar,
-  Pagination,
-  EmptyState,
-} from "@/components/shared";
+import { SearchBar, FilterBar, Pagination } from "@/components/shared";
 import { RefundsTable } from "@/components/refunds";
 import { useGetRefundsQuery } from "@/services/refundsApi";
 import { useAppSelector, useAppDispatch } from "@/hooks/redux";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   setRefundsSearchQuery,
   setRefundsStatusFilter,
@@ -23,7 +17,7 @@ const RefundsPage = () => {
   const { searchQuery, statusFilter, dateRange, currentPage, itemsPerPage } =
     useAppSelector((state) => state.searchFilter.refunds);
 
-  const { data, isLoading, error } = useGetRefundsQuery({
+  const { data, error } = useGetRefundsQuery({
     page: currentPage,
     size: itemsPerPage,
   });
@@ -42,8 +36,6 @@ const RefundsPage = () => {
       </div>
     );
   }
-
-  const refunds = data?.data?.content || [];
   const totalElements = data?.data?.page?.totalElements || 0;
 
   return (
@@ -89,41 +81,23 @@ const RefundsPage = () => {
 
       {/* Refunds Table */}
       <div className="space-y-4">
-        {isLoading ? (
-          <Card>
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                {[...Array(5)].map((_, i) => (
-                  <Skeleton key={i} className="h-16 w-full" />
-                ))}
-              </div>
+        <RefundsTable />
+
+        {/* Pagination */}
+        {totalElements > 0 && (
+          <Card className="py-0">
+            <CardContent className="px-4">
+              <Pagination
+                currentPage={currentPage}
+                itemsPerPage={itemsPerPage}
+                pageInfo={data?.data?.page || null}
+                onPageChange={(page) => dispatch(setRefundsCurrentPage(page))}
+                onItemsPerPageChange={(items) =>
+                  dispatch(setRefundsItemsPerPage(items))
+                }
+              />
             </CardContent>
           </Card>
-        ) : refunds.length === 0 ? (
-          <EmptyState type="no-data" />
-        ) : (
-          <>
-            <RefundsTable />
-
-            {/* Pagination */}
-            {totalElements > 0 && (
-              <Card className="py-0">
-                <CardContent className="px-4">
-                  <Pagination
-                    currentPage={currentPage}
-                    itemsPerPage={itemsPerPage}
-                    pageInfo={data?.data?.page || null}
-                    onPageChange={(page) =>
-                      dispatch(setRefundsCurrentPage(page))
-                    }
-                    onItemsPerPageChange={(items) =>
-                      dispatch(setRefundsItemsPerPage(items))
-                    }
-                  />
-                </CardContent>
-              </Card>
-            )}
-          </>
         )}
       </div>
     </div>
