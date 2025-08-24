@@ -14,32 +14,49 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useAppDispatch, useAppSelector } from "@/hooks/redux";
-import {
-  setStatusFilter,
-  setDateRange,
-  clearFilters,
-} from "@/features/refunds/refundsSlice";
 
-export const RefundFilterBar = () => {
-  const dispatch = useAppDispatch();
-  const { statusFilter, dateRange, searchQuery } = useAppSelector(
-    (state) => state.refunds
-  );
+interface FilterBarProps {
+  statusFilter: "ALL" | "PENDING" | "COMPLETED" | "FAILED";
+  dateRange: {
+    from: string | null;
+    to: string | null;
+  };
+  searchQuery: string;
+  onStatusFilterChange: (
+    status: "ALL" | "PENDING" | "COMPLETED" | "FAILED"
+  ) => void;
+  onDateRangeChange: (range: {
+    from: string | null;
+    to: string | null;
+  }) => void;
+  onClearFilters: () => void;
+  // Optional payment method filter (for payments page)
+  paymentMethodFilter?: "ALL" | "stripe" | "paypal";
+  onPaymentMethodFilterChange?: (method: "ALL" | "stripe" | "paypal") => void;
+}
 
+export const FilterBar = ({
+  statusFilter,
+  dateRange,
+  searchQuery,
+  onStatusFilterChange,
+  onDateRangeChange,
+  onClearFilters,
+  paymentMethodFilter,
+  onPaymentMethodFilterChange,
+}: FilterBarProps) => {
   const hasActiveFilters =
-    statusFilter !== "ALL" || dateRange.from || dateRange.to || searchQuery;
+    statusFilter !== "ALL" ||
+    (paymentMethodFilter && paymentMethodFilter !== "ALL") ||
+    dateRange.from ||
+    dateRange.to ||
+    searchQuery;
 
   return (
     <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center p-4 bg-muted/30 rounded-lg border border-border/50">
       <div className="flex flex-wrap gap-3">
         {/* Status Filter */}
-        <Select
-          value={statusFilter}
-          onValueChange={(value: typeof statusFilter) =>
-            dispatch(setStatusFilter(value))
-          }
-        >
+        <Select value={statusFilter} onValueChange={onStatusFilterChange}>
           <SelectTrigger className="w-[140px] transition-all duration-200 hover:bg-muted/50">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
@@ -50,6 +67,23 @@ export const RefundFilterBar = () => {
             <SelectItem value="FAILED">Failed</SelectItem>
           </SelectContent>
         </Select>
+
+        {/* Payment Method Filter (only for payments) */}
+        {paymentMethodFilter && onPaymentMethodFilterChange && (
+          <Select
+            value={paymentMethodFilter}
+            onValueChange={onPaymentMethodFilterChange}
+          >
+            <SelectTrigger className="w-[150px] transition-all duration-200 hover:bg-muted/50">
+              <SelectValue placeholder="Payment Method" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">All Methods</SelectItem>
+              <SelectItem value="stripe">Stripe</SelectItem>
+              <SelectItem value="paypal">PayPal</SelectItem>
+            </SelectContent>
+          </Select>
+        )}
 
         {/* Date Range Filter */}
         <Popover>
@@ -72,34 +106,30 @@ export const RefundFilterBar = () => {
           <PopoverContent className="w-auto p-4" align="start">
             <div className="grid gap-4">
               <div className="space-y-2">
-                <Label htmlFor="refund-date-from">From</Label>
+                <Label htmlFor="date-from">From</Label>
                 <Input
-                  id="refund-date-from"
+                  id="date-from"
                   type="date"
                   value={dateRange.from || ""}
                   onChange={(e) =>
-                    dispatch(
-                      setDateRange({
-                        from: e.target.value || null,
-                        to: dateRange.to,
-                      })
-                    )
+                    onDateRangeChange({
+                      from: e.target.value || null,
+                      to: dateRange.to,
+                    })
                   }
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="refund-date-to">To</Label>
+                <Label htmlFor="date-to">To</Label>
                 <Input
-                  id="refund-date-to"
+                  id="date-to"
                   type="date"
                   value={dateRange.to || ""}
                   onChange={(e) =>
-                    dispatch(
-                      setDateRange({
-                        from: dateRange.from,
-                        to: e.target.value || null,
-                      })
-                    )
+                    onDateRangeChange({
+                      from: dateRange.from,
+                      to: e.target.value || null,
+                    })
                   }
                 />
               </div>
@@ -107,9 +137,7 @@ export const RefundFilterBar = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() =>
-                    dispatch(setDateRange({ from: null, to: null }))
-                  }
+                  onClick={() => onDateRangeChange({ from: null, to: null })}
                   className="w-full"
                 >
                   Clear dates
@@ -126,7 +154,7 @@ export const RefundFilterBar = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => dispatch(clearFilters())}
+            onClick={onClearFilters}
             className="h-8 px-2 lg:px-3 text-muted-foreground hover:text-foreground transition-colors"
           >
             <X className="h-4 w-4 mr-1" />

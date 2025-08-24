@@ -1,22 +1,35 @@
-import { useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { SearchBar } from "@/components/payments/SearchBar";
-import { FilterBar } from "@/components/payments/FilterBar";
+import { SearchBar, FilterBar, Pagination } from "@/components/shared";
 import { PaymentsTable } from "@/components/payments/PaymentsTable";
-import { Pagination } from "@/components/payments/Pagination";
-import { useAppDispatch, useAppSelector } from "@/hooks/redux";
-import { initializeFilters } from "@/features/payments/paymentsSlice";
+import { useAppSelector, useAppDispatch } from "@/hooks/redux";
+import { useGetPaymentsQuery } from "@/services/paymentsApi";
+import {
+  setPaymentsSearchQuery,
+  setPaymentsStatusFilter,
+  setPaymentsPaymentMethodFilter,
+  setPaymentsDateRange,
+  setPaymentsCurrentPage,
+  setPaymentsItemsPerPage,
+  clearPaymentsFilters,
+} from "@/features/shared/searchFilterSlice";
 
 export const PaymentsPage = () => {
   const dispatch = useAppDispatch();
-  const { filteredPayments, payments } = useAppSelector(
-    (state) => state.payments
-  );
+  const {
+    searchQuery,
+    statusFilter,
+    paymentMethodFilter,
+    dateRange,
+    currentPage,
+    itemsPerPage,
+  } = useAppSelector((state) => state.searchFilter.payments);
 
-  // Initialize filters on component mount
-  useEffect(() => {
-    dispatch(initializeFilters());
-  }, [dispatch]);
+  const { data } = useGetPaymentsQuery({
+    page: currentPage,
+    size: itemsPerPage,
+  });
+
+  const totalElements = data?.data?.page?.totalElements || 0;
 
   return (
     <div className="container mx-auto p-4 lg:p-6 space-y-6">
@@ -33,12 +46,33 @@ export const PaymentsPage = () => {
       </div>
 
       {/* Search and Filters */}
-      <Card>
+      <Card className="py-0">
         <CardContent className="p-6">
           <div className="flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between">
-            <SearchBar />
+            <SearchBar
+              placeholder="Search by payment id, user name or course title..."
+              searchQuery={searchQuery}
+              onSearchChange={(query) =>
+                dispatch(setPaymentsSearchQuery(query))
+              }
+            />
             <div className="lg:flex-1 lg:max-w-none">
-              <FilterBar />
+              <FilterBar
+                statusFilter={statusFilter}
+                dateRange={dateRange}
+                searchQuery={searchQuery}
+                paymentMethodFilter={paymentMethodFilter}
+                onStatusFilterChange={(status) =>
+                  dispatch(setPaymentsStatusFilter(status))
+                }
+                onPaymentMethodFilterChange={(method) =>
+                  dispatch(setPaymentsPaymentMethodFilter(method))
+                }
+                onDateRangeChange={(range) =>
+                  dispatch(setPaymentsDateRange(range))
+                }
+                onClearFilters={() => dispatch(clearPaymentsFilters())}
+              />
             </div>
           </div>
         </CardContent>
@@ -49,19 +83,27 @@ export const PaymentsPage = () => {
         <PaymentsTable />
 
         {/* Pagination */}
-        {filteredPayments.length > 0 && (
-          <Card>
-            <CardContent className="p-4">
-              <Pagination />
+        {totalElements > 0 && (
+          <Card className="py-0">
+            <CardContent className="px-4">
+              <Pagination
+                currentPage={currentPage}
+                itemsPerPage={itemsPerPage}
+                pageInfo={data?.data?.page || null}
+                onPageChange={(page) => dispatch(setPaymentsCurrentPage(page))}
+                onItemsPerPageChange={(items) =>
+                  dispatch(setPaymentsItemsPerPage(items))
+                }
+              />
             </CardContent>
           </Card>
         )}
       </div>
 
       {/* Results Summary */}
-      {filteredPayments.length > 0 && (
+      {totalElements > 0 && (
         <div className="text-center text-sm text-muted-foreground">
-          Showing {filteredPayments.length} of {payments.length} total payments
+          Total {totalElements} payment{totalElements !== 1 ? "s" : ""}
         </div>
       )}
     </div>
