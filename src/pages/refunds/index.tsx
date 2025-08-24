@@ -1,18 +1,23 @@
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  RefundSearchBar,
-  RefundFilterBar,
-  RefundsTable,
-  RefundEmptyState,
-} from "@/components/refunds";
+import { SearchBar, FilterBar, Pagination } from "@/components/shared";
+import { RefundsTable, RefundEmptyState } from "@/components/refunds";
 import { useGetRefundsQuery } from "@/services/refundsApi";
-import { useAppSelector } from "@/hooks/redux";
+import { useAppSelector, useAppDispatch } from "@/hooks/redux";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  setRefundsSearchQuery,
+  setRefundsStatusFilter,
+  setRefundsDateRange,
+  setRefundsCurrentPage,
+  setRefundsItemsPerPage,
+  clearRefundsFilters,
+} from "@/features/shared/searchFilterSlice";
 
 const RefundsPage = () => {
-  const { currentPage, itemsPerPage } = useAppSelector(
-    (state) => state.refunds
-  );
+  const dispatch = useAppDispatch();
+  const { searchQuery, statusFilter, dateRange, currentPage, itemsPerPage } =
+    useAppSelector((state) => state.searchFilter.refunds);
+
   const { data, isLoading, error } = useGetRefundsQuery({
     page: currentPage,
     size: itemsPerPage,
@@ -54,9 +59,24 @@ const RefundsPage = () => {
       <Card>
         <CardContent className="px-6">
           <div className="flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between">
-            <RefundSearchBar />
+            <SearchBar
+              placeholder="Search by user, course, or reason..."
+              searchQuery={searchQuery}
+              onSearchChange={(query) => dispatch(setRefundsSearchQuery(query))}
+            />
             <div className="lg:flex-1 lg:max-w-none">
-              <RefundFilterBar />
+              <FilterBar
+                statusFilter={statusFilter}
+                dateRange={dateRange}
+                searchQuery={searchQuery}
+                onStatusFilterChange={(status) =>
+                  dispatch(setRefundsStatusFilter(status))
+                }
+                onDateRangeChange={(range) =>
+                  dispatch(setRefundsDateRange(range))
+                }
+                onClearFilters={() => dispatch(clearRefundsFilters())}
+              />
             </div>
           </div>
         </CardContent>
@@ -79,16 +99,28 @@ const RefundsPage = () => {
         ) : (
           <>
             <RefundsTable />
+
+            {/* Pagination */}
+            {totalElements > 0 && (
+              <Card className="py-0">
+                <CardContent className="px-4">
+                  <Pagination
+                    currentPage={currentPage}
+                    itemsPerPage={itemsPerPage}
+                    pageInfo={data?.data?.page || null}
+                    onPageChange={(page) =>
+                      dispatch(setRefundsCurrentPage(page))
+                    }
+                    onItemsPerPageChange={(items) =>
+                      dispatch(setRefundsItemsPerPage(items))
+                    }
+                  />
+                </CardContent>
+              </Card>
+            )}
           </>
         )}
       </div>
-
-      {/* Results Summary */}
-      {refunds.length > 0 && (
-        <div className="text-center text-sm text-muted-foreground">
-          Showing {refunds.length} of {totalElements} total refunds
-        </div>
-      )}
     </div>
   );
 };

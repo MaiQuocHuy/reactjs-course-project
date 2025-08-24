@@ -19,7 +19,7 @@ export const PaymentsTable = () => {
     dateRange,
     currentPage,
     itemsPerPage,
-  } = useAppSelector((state) => state.payments);
+  } = useAppSelector((state) => state.searchFilter.payments);
 
   const { data, isLoading, error } = useGetPaymentsQuery({
     page: currentPage,
@@ -67,9 +67,51 @@ export const PaymentsTable = () => {
     );
   }
 
-  const payments = data?.data?.content || [];
+  const allPayments = data?.data?.content || [];
 
-  if (payments.length === 0) {
+  // Client-side filtering since API doesn't support server-side filtering
+  const filteredPayments = allPayments.filter((payment) => {
+    // Search filter
+    if (searchQuery) {
+      const searchLower = searchQuery.toLowerCase();
+      const matchesSearch =
+        payment.user?.name?.toLowerCase().includes(searchLower) ||
+        payment.course?.title?.toLowerCase().includes(searchLower) ||
+        payment.user?.name?.toLowerCase().includes(searchLower);
+
+      if (!matchesSearch) return false;
+    }
+
+    // Status filter
+    if (statusFilter !== "ALL" && payment.status !== statusFilter) {
+      return false;
+    }
+
+    // Payment method filter
+    if (
+      paymentMethodFilter !== "ALL" &&
+      payment.paymentMethod !== paymentMethodFilter
+    ) {
+      return false;
+    }
+
+    // Date range filter
+    if (dateRange.from || dateRange.to) {
+      const paymentDate = new Date(payment.createdAt);
+
+      if (dateRange.from && paymentDate < new Date(dateRange.from)) {
+        return false;
+      }
+
+      if (dateRange.to && paymentDate > new Date(dateRange.to + " 23:59:59")) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+
+  if (filteredPayments.length === 0) {
     return <EmptyState type={hasActiveFilters ? "no-results" : "no-data"} />;
   }
 
@@ -107,7 +149,7 @@ export const PaymentsTable = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {payments.map((payment, index) => (
+              {filteredPayments.map((payment, index) => (
                 <PaymentRow
                   key={payment.id}
                   payment={payment}

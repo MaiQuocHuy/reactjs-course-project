@@ -13,7 +13,7 @@ import { useGetRefundsQuery } from "@/services/refundsApi";
 
 export const RefundsTable = () => {
   const { searchQuery, statusFilter, dateRange, currentPage, itemsPerPage } =
-    useAppSelector((state) => state.refunds);
+    useAppSelector((state) => state.searchFilter.refunds);
 
   const { data, isLoading, error } = useGetRefundsQuery({
     page: currentPage,
@@ -60,9 +60,40 @@ export const RefundsTable = () => {
     );
   }
 
-  const refunds = data?.data?.content || [];
+  const allRefunds = data?.data?.content || [];
 
-  if (refunds.length === 0) {
+  // Client-side filtering (API doesn't support server-side search/filter)
+  const filteredRefunds = allRefunds.filter((refund) => {
+    // Search: match id, payment id, or reason
+    if (searchQuery) {
+      const searchLower = searchQuery.toLowerCase();
+      const matchesSearch =
+        refund.id.toLowerCase().includes(searchLower) ||
+        refund.payment?.id?.toLowerCase().includes(searchLower) ||
+        refund.reason?.toLowerCase().includes(searchLower);
+      if (!matchesSearch) return false;
+    }
+
+    // Status filter
+    if (statusFilter !== "ALL" && refund.status !== statusFilter) {
+      return false;
+    }
+
+    // Date range filter (use requestedAt)
+    if (dateRange.from || dateRange.to) {
+      const refundDate = new Date(refund.requestedAt);
+      if (dateRange.from && refundDate < new Date(dateRange.from)) {
+        return false;
+      }
+      if (dateRange.to && refundDate > new Date(dateRange.to + " 23:59:59")) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+
+  if (filteredRefunds.length === 0) {
     return (
       <RefundEmptyState type={hasActiveFilters ? "no-results" : "no-data"} />
     );
@@ -105,7 +136,7 @@ export const RefundsTable = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {refunds.map((refund, index) => (
+              {filteredRefunds.map((refund, index) => (
                 <RefundRow
                   key={refund.id}
                   refund={refund}

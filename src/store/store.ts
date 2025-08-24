@@ -3,6 +3,7 @@
 // import counterSlice from "@/features/counter/counterSlice";
 import paymentsSlice from "@/features/payments/paymentsSlice";
 import refundsSlice from "@/features/refunds/refundsSlice";
+import searchFilterSlice from "@/features/shared/searchFilterSlice";
 import { authApi } from "@/services/authApi";
 import { usersApi } from "@/services/usersApi";
 import { paymentsApi } from "@/services/paymentsApi";
@@ -25,6 +26,7 @@ export const store = configureStore({
     [categoriesApi.reducerPath]: categoriesApi.reducer,
     payments: paymentsSlice.reducer,
     refunds: refundsSlice.reducer,
+    searchFilter: searchFilterSlice.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()

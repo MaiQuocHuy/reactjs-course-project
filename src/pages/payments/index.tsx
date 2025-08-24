@@ -1,15 +1,29 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { SearchBar } from "@/components/payments/SearchBar";
-import { FilterBar } from "@/components/payments/FilterBar";
+import { SearchBar, FilterBar, Pagination } from "@/components/shared";
 import { PaymentsTable } from "@/components/payments/PaymentsTable";
-import { Pagination } from "@/components/payments/Pagination";
-import { useAppSelector } from "@/hooks/redux";
+import { useAppSelector, useAppDispatch } from "@/hooks/redux";
 import { useGetPaymentsQuery } from "@/services/paymentsApi";
+import {
+  setPaymentsSearchQuery,
+  setPaymentsStatusFilter,
+  setPaymentsPaymentMethodFilter,
+  setPaymentsDateRange,
+  setPaymentsCurrentPage,
+  setPaymentsItemsPerPage,
+  clearPaymentsFilters,
+} from "@/features/shared/searchFilterSlice";
 
 export const PaymentsPage = () => {
-  const { currentPage, itemsPerPage } = useAppSelector(
-    (state) => state.payments
-  );
+  const dispatch = useAppDispatch();
+  const {
+    searchQuery,
+    statusFilter,
+    paymentMethodFilter,
+    dateRange,
+    currentPage,
+    itemsPerPage,
+  } = useAppSelector((state) => state.searchFilter.payments);
+
   const { data } = useGetPaymentsQuery({
     page: currentPage,
     size: itemsPerPage,
@@ -35,9 +49,30 @@ export const PaymentsPage = () => {
       <Card className="py-0">
         <CardContent className="p-6">
           <div className="flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between">
-            <SearchBar />
+            <SearchBar
+              placeholder="Search by user name or course title..."
+              searchQuery={searchQuery}
+              onSearchChange={(query) =>
+                dispatch(setPaymentsSearchQuery(query))
+              }
+            />
             <div className="lg:flex-1 lg:max-w-none">
-              <FilterBar />
+              <FilterBar
+                statusFilter={statusFilter}
+                dateRange={dateRange}
+                searchQuery={searchQuery}
+                paymentMethodFilter={paymentMethodFilter}
+                onStatusFilterChange={(status) =>
+                  dispatch(setPaymentsStatusFilter(status))
+                }
+                onPaymentMethodFilterChange={(method) =>
+                  dispatch(setPaymentsPaymentMethodFilter(method))
+                }
+                onDateRangeChange={(range) =>
+                  dispatch(setPaymentsDateRange(range))
+                }
+                onClearFilters={() => dispatch(clearPaymentsFilters())}
+              />
             </div>
           </div>
         </CardContent>
@@ -51,7 +86,15 @@ export const PaymentsPage = () => {
         {totalElements > 0 && (
           <Card className="py-0">
             <CardContent className="px-4">
-              <Pagination />
+              <Pagination
+                currentPage={currentPage}
+                itemsPerPage={itemsPerPage}
+                pageInfo={data?.data?.page || null}
+                onPageChange={(page) => dispatch(setPaymentsCurrentPage(page))}
+                onItemsPerPageChange={(items) =>
+                  dispatch(setPaymentsItemsPerPage(items))
+                }
+              />
             </CardContent>
           </Card>
         )}
