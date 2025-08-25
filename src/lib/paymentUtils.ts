@@ -1,13 +1,13 @@
 export const getStatusVariant = (status: string) => {
   switch (status) {
     case "COMPLETED":
-      return "default" as const;
+      return "completed" as const;
     case "PENDING":
-      return "secondary" as const;
+      return "pending" as const;
     case "FAILED":
-      return "destructive" as const;
+      return "failed" as const;
     default:
-      return "secondary" as const;
+      return "refunded" as const;
   }
 };
 
