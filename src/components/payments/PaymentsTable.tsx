@@ -108,6 +108,9 @@ export const PaymentsTable = () => {
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/50 hover:bg-muted/70 transition-colors">
+                <TableHead className="font-semibold text-xs uppercase tracking-wide text-end">
+                  No.
+                </TableHead>
                 <TableHead className="font-semibold text-xs uppercase tracking-wide">
                   Payment ID
                 </TableHead>
@@ -126,8 +129,14 @@ export const PaymentsTable = () => {
                 <TableHead className="font-semibold text-xs uppercase tracking-wide">
                   Status
                 </TableHead>
-                <TableHead className="font-semibold text-xs uppercase tracking-wide w-[160px]">
-                  Dates
+                <TableHead className="font-semibold text-xs uppercase tracking-wide w-[80px]">
+                  Created
+                </TableHead>
+                <TableHead className="font-semibold text-xs uppercase tracking-wide w-[80px]">
+                  Paid
+                </TableHead>
+                <TableHead className="font-semibold text-xs uppercase tracking-wide w-[80px]">
+                  Paid out
                 </TableHead>
                 <TableHead className="font-semibold text-xs uppercase tracking-wide">
                   Actions
@@ -139,6 +148,7 @@ export const PaymentsTable = () => {
                 <PaymentRow
                   key={payment.id}
                   payment={payment}
+                  index={index}
                   style={{ animationDelay: `${index * 50}ms` }}
                 />
               ))}

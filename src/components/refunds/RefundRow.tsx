@@ -11,13 +11,17 @@ import {
 } from "@/lib/paymentUtils";
 
 interface RefundRowProps {
+  index: number;
   refund: RefundResponse;
   style?: React.CSSProperties;
 }
 
-export const RefundRow = ({ refund, style }: RefundRowProps) => {
+export const RefundRow = ({ refund, style, index }: RefundRowProps) => {
   return (
     <TableRow className="hover:bg-gray-200" style={style}>
+      {/* No. */}
+      <TableCell className="text-end">{index + 1}</TableCell>
+
       {/* Refund ID */}
       <TableCell>
         <Tooltip>
@@ -38,11 +42,6 @@ export const RefundRow = ({ refund, style }: RefundRowProps) => {
       {/* Refund Amount */}
       <TableCell className="text-end">
         <span className="">{formatCurrency(refund.amount)}</span>
-      </TableCell>
-
-      {/* Payment Amount */}
-      <TableCell className="text-end">
-        <span className="">{formatCurrency(refund.payment.amount)}</span>
       </TableCell>
 
       {/* Reason */}
@@ -74,18 +73,26 @@ export const RefundRow = ({ refund, style }: RefundRowProps) => {
         <Badge variant={getStatusVariant(refund.status)}>{refund.status}</Badge>
       </TableCell>
 
-      {/* Dates */}
+      {/* Requested Dates */}
       <TableCell className="w-[160px]">
         <div className="text-sm flex gap-2">
           <div>
             <p className="">Requested:</p>
             <p className="">{formatDate(refund.requestedAt)}</p>
           </div>
-          {refund.processedAt && (
+        </div>
+      </TableCell>
+
+      {/* Processed Dates */}
+      <TableCell className="w-[160px]">
+        <div className="text-sm flex gap-2">
+          {refund.processedAt ? (
             <div>
               <p className="">Processed:</p>
               <p className="">{formatDate(refund.processedAt)}</p>
             </div>
+          ) : (
+            <Badge variant="notPaid">Not processed</Badge>
           )}
         </div>
       </TableCell>
