@@ -11,19 +11,20 @@ import {
   ResponsiveContainer,
   Legend,
 } from 'recharts';
-import { useAppSelector } from '../../hooks/redux';
+import { useGetPaymentsQuery } from '@/services/paymentsApi';
 
 type Props = {};
 
 const RevenuesPage: React.FC<Props> = () => {
   const [tab, setTab] = useState<'monthly' | 'yearly'>('monthly');
-  const { payments } = useAppSelector((state) => state.payments);
+  const { data: payments, isLoading } = useGetPaymentsQuery({});
 
   // Extract available years from payment data
   const availableYears = useMemo(() => {
-    if (!payments || payments.length === 0) return [new Date().getFullYear()];
+    if (!payments || payments.data.content.length === 0)
+      return [new Date().getFullYear()];
 
-    const years = payments
+    const years = payments.data.content
       .map((payment) => {
         if (!payment.createdAt) return null;
         const date = new Date(String(payment.createdAt));
@@ -65,10 +66,10 @@ const RevenuesPage: React.FC<Props> = () => {
 
   // Calculate total revenue
   const totalRevenue = useMemo(() => {
-    if (!payments || payments.length === 0) return 0;
+    if (!payments || payments.data.content.length === 0) return 0;
 
     return (
-      payments.reduce((acc, payment) => {
+      payments.data.content.reduce((acc, payment) => {
         return acc + (payment.amount || 0);
       }, 0) * 0.3
     ); // Platform gets 30% of payment
@@ -76,7 +77,7 @@ const RevenuesPage: React.FC<Props> = () => {
 
   // Generate yearly revenue data
   const yearlyData = useMemo(() => {
-    if (!payments || payments.length === 0) {
+    if (!payments || payments.data.content.length === 0) {
       return {};
     }
 
@@ -88,7 +89,7 @@ const RevenuesPage: React.FC<Props> = () => {
     });
 
     // Fill in the actual revenue data
-    payments.forEach((payment) => {
+    payments.data.content.forEach((payment) => {
       if (!payment.createdAt || !payment.amount) return;
 
       const date = new Date(String(payment.createdAt));
@@ -358,7 +359,7 @@ const RevenuesPage: React.FC<Props> = () => {
                     : `Revenue distribution across months for ${selectedYear}`}
                 </div>
               </div>
-              {!payments || payments.length === 0 ? (
+              {!payments || payments.data.content.length === 0 ? (
                 <div className="flex items-center justify-center h-64 bg-muted/20 rounded-lg">
                   <p className="text-muted-foreground">
                     No payment data available
@@ -378,7 +379,7 @@ const RevenuesPage: React.FC<Props> = () => {
                   Compare total revenue between years {startYear} - {endYear}
                 </div>
               </div>
-              {!payments || payments.length === 0 ? (
+              {!payments || payments.data.content.length === 0 ? (
                 <div className="flex items-center justify-center h-64 bg-muted/20 rounded-lg">
                   <p className="text-muted-foreground">
                     No payment data available
@@ -393,7 +394,7 @@ const RevenuesPage: React.FC<Props> = () => {
       </Card>
 
       {/* Additional data insights */}
-      {payments && payments.length > 0 && (
+      {payments && payments.data.content.length > 0 && (
         <Card>
           <CardHeader>
             <div className="font-medium">Revenue Insights</div>

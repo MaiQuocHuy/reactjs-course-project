@@ -15,7 +15,6 @@ import {
 } from '../../components/ui/avatar';
 import {
   Users,
-  CreditCard,
   RefreshCw,
   Activity,
   Eye,
@@ -42,8 +41,9 @@ import {
 } from '../../components/ui/table';
 import PendingCourses from '@/components/courses/PendingCourses';
 import { useGetUsersQuery } from '@/services/usersApi';
-import { useAppSelector } from '@/hooks/redux';
 import { useGetAllCoursesQuery } from '@/services/courses-api';
+import { useGetPaymentsQuery } from '@/services/paymentsApi';
+import { useGetRefundsQuery } from '@/services/refundsApi';
 
 interface Stats {
   title: string;
@@ -64,13 +64,9 @@ export const DashboardPage: React.FC = () => {
   const { data: courses, isLoading: isLoadingCourses } = useGetAllCoursesQuery(
     {}
   );
-  const { payments, loading: isLoadingPayments } = useAppSelector(
-    (state) => state.payments
-  );
-  const { refunds, loading: isLoadingRefunds } = useAppSelector(
-    (state) => state.refunds
-  );
-
+  const { data: payments, isLoading: isLoadingPayments } = useGetPaymentsQuery({});
+  const { data: refunds, isLoading: isLoadingRefunds } = useGetRefundsQuery({});
+  
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -84,8 +80,8 @@ export const DashboardPage: React.FC = () => {
       };
     }
 
-    if (payments && payments.length > 0) {
-      const totalRevenue = payments.reduce(
+    if (payments && payments.data.content.length > 0) {
+      const totalRevenue = payments.data.content.reduce(
         (acc, payment) => acc + payment.amount,
         0
       );
@@ -104,10 +100,10 @@ export const DashboardPage: React.FC = () => {
       };
     }
 
-    if (refunds && refunds.length > 0) {
+    if (refunds && refunds.data.content.length > 0) {
       newStats[3] = {
         title: 'Pending Refunds',
-        value: refunds.length.toString(),
+        value: refunds.data.content.length.toString(),
         icon: RefreshCw,
       };
     }
@@ -119,28 +115,26 @@ export const DashboardPage: React.FC = () => {
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
       case 'ADMIN':
-        return 'destructive';
-      case 'INSTRUCTOR':
-        return 'default';
+        return 'destructive'; // Red color for admin (signifies special access)
+      case 'INSTRUCTOR': 
+        return 'refunded'; // Blue color for instructors (professional)
       case 'STUDENT':
-        return 'secondary';
+        return 'secondary'; // Purple/gray color for students (differentiates from other statuses)
       default:
-        return 'outline';
+        return 'outline'; // Default fallback
     }
   };
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
       case 'ACTIVE':
-      case 'COMPLETED':
-        return 'default';
+        return 'completed'; // Green color for active status
+      case 'INACTIVE':
+        return 'pending'; // Yellow color for inactive status
       case 'BANNED':
-      case 'FAILED':
-        return 'destructive';
-      case 'PENDING':
-        return 'secondary';
+        return 'destructive'; // Red color for banned status
       default:
-        return 'outline';
+        return 'outline'; // Default fallback
     }
   };
 
@@ -219,7 +213,7 @@ export const DashboardPage: React.FC = () => {
             <div>
               <CardTitle>Overview of recent revenue</CardTitle>
             </div>
-            {payments && payments.length > 0 && (
+            {payments && payments.data.content.length > 0 && (
               <div className="text-right">
                 <div className="text-lg font-bold">
                   {(() => {
@@ -229,7 +223,7 @@ export const DashboardPage: React.FC = () => {
                       currentMonth === 0 ? 11 : currentMonth - 1;
 
                     // Get current month revenue
-                    const currentMonthRevenue = payments
+                    const currentMonthRevenue = payments.data.content
                       .filter((payment) => {
                         if (!payment.createdAt) return false;
                         const paymentDate = payment.createdAt
@@ -245,7 +239,7 @@ export const DashboardPage: React.FC = () => {
                       .reduce((acc, payment) => acc + payment.amount, 0);
 
                     // Get last month revenue
-                    const lastMonthRevenue = payments
+                    const lastMonthRevenue = payments.data.content
                       .filter((payment) => {
                         const paymentDate = payment.createdAt
                           ? new Date(String(payment.createdAt))
@@ -288,7 +282,7 @@ export const DashboardPage: React.FC = () => {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={(() => {
-                    if (!payments || payments.length === 0) {
+                    if (!payments || payments.data.content.length === 0) {
                       return [{ name: 'No Data', value: 0 }];
                     }
 
@@ -327,7 +321,7 @@ export const DashboardPage: React.FC = () => {
 
                     // Calculate revenue for each month
                     return last3Months.map((month) => {
-                      const monthlyRevenue = payments
+                      const monthlyRevenue = payments.data.content
                         .filter((payment) => {
                           const paymentDate = payment.createdAt
                             ? new Date(String(payment.createdAt))
@@ -395,7 +389,7 @@ export const DashboardPage: React.FC = () => {
                 {users.data.users
                   .slice(
                     0,
-                    users.data.users.length > 5 ? 5 : users.data.users.length
+                    users.data.users.length > 3 ? 3 : users.data.users.length
                   )
                   .map((user) => (
                     <div
@@ -442,7 +436,7 @@ export const DashboardPage: React.FC = () => {
           </Card>
         )}
         {/* Recent Payments */}
-        {payments && payments.length > 0 && (
+        {payments && payments.data.content.length > 0 && (
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -472,8 +466,13 @@ export const DashboardPage: React.FC = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {payments
-                    .slice(0, payments.length > 5 ? 5 : payments.length)
+                  {payments.data.content
+                    .slice(
+                      0,
+                      payments.data.content.length > 3
+                        ? 3
+                        : payments.data.content.length
+                    )
                     .map((payment) => (
                       <TableRow key={payment.id}>
                         <TableCell>

@@ -1,6 +1,3 @@
-import { Card, CardContent } from '@/components/ui/card';
-import { Play } from 'lucide-react';
-
 type Props = {
   videoUrl: string;
 };
@@ -34,7 +31,7 @@ const VideoContent = ({ videoUrl }: Props) => {
               controls
               style={{
                 width: '100%',
-                height: '100%',
+                maxHeight: '55vh',
                 objectFit: 'contain',
                 background: '#000',
                 borderRadius: '12px',

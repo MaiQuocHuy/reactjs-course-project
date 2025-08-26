@@ -57,7 +57,7 @@ export const coursesApi = createApi({
     }),
 
     // Get course detail
-    getCourseById: builder.query<ApiResponse<Section[]>, string>({
+    getCourseById: builder.query<Section[], string>({
       query: (id) => ({
         url: `/admin/courses/${id}`,
         method: 'GET',
