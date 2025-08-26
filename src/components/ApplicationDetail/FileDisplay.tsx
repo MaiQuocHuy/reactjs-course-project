@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Eye, Download, FileText, X, ExternalLink, Github, Linkedin } from "lucide-react";
+import { Eye, Download, FileText, X, ExternalLink, Github, Linkedin, Globe } from "lucide-react";
 
-// Component FileDisplay đã được cải thiện
 export const FileDisplay = ({
   file,
   label,
@@ -26,10 +25,51 @@ export const FileDisplay = ({
   const [docxError, setDocxError] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // Helper function to get display name for portfolio
+  const getDisplayNameForPortfolio = (url: string) => {
+    try {
+      const urlObj = new URL(url);
+      const domain = urlObj.hostname.replace(/^www\./, ""); // Remove www if present
+
+      // Check for specific platforms
+      if (domain.includes("github.com") || domain.includes("github.io")) {
+        return "GitHub Repository/Portfolio";
+      }
+      if (domain.includes("behance.net")) {
+        return "Behance Portfolio";
+      }
+      if (domain.includes("dribbble.com")) {
+        return "Dribbble Portfolio";
+      }
+      if (domain.includes("linkedin.com")) {
+        return "LinkedIn Profile";
+      }
+      if (domain.includes("notion.so")) {
+        return "Notion Portfolio";
+      }
+
+      // For other domains, return the domain name
+      return domain;
+    } catch (e) {
+      // If URL parsing fails, fallback to simple extraction
+      return url.split("/")[2] || "Portfolio Website";
+    }
+  };
+
   // Enhanced file type detection for Vietnamese requirements
   const getFileInfo = () => {
     if (typeof file === "string") {
       const url = file;
+
+      // PRIORITY: If label is "Portfolio", always treat as external link
+      if (label.toLowerCase() === "portfolio") {
+        return {
+          name: getDisplayNameForPortfolio(url),
+          type: "external-portfolio",
+          url: url,
+        };
+      }
+
       let fileName = "Unknown File";
       let fileExtension = "";
 
@@ -218,21 +258,46 @@ export const FileDisplay = ({
 
   // Special handling for external links
   if (isExternal) {
+    const getExternalIcon = () => {
+      if (fileInfo.type === "external-github") return <Github className="h-5 w-5 text-blue-600" />;
+      if (fileInfo.type === "external-linkedin")
+        return <Linkedin className="h-5 w-5 text-blue-600" />;
+      if (fileInfo.type === "external-portfolio")
+        return <Globe className="h-5 w-5 text-purple-600" />;
+      return <ExternalLink className="h-5 w-5 text-blue-600" />;
+    };
+
+    const getBackgroundColor = () => {
+      if (fileInfo.type === "external-portfolio") return "bg-purple-50 border-purple-200";
+      return "bg-blue-50 border-blue-200";
+    };
+
+    const getTextColor = () => {
+      if (fileInfo.type === "external-portfolio") return "text-purple-600";
+      return "text-blue-600";
+    };
+
+    const getButtonColor = () => {
+      if (fileInfo.type === "external-portfolio")
+        return "border-purple-300 text-purple-700 hover:bg-purple-100";
+      return "border-blue-300 text-blue-700 hover:bg-blue-100";
+    };
+
     return (
-      <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+      <div
+        className={`flex items-center justify-between p-3 rounded-lg border ${getBackgroundColor()}`}
+      >
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          <div className="w-10 h-10 bg-blue-100 rounded flex items-center justify-center">
-            {fileInfo.type === "external-github" && <Github className="h-5 w-5 text-blue-600" />}
-            {fileInfo.type === "external-linkedin" && (
-              <Linkedin className="h-5 w-5 text-blue-600" />
-            )}
-            {!fileInfo.type.includes("github") && !fileInfo.type.includes("linkedin") && (
-              <ExternalLink className="h-5 w-5 text-blue-600" />
-            )}
+          <div
+            className={`w-10 h-10 ${
+              fileInfo.type === "external-portfolio" ? "bg-purple-100" : "bg-blue-100"
+            } rounded flex items-center justify-center`}
+          >
+            {getExternalIcon()}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-gray-900 truncate">{fileInfo.name}</p>
-            <p className="text-xs text-blue-600">{label}</p>
+            <p className={`text-xs ${getTextColor()}`}>{label}</p>
           </div>
         </div>
         <div className="flex items-center gap-2 ml-3">
@@ -240,7 +305,7 @@ export const FileDisplay = ({
             onClick={() => window.open(fileInfo.url, "_blank")}
             variant="outline"
             size="sm"
-            className="hidden sm:flex items-center gap-2 border-blue-300 text-blue-700 hover:bg-blue-100"
+            className={`hidden sm:flex items-center gap-2 ${getButtonColor()}`}
           >
             <ExternalLink className="h-4 w-4" />
             Open Link
@@ -249,7 +314,7 @@ export const FileDisplay = ({
             onClick={() => window.open(fileInfo.url, "_blank")}
             variant="outline"
             size="sm"
-            className="sm:hidden p-2 border-blue-300 text-blue-700 hover:bg-blue-100"
+            className={`sm:hidden p-2 ${getButtonColor()}`}
           >
             <ExternalLink className="h-4 w-4" />
           </Button>
@@ -328,7 +393,11 @@ export const FileDisplay = ({
       </div>
 
       <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-        <DialogContent className="max-w-[95vw] w-full sm:max-w-3xl md:max-w-5xl lg:max-w-6xl xl:max-w-7xl max-h-[95vh] overflow-auto p-2 sm:p-4 md:p-6">
+        <DialogContent
+          showCloseButton={false}
+          aria-describedby={undefined}
+          className="max-w-[95vw] w-full sm:max-w-3xl md:max-w-5xl lg:max-w-6xl xl:max-w-7xl max-h-[95vh] overflow-auto p-2 sm:p-4 md:p-6"
+        >
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between">
               <span className="truncate pr-4 text-sm sm:text-base md:text-lg">{fileInfo.name}</span>
