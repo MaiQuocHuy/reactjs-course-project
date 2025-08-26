@@ -90,6 +90,9 @@ export const RefundsTable = () => {
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/50 hover:bg-muted/70 transition-colors">
+                <TableHead className="font-semibold text-xs uppercase tracking-wide text-end">
+                  No.
+                </TableHead>
                 <TableHead className="font-semibold text-xs uppercase tracking-wide">
                   Refund ID
                 </TableHead>
@@ -97,10 +100,7 @@ export const RefundsTable = () => {
                   User
                 </TableHead>
                 <TableHead className="font-semibold text-xs uppercase tracking-wide text-end">
-                  Refund
-                </TableHead>
-                <TableHead className="font-semibold text-xs uppercase tracking-wide text-end">
-                  Payment
+                  Amount
                 </TableHead>
                 <TableHead className="font-semibold text-xs uppercase tracking-wide">
                   Reason
@@ -112,7 +112,10 @@ export const RefundsTable = () => {
                   Status
                 </TableHead>
                 <TableHead className="font-semibold text-xs uppercase tracking-wide">
-                  Dates
+                  Requested
+                </TableHead>
+                <TableHead className="font-semibold text-xs uppercase tracking-wide">
+                  Processed
                 </TableHead>
                 <TableHead className="font-semibold text-xs uppercase tracking-wide ">
                   Actions
@@ -124,6 +127,7 @@ export const RefundsTable = () => {
                 <RefundRow
                   key={refund.id}
                   refund={refund}
+                  index={index}
                   style={{ animationDelay: `${index * 50}ms` }}
                 />
               ))}

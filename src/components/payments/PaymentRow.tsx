@@ -11,18 +11,22 @@ import {
 } from "@/lib/paymentUtils";
 
 interface PaymentRowProps {
+  index: number;
   payment: PaymentResponse;
   style?: React.CSSProperties;
 }
 
-export const PaymentRow = ({ payment, style }: PaymentRowProps) => {
+export const PaymentRow = ({ payment, style, index }: PaymentRowProps) => {
   return (
-    <TableRow className="hover:bg-muted/50" style={style}>
+    <TableRow className="hover:bg-gray-200" style={style}>
+      {/* No. */}
+      <TableCell className="text-end">{index + 1}</TableCell>
+
       {/* Payment ID */}
       <TableCell>
         <Tooltip>
           <TooltipTrigger asChild>
-            <div className="font-mono text-xs bg-muted px-2 py-1 rounded inline-block">
+            <div className="font-mono text-xs bg-gray-200 px-2 py-1 rounded inline-block">
               {formatPaymentId(payment.id)}
             </div>
           </TooltipTrigger>
@@ -69,28 +73,36 @@ export const PaymentRow = ({ payment, style }: PaymentRowProps) => {
         </Badge>
       </TableCell>
 
-      {/* Date */}
+      {/* Created Date */}
       <TableCell>
-        <div className="text-sm space-y-1 flex gap-2">
-          <div>
-            <div>
-              <span className="">Created:</span>
-              <p className="">{formatDate(payment.createdAt)}</p>
-            </div>
-          </div>
-          {payment.paidAt && (
-            <div>
-              <span className="">Paid:</span>
-              <p className="">{formatDate(payment.paidAt)}</p>
-            </div>
-          )}
-          {payment.paidOutAt && (
-            <div>
-              <span className="">Paid Out:</span>
-              <p className="">{formatDate(payment.paidOutAt)}</p>
-            </div>
-          )}
+        <div className="text-sm flex flex-col ">
+          <span className="">Created:</span>
+          <p className="">{formatDate(payment.createdAt)}</p>
         </div>
+      </TableCell>
+
+      {/* Paid Date */}
+      <TableCell>
+        {payment.paidAt ? (
+          <div className="text-sm flex flex-col ">
+            <span className="">Paid:</span>
+            <p className="">{formatDate(payment.paidAt)}</p>
+          </div>
+        ) : (
+          <Badge variant="secondary">Not Paid</Badge>
+        )}
+      </TableCell>
+
+      {/* Paid out Date */}
+      <TableCell>
+        {payment.paidOutAt ? (
+          <div className="text-sm flex flex-col ">
+            <span className="">Paid Out:</span>
+            <p className="">{formatDate(payment.paidOutAt)}</p>
+          </div>
+        ) : (
+          <Badge variant="notPaid">Not Paid</Badge>
+        )}
       </TableCell>
 
       {/* Actions */}
