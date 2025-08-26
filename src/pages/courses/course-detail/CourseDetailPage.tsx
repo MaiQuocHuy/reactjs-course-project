@@ -19,6 +19,8 @@ const CourseDetailPage = () => {
     error,
     refetch,
   } = id ? useGetCourseByIdQuery(id) : { data: undefined };
+  console.log(courseData);
+  
 
   const handleRetry = useCallback(() => {
     if (refetch) {
@@ -79,7 +81,7 @@ const CourseDetailPage = () => {
             totalDuration={mockCourseDetail.totalDuration}
           /> */}
 
-            <CourseContent sections={courseData.data} />
+            <CourseContent sections={courseData} />
           </CardContent>
         </Card>
       )}

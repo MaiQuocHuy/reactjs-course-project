@@ -64,6 +64,14 @@ function App() {
               </AdminLayout>
             }
           />
+          <Route
+            path="/admin/pending-courses"
+            element={
+              <AdminLayout>
+                <CoursesPage />
+              </AdminLayout>
+            }
+          />
           {/* Course Detail */}
           <Route
             path="/admin/courses/:id"
