@@ -22,6 +22,8 @@ import CourseReviewDetailPage from "./pages/courses/course-detail/CourseReviewDe
 import { Toaster } from "@/components/ui/sonner";
 import { RefundDetailPage } from "./pages/refunds/RefundDetailPage";
 import { CategoriesListPage } from "./pages/admin/categories/CategoriesListPage";
+import { RolesListPage } from "./pages/admin/roles/RolesListPage";
+import { RolePermissionsPage } from "./pages/admin/roles/RolePermissionsPage";
 
 function App() {
   return (
@@ -106,7 +108,7 @@ function App() {
             }
           />
 
-          {/* Payments */}
+          {/* Categories */}
           <Route
             path="/admin/categories"
             element={
@@ -116,6 +118,27 @@ function App() {
             }
           />
 
+          {/* Roles */}
+          <Route
+            path="/admin/roles"
+            element={
+              <AdminLayout>
+                <RolesListPage />
+              </AdminLayout>
+            }
+          />
+
+          {/* Role Permissions */}
+          <Route
+            path="/admin/roles/:roleId/permissions"
+            element={
+              <AdminLayout>
+                <RolePermissionsPage />
+              </AdminLayout>
+            }
+          />
+
+          {/* Payments */}
           <Route
             path="/admin/payments"
             element={

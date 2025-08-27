@@ -75,6 +75,25 @@ export const UsersListPage: React.FC = () => {
     sort: "name,asc",
   });
 
+  // API hooks for statistics - get first page with size 1 to get total counts
+  const { data: activeUsersResponse } = useGetUsersQuery({
+    isActive: true,
+    page: 0,
+    size: 1,
+  });
+
+  const { data: instructorsResponse } = useGetUsersQuery({
+    role: "INSTRUCTOR",
+    page: 0,
+    size: 1,
+  });
+
+  const { data: bannedUsersResponse } = useGetUsersQuery({
+    isActive: false,
+    page: 0,
+    size: 1,
+  });
+
   const [updateUserStatus] = useUpdateUserStatusMutation();
   const [updateUserRole] = useUpdateUserRoleMutation();
   const [updateUser] = useUpdateUserMutation();
@@ -94,6 +113,11 @@ export const UsersListPage: React.FC = () => {
   const totalElements = usersResponse?.data?.totalElements || 0;
   const hasNext = usersResponse?.data?.hasNext || false;
   const hasPrevious = usersResponse?.data?.hasPrevious || false;
+
+  // Extract statistics from separate API calls
+  const activeUsersCount = activeUsersResponse?.data?.totalElements || 0;
+  const instructorsCount = instructorsResponse?.data?.totalElements || 0;
+  const bannedUsersCount = bannedUsersResponse?.data?.totalElements || 0;
 
   // Map API user data to component format (convert isActive to status)
   const mappedUsers: User[] = users.map((user) => ({
@@ -388,9 +412,7 @@ export const UsersListPage: React.FC = () => {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {mappedUsers.filter((u) => u.status === "ACTIVE").length}
-            </div>
+            <div className="text-2xl font-bold">{activeUsersCount}</div>
           </CardContent>
         </Card>
         <Card>
@@ -399,9 +421,7 @@ export const UsersListPage: React.FC = () => {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {mappedUsers.filter((u) => u.role === "INSTRUCTOR").length}
-            </div>
+            <div className="text-2xl font-bold">{instructorsCount}</div>
           </CardContent>
         </Card>
         <Card>
@@ -410,9 +430,7 @@ export const UsersListPage: React.FC = () => {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {mappedUsers.filter((u) => u.status === "BANNED").length}
-            </div>
+            <div className="text-2xl font-bold">{bannedUsersCount}</div>
           </CardContent>
         </Card>
       </div>
