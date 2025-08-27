@@ -3,7 +3,6 @@ import type {
   RefundDetailApiResponse,
   RefundsApiResponse,
   RefundStatisticsResponse,
-  UpdateRefundStatusResponse,
 } from "@/types/refunds";
 import { createApi } from "@reduxjs/toolkit/query/react";
 
@@ -30,17 +29,6 @@ export const refundsApi = createApi({
       query: () => `/admin/refund/statistics`,
       providesTags: ["Refund"],
     }),
-    updateRefundStatus: builder.mutation<
-      UpdateRefundStatusResponse,
-      { id: string; status: "COMPLETED" | "FAILED"; rejectedReason?: string }
-    >({
-      query: ({ id, status, rejectedReason }) => ({
-        url: `/admin/refund/${id}/status`,
-        method: "PATCH",
-        body: status === "COMPLETED" ? { status } : { status, rejectedReason },
-      }),
-      invalidatesTags: ["Refund"],
-    }),
   }),
 });
 
@@ -48,5 +36,4 @@ export const {
   useGetRefundsQuery,
   useGetRefundByIdQuery,
   useGetRefundStatisticsQuery,
-  useUpdateRefundStatusMutation,
 } = refundsApi;

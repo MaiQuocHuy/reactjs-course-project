@@ -55,23 +55,6 @@ export interface RefundDetailApiResponse {
   timestamp: string;
 }
 
-export interface UpdateRefundStatusRequest {
-  status: "COMPLETED" | "FAILED";
-  reason?: string;
-}
-
-export interface UpdateRefundStatusResponse {
-  statusCode: number;
-  message: string;
-  data: {
-    id: string;
-    paymentId: string;
-    amount: number;
-    status: string;
-  };
-  timestamp: string;
-}
-
 export interface RefundStatistics {
   total: number;
   completed: number;

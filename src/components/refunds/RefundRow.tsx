@@ -1,6 +1,5 @@
 import { Badge } from "@/components/ui/badge";
 import { TableCell, TableRow } from "@/components/ui/table";
-import { RefundActions } from "./RefundActions";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import type { RefundResponse } from "@/types/refunds";
 import {
@@ -9,6 +8,9 @@ import {
   formatPaymentId,
   getStatusVariant,
 } from "@/lib/paymentUtils";
+import { useNavigate } from "react-router-dom";
+import { Button } from "../ui/button";
+import { Eye } from "lucide-react";
 
 interface RefundRowProps {
   index: number;
@@ -17,6 +19,11 @@ interface RefundRowProps {
 }
 
 export const RefundRow = ({ refund, style, index }: RefundRowProps) => {
+  const navigate = useNavigate();
+
+  const handleViewDetails = () => {
+    navigate(`/admin/refunds/${refund.id}`);
+  };
   return (
     <TableRow className="hover:bg-gray-200" style={style}>
       {/* No. */}
@@ -100,7 +107,15 @@ export const RefundRow = ({ refund, style, index }: RefundRowProps) => {
       {/* Actions */}
       <TableCell>
         <div className="flex justify-end">
-          <RefundActions refund={refund} />
+          <Button
+            onClick={handleViewDetails}
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <Eye className="h-4 w-4" />
+            View
+          </Button>
         </div>
       </TableCell>
     </TableRow>
