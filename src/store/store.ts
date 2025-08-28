@@ -10,6 +10,7 @@ import { paymentsApi } from "@/services/paymentsApi";
 import { refundsApi } from "@/services/refundsApi";
 import { coursesApi } from "@/services/courses-api";
 import { categoriesApi } from "@/services/categoriesApi";
+import { rolesApi } from "@/services/rolesApi";
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "./authSlice";
 import { applicationsApi } from "@/services/applicationsApi";
@@ -22,8 +23,9 @@ export const store = configureStore({
     [refundsApi.reducerPath]: refundsApi.reducer,
     [applicationsApi.reducerPath]: applicationsApi.reducer,
     [coursesApi.reducerPath]: coursesApi.reducer,
-    // counter: counterSlice.reducer,
     [categoriesApi.reducerPath]: categoriesApi.reducer,
+    [rolesApi.reducerPath]: rolesApi.reducer,
+    // counter: counterSlice.reducer,
     payments: paymentsSlice.reducer,
     refunds: refundsSlice.reducer,
     searchFilter: searchFilterSlice.reducer,
@@ -36,7 +38,8 @@ export const store = configureStore({
       .concat(refundsApi.middleware)
       .concat(applicationsApi.middleware)
       .concat(coursesApi.middleware)
-      .concat(categoriesApi.middleware),
+      .concat(categoriesApi.middleware)
+      .concat(rolesApi.middleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;
