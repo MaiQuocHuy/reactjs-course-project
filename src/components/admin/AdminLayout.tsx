@@ -27,6 +27,7 @@ import {
   BookOpen,
   FolderOpen,
   FileUser,
+  Shield,
 } from "lucide-react";
 import { Input } from "../ui/input";
 import { useLogoutMutation } from "@/services/authApi";
@@ -84,6 +85,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       icon: FolderOpen,
       badge: categoriesCount,
     },
+    { name: "Roles", href: "/admin/roles", icon: Shield },
     { name: "Courses", href: "/admin/courses", icon: BookOpen, badge: 3 },
     { name: "Revenues", href: "/admin/revenues", icon: HandCoins, badge: 1 },
     {

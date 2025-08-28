@@ -22,6 +22,7 @@ import CourseReviewDetailPage from "./pages/courses/course-detail/CourseReviewDe
 import { Toaster } from "@/components/ui/sonner";
 import { RefundDetailPage } from "./pages/refunds/RefundDetailPage";
 import { CategoriesListPage } from "./pages/admin/categories/CategoriesListPage";
+import { RolesListPage } from "./pages/admin/roles";
 
 function App() {
   return (
@@ -112,6 +113,16 @@ function App() {
             element={
               <AdminLayout>
                 <CategoriesListPage />
+              </AdminLayout>
+            }
+          />
+
+          {/* Roles */}
+          <Route
+            path="/admin/roles"
+            element={
+              <AdminLayout>
+                <RolesListPage />
               </AdminLayout>
             }
           />
