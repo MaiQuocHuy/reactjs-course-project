@@ -101,9 +101,10 @@ export const ViewRoleDialog: React.FC<ViewRoleDialogProps> = ({
                       >
                         <div className="flex-1">
                           <h4 className="text-sm font-medium">
-                            {rolePermission.permission.name}
+                            {rolePermission.permission?.name ||
+                              "Unknown Permission"}
                           </h4>
-                          {rolePermission.permission.description && (
+                          {rolePermission.permission?.description && (
                             <p className="text-xs text-muted-foreground mt-1">
                               {rolePermission.permission.description}
                             </p>
