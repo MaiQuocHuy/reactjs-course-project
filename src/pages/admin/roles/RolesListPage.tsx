@@ -181,7 +181,7 @@ export const RolesListPage: React.FC = () => {
                 ? Math.round(
                     roles.reduce(
                       (acc: number, role: RoleWithPermissions) =>
-                        acc + (role.permissions?.length || 0),
+                        acc + (role.totalPermission || 0),
                       0
                     ) / roles.length
                   )
@@ -200,8 +200,7 @@ export const RolesListPage: React.FC = () => {
               {roles.length > 0
                 ? Math.max(
                     ...roles.map(
-                      (role: RoleWithPermissions) =>
-                        role.permissions?.length || 0
+                      (role: RoleWithPermissions) => role.totalPermission || 0
                     )
                   )
                 : 0}
@@ -298,7 +297,7 @@ export const RolesListPage: React.FC = () => {
                         </TableCell>
                         <TableCell>
                           <Badge variant="secondary">
-                            {role.permissions?.length || 0}
+                            {role.totalPermission || 0}
                           </Badge>
                         </TableCell>
                         <TableCell>

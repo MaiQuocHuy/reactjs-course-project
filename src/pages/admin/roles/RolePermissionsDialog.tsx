@@ -64,8 +64,11 @@ export const RolePermissionsDialog: React.FC<RolePermissionsDialogProps> = ({
     return name.replace(/([A-Z])/g, " $1").trim();
   };
 
+  // Count only assigned permissions
   const totalPermissions = Object.values(resources).reduce(
-    (total, permissions) => total + (permissions?.length || 0),
+    (total, permissions) =>
+      total +
+      (permissions?.filter((p: any) => p?.isAssigned === true)?.length || 0),
     0
   );
 
@@ -118,7 +121,7 @@ export const RolePermissionsDialog: React.FC<RolePermissionsDialogProps> = ({
                 </div>
               ))}
             </div>
-          ) : Object.keys(resources).length === 0 ? (
+          ) : totalPermissions === 0 ? (
             <div className="text-center py-8">
               <Shield className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-500">
@@ -127,51 +130,70 @@ export const RolePermissionsDialog: React.FC<RolePermissionsDialogProps> = ({
             </div>
           ) : (
             <div className="space-y-6">
-              {Object.entries(resources).map(([resourceName, permissions]) => (
-                <div key={resourceName} className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <ShieldCheck className="h-5 w-5 text-blue-600" />
-                    <h3 className="text-lg font-semibold capitalize">
-                      {resourceName}
-                    </h3>
-                    <Badge variant="secondary" className="ml-auto">
-                      {permissions?.length || 0} permissions
-                    </Badge>
-                  </div>
+              {Object.entries(resources)
+                .filter(([_, permissions]) =>
+                  permissions?.some((p: any) => p?.isAssigned === true)
+                )
+                .map(([resourceName, permissions]) => {
+                  const assignedPermissions =
+                    permissions?.filter((p: any) => p?.isAssigned === true) ||
+                    [];
 
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                    {permissions?.map((permission: any, index: number) => {
-                      console.log("Permission object:", permission);
-
-                      // Handle different permission object structures
-                      const permissionName =
-                        permission?.name ||
-                        permission?.permissionKey ||
-                        permission?.action ||
-                        `Unknown Permission ${index}`;
-                      const action = permissionName.includes(":")
-                        ? permissionName.split(":")[1]
-                        : permissionName;
-
-                      return (
-                        <Badge
-                          key={
-                            permission?.id || permission?.permissionKey || index
-                          }
-                          variant="outline"
-                          className={`${getActionColor(
-                            action
-                          )} justify-center text-center cursor-default transition-colors`}
-                        >
-                          <CheckCircle className="h-3 w-3 mr-1" />
-                          {formatPermissionName(action)}
+                  return (
+                    <div key={resourceName} className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <ShieldCheck className="h-5 w-5 text-blue-600" />
+                        <h3 className="text-lg font-semibold capitalize">
+                          {resourceName}
+                        </h3>
+                        <Badge variant="secondary" className="ml-auto">
+                          {assignedPermissions.length} assigned
                         </Badge>
-                      );
-                    })}
-                  </div>
-                  <Separator />
-                </div>
-              ))}
+                      </div>
+
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                        {permissions
+                          ?.filter(
+                            (permission: any) => permission?.isAssigned === true
+                          )
+                          ?.map((permission: any, index: number) => {
+                            console.log(
+                              "Assigned Permission object:",
+                              permission
+                            );
+
+                            // Handle different permission object structures
+                            const permissionName =
+                              permission?.name ||
+                              permission?.permissionKey ||
+                              permission?.action ||
+                              `Unknown Permission ${index}`;
+                            const action = permissionName.includes(":")
+                              ? permissionName.split(":")[1]
+                              : permissionName;
+
+                            return (
+                              <Badge
+                                key={
+                                  permission?.id ||
+                                  permission?.permissionKey ||
+                                  index
+                                }
+                                variant="outline"
+                                className={`${getActionColor(
+                                  action
+                                )} justify-center text-center cursor-default transition-colors`}
+                              >
+                                <CheckCircle className="h-3 w-3 mr-1" />
+                                {formatPermissionName(action)}
+                              </Badge>
+                            );
+                          })}
+                      </div>
+                      <Separator />
+                    </div>
+                  );
+                })}
 
               {/* Summary */}
               <div className="bg-gray-50 p-4 rounded-lg">

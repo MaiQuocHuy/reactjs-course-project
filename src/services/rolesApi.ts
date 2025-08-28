@@ -42,6 +42,7 @@ export interface RoleWithPermissions {
   id: string;
   name: string;
   permissions: RolePermissionDetail[];
+  totalPermission?: number;
   totalUsers?: number;
 }
 
