@@ -20,10 +20,29 @@ export interface RolePermissionDetail {
   filterType?: string;
 }
 
+// Interface for permissions response from /api/permissions/{roleId}
+export interface PermissionsByResource {
+  [resourceName: string]: Permission[];
+}
+
+export interface RolePermissionsData {
+  roleId: string;
+  roleName: string;
+  resources: PermissionsByResource;
+}
+
+export interface RolePermissionsResponse {
+  statusCode: number;
+  message: string;
+  data: RolePermissionsData;
+  timestamp: string;
+}
+
 export interface RoleWithPermissions {
   id: string;
   name: string;
   permissions: RolePermissionDetail[];
+  totalPermission?: number;
   totalUsers?: number;
 }
 
@@ -159,12 +178,12 @@ export const rolesApi = createApi({
       providesTags: ['Permission'],
     }),
 
-    // Get role permissions
+    // Get role permissions using correct endpoint
     getRolePermissions: builder.query<
-      ApiResponse<RolePermissionDetail[]>,
+      RolePermissionsResponse,
       string
     >({
-      query: (roleId: string) => `/admin/roles/${roleId}/permissions`,
+      query: (roleId: string) => `/permissions/${roleId}`,
       providesTags: (_result, _error, roleId) => [{ type: 'Role', id: roleId }],
     }),
   }),

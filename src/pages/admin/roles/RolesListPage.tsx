@@ -8,7 +8,15 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, MoreHorizontal, Eye, Edit, Trash2 } from "lucide-react";
+import {
+  Plus,
+  Search,
+  MoreHorizontal,
+  Eye,
+  Edit,
+  Trash2,
+  Shield,
+} from "lucide-react";
 import {
   Table,
   TableBody,
@@ -30,6 +38,7 @@ import { CreateRoleDialog } from "./CreateRoleDialog";
 import { EditRoleDialog } from "./EditRoleDialog";
 import { ViewRoleDialog } from "./ViewRoleDialog";
 import { DeleteRoleDialog } from "./DeleteRoleDialog";
+import { RolePermissionsDialog } from "./RolePermissionsDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 
@@ -43,6 +52,7 @@ export const RolesListPage: React.FC = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [permissionsDialogOpen, setPermissionsDialogOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState<RoleWithPermissions | null>(
     null
   );
@@ -74,6 +84,11 @@ export const RolesListPage: React.FC = () => {
   const handleView = (role: RoleWithPermissions) => {
     setSelectedRole(role);
     setViewDialogOpen(true);
+  };
+
+  const handleViewPermissions = (role: RoleWithPermissions) => {
+    setSelectedRole(role);
+    setPermissionsDialogOpen(true);
   };
 
   const handleDelete = (role: RoleWithPermissions) => {
@@ -166,7 +181,7 @@ export const RolesListPage: React.FC = () => {
                 ? Math.round(
                     roles.reduce(
                       (acc: number, role: RoleWithPermissions) =>
-                        acc + (role.permissions?.length || 0),
+                        acc + (role.totalPermission || 0),
                       0
                     ) / roles.length
                   )
@@ -185,8 +200,7 @@ export const RolesListPage: React.FC = () => {
               {roles.length > 0
                 ? Math.max(
                     ...roles.map(
-                      (role: RoleWithPermissions) =>
-                        role.permissions?.length || 0
+                      (role: RoleWithPermissions) => role.totalPermission || 0
                     )
                   )
                 : 0}
@@ -263,7 +277,11 @@ export const RolesListPage: React.FC = () => {
                       role.name.toLowerCase().includes(searchTerm.toLowerCase())
                     )
                     .map((role: RoleWithPermissions) => (
-                      <TableRow key={role.id}>
+                      <TableRow
+                        key={role.id}
+                        className="cursor-pointer hover:bg-muted/50"
+                        onClick={() => handleViewPermissions(role)}
+                      >
                         <TableCell className="font-medium">
                           <div className="flex items-center gap-2">
                             {role.name}
@@ -279,7 +297,7 @@ export const RolesListPage: React.FC = () => {
                         </TableCell>
                         <TableCell>
                           <Badge variant="secondary">
-                            {role.permissions?.length || 0}
+                            {role.totalPermission || 0}
                           </Badge>
                         </TableCell>
                         <TableCell>
@@ -293,7 +311,11 @@ export const RolesListPage: React.FC = () => {
                         <TableCell className="text-right">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" className="h-8 w-8 p-0">
+                              <Button
+                                variant="ghost"
+                                className="h-8 w-8 p-0"
+                                onClick={(e) => e.stopPropagation()}
+                              >
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
@@ -303,6 +325,12 @@ export const RolesListPage: React.FC = () => {
                               >
                                 <Eye className="mr-2 h-4 w-4" />
                                 View
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleViewPermissions(role)}
+                              >
+                                <Shield className="mr-2 h-4 w-4" />
+                                View Permissions
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 onClick={() => handleEdit(role)}
@@ -400,6 +428,13 @@ export const RolesListPage: React.FC = () => {
             onOpenChange={setDeleteDialogOpen}
             role={selectedRole}
             onConfirm={handleConfirmDelete}
+          />
+
+          <RolePermissionsDialog
+            open={permissionsDialogOpen}
+            onOpenChange={setPermissionsDialogOpen}
+            roleId={selectedRole?.id || null}
+            roleName={selectedRole?.name || ""}
           />
         </>
       )}
