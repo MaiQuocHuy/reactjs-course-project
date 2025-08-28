@@ -54,6 +54,14 @@ export interface UpdateRoleRequest {
   name: string;
 }
 
+// Interface for updating role permissions
+export interface UpdateRolePermissionsRequest {
+  permissions: Array<{
+    key: string;
+    filterType: string;
+  }>;
+}
+
 export interface AssignPermissionsRequest {
   permissionIds: string[];
 }
@@ -186,6 +194,22 @@ export const rolesApi = createApi({
       query: (roleId: string) => `/permissions/${roleId}`,
       providesTags: (_result, _error, roleId) => [{ type: 'Role', id: roleId }],
     }),
+
+    // Update role permissions
+    updateRolePermissions: builder.mutation<
+      ApiResponse<void>,
+      { roleId: string; data: UpdateRolePermissionsRequest }
+    >({
+      query: ({ roleId, data }) => ({
+        url: `/permissions/${roleId}`,
+        method: 'PATCH',
+        body: data,
+      }),
+      invalidatesTags: (_result, _error, { roleId }) => [
+        { type: 'Role', id: roleId },
+        'Role',
+      ],
+    }),
   }),
 });
 
@@ -200,4 +224,5 @@ export const {
   useRemovePermissionsMutation,
   useGetAvailablePermissionsQuery,
   useGetRolePermissionsQuery,
+  useUpdateRolePermissionsMutation,
 } = rolesApi;

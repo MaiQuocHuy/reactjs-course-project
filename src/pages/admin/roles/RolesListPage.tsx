@@ -39,6 +39,7 @@ import { EditRoleDialog } from "./EditRoleDialog";
 import { ViewRoleDialog } from "./ViewRoleDialog";
 import { DeleteRoleDialog } from "./DeleteRoleDialog";
 import { RolePermissionsDialog } from "./RolePermissionsDialog";
+import { AssignPermissionsDialog } from "./AssignPermissionsDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 
@@ -53,6 +54,8 @@ export const RolesListPage: React.FC = () => {
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [permissionsDialogOpen, setPermissionsDialogOpen] = useState(false);
+  const [assignPermissionsDialogOpen, setAssignPermissionsDialogOpen] =
+    useState(false);
   const [selectedRole, setSelectedRole] = useState<RoleWithPermissions | null>(
     null
   );
@@ -89,6 +92,11 @@ export const RolesListPage: React.FC = () => {
   const handleViewPermissions = (role: RoleWithPermissions) => {
     setSelectedRole(role);
     setPermissionsDialogOpen(true);
+  };
+
+  const handleAssignPermissions = (role: RoleWithPermissions) => {
+    setSelectedRole(role);
+    setAssignPermissionsDialogOpen(true);
   };
 
   const handleDelete = (role: RoleWithPermissions) => {
@@ -237,6 +245,7 @@ export const RolesListPage: React.FC = () => {
                   <TableHead>Permissions Count</TableHead>
                   <TableHead>Users Count</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Assign Permissions</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -307,6 +316,20 @@ export const RolesListPage: React.FC = () => {
                         </TableCell>
                         <TableCell>
                           <Badge variant="default">Active</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAssignPermissions(role);
+                            }}
+                            className="h-8"
+                          >
+                            <Shield className="h-4 w-4 mr-1" />
+                            Assign
+                          </Button>
                         </TableCell>
                         <TableCell className="text-right">
                           <DropdownMenu>
@@ -420,7 +443,7 @@ export const RolesListPage: React.FC = () => {
           <ViewRoleDialog
             open={viewDialogOpen}
             onOpenChange={setViewDialogOpen}
-            role={selectedRole}
+            roleId={selectedRole?.id || null}
           />
 
           <DeleteRoleDialog
@@ -433,6 +456,13 @@ export const RolesListPage: React.FC = () => {
           <RolePermissionsDialog
             open={permissionsDialogOpen}
             onOpenChange={setPermissionsDialogOpen}
+            roleId={selectedRole?.id || null}
+            roleName={selectedRole?.name || ""}
+          />
+
+          <AssignPermissionsDialog
+            open={assignPermissionsDialogOpen}
+            onOpenChange={setAssignPermissionsDialogOpen}
             roleId={selectedRole?.id || null}
             roleName={selectedRole?.name || ""}
           />

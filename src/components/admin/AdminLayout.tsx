@@ -35,6 +35,7 @@ import { useGetAllCategoriesDropdownQuery } from "@/services/categoriesApi";
 import { useGetPaymentStatisticsQuery } from "@/services/paymentsApi";
 import { useGetRefundStatisticsQuery } from "@/services/refundsApi";
 import { useGetApplicationsQuery } from "@/services/applicationsApi";
+import { useGetRolesListQuery } from "@/services/rolesApi";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -70,6 +71,10 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     pendingApplicationsCount?.filter((app) => app.status === "PENDING")
       .length || 0;
 
+  // Get roles count
+  const { data: rolesListData } = useGetRolesListQuery();
+  const rolesCount = rolesListData?.data?.length || 0;
+
   const navigation: NavigationItem[] = [
     { name: "Dashboard", href: "/admin", icon: Home },
     { name: "Users", href: "/admin/users", icon: Users, badge: 12 },
@@ -85,7 +90,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       icon: FolderOpen,
       badge: categoriesCount,
     },
-    { name: "Roles", href: "/admin/roles", icon: Shield },
+    { name: "Roles", href: "/admin/roles", icon: Shield, badge: rolesCount },
     { name: "Courses", href: "/admin/courses", icon: BookOpen, badge: 3 },
     { name: "Revenues", href: "/admin/revenues", icon: HandCoins, badge: 1 },
     {
