@@ -9,10 +9,21 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
-import { Search, Eye } from "lucide-react";
+import { Search, Eye, Trash2 } from "lucide-react";
 import type { Application } from "@/types/applications";
-import { useGetApplicationsQuery } from "@/services/applicationsApi";
+import { useGetApplicationsQuery, useDeleteApplicationMutation } from "@/services/applicationsApi";
 import { ApplicationListSkeleton } from "./ApplicationsListSkeleton";
 import { Pagination } from "./Pagination";
 
@@ -33,10 +44,24 @@ export const ApplicationsList = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState<string | null>(null);
   const navigate = useNavigate();
   const itemsPerPage = 10;
 
   const { data: applications = [], isLoading, error } = useGetApplicationsQuery();
+  const [deleteApplication, { isLoading: isDeleting }] = useDeleteApplicationMutation();
+
+  const handleDeleteApplication = async (id: string) => {
+    try {
+      await deleteApplication(id).unwrap();
+      setDeleteDialogOpen(null); // Close dialog on success
+      // Optional: Add a toast notification here for success
+    } catch (error) {
+      setDeleteDialogOpen(null); // Close dialog on error too
+      // Optional: Add a toast notification here for error
+      console.error("Failed to delete application:", error);
+    }
+  };
 
   // Handle error state
   if (error) {
@@ -151,15 +176,55 @@ export const ApplicationsList = () => {
                         {application.submittedAt}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <Button
-                          onClick={() => navigate(`/admin/applications/${application.id}`)}
-                          variant="outline"
-                          size="sm"
-                          className="flex items-center gap-2"
-                        >
-                          <Eye className="h-4 w-4" />
-                          View Detail
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            onClick={() => navigate(`/admin/applications/${application.id}`)}
+                            variant="outline"
+                            size="sm"
+                            className="flex items-center gap-2"
+                          >
+                            <Eye className="h-4 w-4" />
+                            View Detail
+                          </Button>
+
+                          <AlertDialog
+                            open={deleteDialogOpen === application.id}
+                            onOpenChange={(open) =>
+                              !isDeleting && setDeleteDialogOpen(open ? application.id : null)
+                            }
+                          >
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                Delete
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete Application</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete this application from{" "}
+                                  <strong>{application.applicant.name}</strong>? This action cannot
+                                  be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDeleteApplication(application.id)}
+                                  className="bg-red-600 hover:bg-red-700"
+                                  disabled={isDeleting}
+                                >
+                                  {isDeleting ? "Deleting..." : "Delete"}
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
                       </td>
                     </tr>
                   ))

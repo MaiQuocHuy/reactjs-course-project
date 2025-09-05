@@ -35,6 +35,14 @@ export const applicationsApi = createApi({
         { type: 'Application', id }
       ],
     }),
+
+    deleteApplication: builder.mutation<ApiResponse<void>, string>({
+      query: (id) => ({
+        url: `admin/applications/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ['Application'],
+    }),
   })
 });
 
@@ -42,4 +50,5 @@ export const {
   useGetApplicationsQuery,
   useGetApplicationByIdQuery,
   useReviewApplicationMutation,
+  useDeleteApplicationMutation,
 } = applicationsApi;
