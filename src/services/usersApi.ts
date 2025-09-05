@@ -1,6 +1,6 @@
 // src/services/usersApi.ts
 import { createApi } from "@reduxjs/toolkit/query/react";
-import type { User } from "../types/users";
+import type { User } from "@/types/users";
 import { baseQueryWithReauth } from '@/lib/baseQueryWithReauth';
 
 // API Response types based on Spring Boot backend
@@ -107,14 +107,14 @@ export const usersApi = createApi({
       }),
     }),
 
-    // PATCH /api/admin/users/{id}/role - Update user role
+    // PUT /api/admin/users/{id}/role - Update user role
     updateUserRole: builder.mutation<
       ApiResponse<User>,
       { id: string; data: UpdateUserRoleRequest }
     >({
       query: ({ id, data }) => ({
         url: `/admin/users/${id}/role`,
-        method: 'PATCH',
+        method: 'PUT',
         body: data,
       }),
     }),
@@ -138,6 +138,17 @@ export const usersApi = createApi({
         method: 'DELETE',
       }),
     }),
+
+    // Debug: Get available roles in database
+    getAvailableRoles: builder.query<
+      ApiResponse<string[]>,
+      void
+    >({
+      query: () => ({
+        url: `/admin/users/debug/available-roles`,
+        method: 'GET',
+      }),
+    }),
   }),
 });
 
@@ -149,4 +160,5 @@ export const {
   useUpdateUserRoleMutation,
   useUpdateUserStatusMutation,
   useDeleteUserMutation,
+  useGetAvailableRolesQuery,
 } = usersApi;

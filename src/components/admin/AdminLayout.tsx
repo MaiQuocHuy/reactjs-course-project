@@ -28,6 +28,8 @@ import {
   FolderOpen,
   FileUser,
   Shield,
+  Lock,
+  UserCog,
 } from "lucide-react";
 import { Input } from "../ui/input";
 import { useLogoutMutation } from "@/services/authApi";
@@ -91,6 +93,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       badge: categoriesCount,
     },
     { name: "Roles", href: "/admin/roles", icon: Shield, badge: rolesCount },
+    { name: "Assign Roles", href: "/admin/assign-roles", icon: UserCog },
     { name: "Courses", href: "/admin/courses", icon: BookOpen, badge: 3 },
     { name: "Revenues", href: "/admin/revenues", icon: HandCoins, badge: 1 },
     {
@@ -106,6 +109,11 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       badge: refundsCount,
     },
     { name: "Settings", href: "/admin/settings", icon: Settings },
+    {
+      name: "Permission Demo",
+      href: "/admin/permission-system-demo",
+      icon: Lock,
+    },
   ];
 
   const handleLogout = async () => {
