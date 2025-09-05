@@ -5,6 +5,31 @@ export interface User {
   thumbnailUrl?: string;
   bio?: string;
   isActive: boolean;
+  role?: string; // Add role field
+}
+
+export interface UserRole {
+  id: string;
+  name: string;
+}
+
+export interface PermissionDetail {
+  permissionKey: string;
+  description: string;
+  resource: string;
+  action: string;
+  filterType: string;
+  canAccessAll: boolean;
+  canAccessOwn: boolean;
+}
+
+export interface UserPermissions {
+  userId: string;
+  email: string;
+  name: string;
+  role: UserRole;
+  permissions: string[];
+  detailedPermissions: PermissionDetail[];
 }
 
 export interface LoginResponse {
@@ -27,6 +52,8 @@ export interface AuthState {
   accessToken: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  permissions: string[]; // Add permissions to auth state
+  userRole: UserRole | null; // Add user role to auth state
 }
 
 export interface RefreshTokenResponse {
