@@ -24,6 +24,7 @@ import {
   Edit,
 } from "lucide-react";
 import type { User } from "../../types/users";
+import { usePermission } from "../../hooks/usePermissions";
 
 interface UserTableProps {
   users: User[];
@@ -68,6 +69,9 @@ export const UserTable: React.FC<UserTableProps> = ({
   onAssignRole,
   onViewUser,
 }) => {
+  const { hasPermission: canUpdateUser } = usePermission("user:UPDATE");
+  const { hasPermission: canReadUser } = usePermission("user:READ");
+
   return (
     <div className="rounded-md border">
       <Table>
@@ -143,15 +147,19 @@ export const UserTable: React.FC<UserTableProps> = ({
                     <DropdownMenuItem onClick={() => onViewUser(user.id)}>
                       View Details
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => onEditUser(user.id)}>
-                      <Edit className="mr-2 h-4 w-4" />
-                      Edit User
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => onAssignRole(user.id)}>
-                      <Shield className="mr-2 h-4 w-4" />
-                      Assign Role
-                    </DropdownMenuItem>
-                    {user.status === "ACTIVE" ? (
+                    {canUpdateUser && (
+                      <DropdownMenuItem onClick={() => onEditUser(user.id)}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        Edit User
+                      </DropdownMenuItem>
+                    )}
+                    {canUpdateUser && (
+                      <DropdownMenuItem onClick={() => onAssignRole(user.id)}>
+                        <Shield className="mr-2 h-4 w-4" />
+                        Assign Role
+                      </DropdownMenuItem>
+                    )}
+                    {canUpdateUser && user.status === "ACTIVE" ? (
                       <DropdownMenuItem
                         onClick={() => onBanUser(user.id)}
                         className="text-red-600"
@@ -159,7 +167,7 @@ export const UserTable: React.FC<UserTableProps> = ({
                         <UserMinus className="mr-2 h-4 w-4" />
                         Ban User
                       </DropdownMenuItem>
-                    ) : user.status === "BANNED" ? (
+                    ) : canUpdateUser && user.status === "BANNED" ? (
                       <DropdownMenuItem
                         onClick={() => onUnbanUser(user.id)}
                         className="text-green-600"

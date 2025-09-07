@@ -26,12 +26,12 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 export default function LoginForm() {
-  const counter = useAppSelector((state) => state.counter);
+  // const counter = useAppSelector((state) => state.counter);
   const auth = useAppSelector((state) => state.auth); // Get auth state
 
   const navigate = useNavigate();
 
-  const dispatch = useAppDispatch();
+  // const dispatch = useAppDispatch();
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -93,7 +93,9 @@ export default function LoginForm() {
     <div className="max-w-sm mx-auto mt-10 p-6 border rounded-xl shadow-sm space-y-4">
       <div className="text-center space-y-2">
         <h2 className="text-xl font-semibold">Đăng nhập</h2>
-        <p className="text-sm text-muted-foreground">Đăng nhập với tài khoản admin của bạn</p>
+        <p className="text-sm text-muted-foreground">
+          Đăng nhập với tài khoản admin của bạn
+        </p>
       </div>
 
       <Form {...form}>

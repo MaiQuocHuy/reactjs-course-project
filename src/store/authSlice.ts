@@ -1,5 +1,5 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import type { User, AuthState } from '../types/auth';
+import type { User, AuthState, UserRole } from '../types/auth';
 
 // Helper functions cho localStorage
 const getStoredAuth = (): { user: User | null; accessToken: string | null } => {
@@ -32,6 +32,8 @@ const initialState: AuthState = {
   accessToken: storedAuth.accessToken,
   isAuthenticated: !!storedAuth.accessToken,
   isLoading: false,
+  permissions: [],
+  userRole: null,
 };
 
 const authSlice = createSlice({
@@ -65,6 +67,8 @@ const authSlice = createSlice({
       state.accessToken = null;
       state.isAuthenticated = false;
       state.isLoading = false;
+      state.permissions = [];
+      state.userRole = null;
       
       // Clear localStorage
       setStoredAuth(null, null);
@@ -73,8 +77,32 @@ const authSlice = createSlice({
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.isLoading = action.payload;
     },
+    
+    setPermissions: (state, action: PayloadAction<string[]>) => {
+      state.permissions = action.payload;
+    },
+    
+    setUserRole: (state, action: PayloadAction<UserRole>) => {
+      state.userRole = action.payload;
+    },
+    
+    updateUserPermissions: (
+      state, 
+      action: PayloadAction<{ permissions: string[]; userRole: UserRole }>
+    ) => {
+      state.permissions = action.payload.permissions;
+      state.userRole = action.payload.userRole;
+    },
   },
 });
 
-export const { setCredentials, updateAccessToken, logout, setLoading } = authSlice.actions;
+export const { 
+  setCredentials, 
+  updateAccessToken, 
+  logout, 
+  setLoading, 
+  setPermissions, 
+  setUserRole, 
+  updateUserPermissions 
+} = authSlice.actions;
 export default authSlice.reducer;

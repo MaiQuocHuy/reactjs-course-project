@@ -40,6 +40,10 @@ import type {
   UserStatus,
   UserFilters,
 } from "../../../types/users";
+import {
+  PermissionGate,
+  PermissionButton,
+} from "../../../components/shared/PermissionComponents";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -75,6 +79,25 @@ export const UsersListPage: React.FC = () => {
     sort: "name,asc",
   });
 
+  // API hooks for statistics - get first page with size 1 to get total counts
+  const { data: activeUsersResponse } = useGetUsersQuery({
+    isActive: true,
+    page: 0,
+    size: 1,
+  });
+
+  const { data: instructorsResponse } = useGetUsersQuery({
+    role: "INSTRUCTOR",
+    page: 0,
+    size: 1,
+  });
+
+  const { data: bannedUsersResponse } = useGetUsersQuery({
+    isActive: false,
+    page: 0,
+    size: 1,
+  });
+
   const [updateUserStatus] = useUpdateUserStatusMutation();
   const [updateUserRole] = useUpdateUserRoleMutation();
   const [updateUser] = useUpdateUserMutation();
@@ -94,6 +117,11 @@ export const UsersListPage: React.FC = () => {
   const totalElements = usersResponse?.data?.totalElements || 0;
   const hasNext = usersResponse?.data?.hasNext || false;
   const hasPrevious = usersResponse?.data?.hasPrevious || false;
+
+  // Extract statistics from separate API calls
+  const activeUsersCount = activeUsersResponse?.data?.totalElements || 0;
+  const instructorsCount = instructorsResponse?.data?.totalElements || 0;
+  const bannedUsersCount = bannedUsersResponse?.data?.totalElements || 0;
 
   // Map API user data to component format (convert isActive to status)
   const mappedUsers: User[] = users.map((user) => ({
@@ -360,131 +388,140 @@ export const UsersListPage: React.FC = () => {
           </p>
         </div>
         <div className="flex space-x-2">
-          <Button variant="outline">
+          <PermissionButton
+            permissions={["user:READ"]}
+            className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2"
+          >
             <Download className="mr-2 h-4 w-4" />
             Export
-          </Button>
-          <Button onClick={handleAddUser}>
+          </PermissionButton>
+          <PermissionButton
+            permissions={["user:CREATE"]}
+            onClick={handleAddUser}
+            className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2"
+          >
             <UserPlus className="mr-2 h-4 w-4" />
             Add User
-          </Button>
+          </PermissionButton>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalElements}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Users</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {mappedUsers.filter((u) => u.status === "ACTIVE").length}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Instructors</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {mappedUsers.filter((u) => u.role === "INSTRUCTOR").length}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Banned Users</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {mappedUsers.filter((u) => u.status === "BANNED").length}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <PermissionGate permissions={["user:READ"]}>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{totalElements}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Active Users
+              </CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{activeUsersCount}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Instructors</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{instructorsCount}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Banned Users
+              </CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{bannedUsersCount}</div>
+            </CardContent>
+          </Card>
+        </div>
+      </PermissionGate>
 
       {/* Filters */}
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col space-y-4 md:flex-row md:justify-between md:space-y-0">
-            <SearchBar
-              value={filters.search}
-              onChange={handleSearchChange}
-              placeholder="Search by name or email..."
-            />
-            <FilterBar
-              roleFilter={filters.role}
-              statusFilter={filters.status}
-              onRoleChange={handleRoleChange}
-              onStatusChange={handleStatusChange}
-              onClearFilters={handleClearFilters}
-            />
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="flex justify-between items-center mb-4">
-            <p className="text-sm text-muted-foreground">
-              Showing {(currentPage - 1) * pageSize + 1}-
-              {Math.min(currentPage * pageSize, totalElements)} of{" "}
-              {totalElements} users
-            </p>
-          </div>
-
-          <UserTable
-            users={mappedUsers}
-            onBanUser={handleBanUser}
-            onUnbanUser={handleUnbanUser}
-            onEditUser={handleEditUser}
-            onAssignRole={handleAssignRole}
-            onViewUser={handleViewUser}
-          />
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="mt-6">
-              <Pagination>
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious
-                      onClick={() =>
-                        setCurrentPage(Math.max(1, currentPage - 1))
-                      }
-                      className={
-                        !hasPrevious ? "pointer-events-none opacity-50" : ""
-                      }
-                    />
-                  </PaginationItem>
-                  {renderPaginationItems()}
-                  <PaginationItem>
-                    <PaginationNext
-                      onClick={() =>
-                        setCurrentPage(Math.min(totalPages, currentPage + 1))
-                      }
-                      className={
-                        !hasNext ? "pointer-events-none opacity-50" : ""
-                      }
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
+      <PermissionGate permissions={["user:READ"]}>
+        <Card>
+          <CardHeader>
+            <div className="flex flex-col space-y-4 md:flex-row md:justify-between md:space-y-0">
+              <SearchBar
+                value={filters.search}
+                onChange={handleSearchChange}
+                placeholder="Search by name or email..."
+              />
+              <FilterBar
+                roleFilter={filters.role}
+                statusFilter={filters.status}
+                onRoleChange={handleRoleChange}
+                onStatusChange={handleStatusChange}
+                onClearFilters={handleClearFilters}
+              />
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardHeader>
+          <CardContent>
+            <div className="flex justify-between items-center mb-4">
+              <p className="text-sm text-muted-foreground">
+                Showing {(currentPage - 1) * pageSize + 1}-
+                {Math.min(currentPage * pageSize, totalElements)} of{" "}
+                {totalElements} users
+              </p>
+            </div>
+
+            <UserTable
+              users={mappedUsers}
+              onBanUser={handleBanUser}
+              onUnbanUser={handleUnbanUser}
+              onEditUser={handleEditUser}
+              onAssignRole={handleAssignRole}
+              onViewUser={handleViewUser}
+            />
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="mt-6">
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        onClick={() =>
+                          setCurrentPage(Math.max(1, currentPage - 1))
+                        }
+                        className={
+                          !hasPrevious ? "pointer-events-none opacity-50" : ""
+                        }
+                      />
+                    </PaginationItem>
+                    {renderPaginationItems()}
+                    <PaginationItem>
+                      <PaginationNext
+                        onClick={() =>
+                          setCurrentPage(Math.min(totalPages, currentPage + 1))
+                        }
+                        className={
+                          !hasNext ? "pointer-events-none opacity-50" : ""
+                        }
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </PermissionGate>
 
       {/* Dialogs */}
       <BanUserDialog

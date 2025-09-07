@@ -26,6 +26,7 @@ import {
 import { FolderPlus, RefreshCw } from "lucide-react";
 import {
   useGetCategoriesQuery,
+  useGetAllCategoriesDropdownQuery,
   useCreateCategoryMutation,
   useUpdateCategoryMutation,
   useDeleteCategoryMutation,
@@ -67,6 +68,9 @@ export const CategoriesListPage: React.FC = () => {
     sortDir,
   });
 
+  // API hook for statistics - get all categories to calculate stats
+  const { data: allCategoriesResponse } = useGetAllCategoriesDropdownQuery();
+
   const [createCategory, { isLoading: isCreating }] =
     useCreateCategoryMutation();
   const [updateCategory, { isLoading: isUpdating }] =
@@ -77,6 +81,16 @@ export const CategoriesListPage: React.FC = () => {
   const categories = categoriesResponse?.data?.content || [];
   const totalPages = categoriesResponse?.data?.totalPages || 0;
   const totalElements = categoriesResponse?.data?.totalElements || 0;
+
+  // Calculate statistics from all categories
+  const allCategories = allCategoriesResponse?.data || [];
+  const totalCategoriesCount = allCategories.length;
+  const activeCategoriesCount = allCategories.filter(
+    (c) => c.courseCount > 0
+  ).length;
+  const emptyCategoriesCount = allCategories.filter(
+    (c) => c.courseCount === 0
+  ).length;
 
   // Handlers
   const handleSearch = (term: string) => {
@@ -267,9 +281,9 @@ export const CategoriesListPage: React.FC = () => {
             <FolderPlus className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalElements}</div>
+            <div className="text-2xl font-bold">{totalCategoriesCount}</div>
             <p className="text-xs text-muted-foreground">
-              {categories.filter((c) => c.courseCount > 0).length} with courses
+              {activeCategoriesCount} with courses
             </p>
           </CardContent>
         </Card>
@@ -281,9 +295,7 @@ export const CategoriesListPage: React.FC = () => {
             <FolderPlus className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {categories.filter((c) => c.courseCount > 0).length}
-            </div>
+            <div className="text-2xl font-bold">{activeCategoriesCount}</div>
             <p className="text-xs text-muted-foreground">
               Categories with courses
             </p>
@@ -297,9 +309,7 @@ export const CategoriesListPage: React.FC = () => {
             <FolderPlus className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {categories.filter((c) => c.courseCount === 0).length}
-            </div>
+            <div className="text-2xl font-bold">{emptyCategoriesCount}</div>
             <p className="text-xs text-muted-foreground">
               Categories without courses
             </p>
