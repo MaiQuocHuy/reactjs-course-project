@@ -1,10 +1,15 @@
-import type { Course } from '@/types/courses';
-import { Link } from 'react-router-dom';
+import type { Course } from "@/types/courses";
+import { Link } from "react-router-dom";
+import { PermissionButton } from "@/components/shared/PermissionComponents";
+import { useUserRole } from "@/hooks/usePermissions";
+
 type Props = {
   course: Course;
 };
 
 const CourseCard = ({ course }: Props) => {
+  const { isAdmin, isInstructor } = useUserRole();
+
   return (
     <Link
       to={`/admin/courses/${course.id}`}
@@ -19,10 +24,10 @@ const CourseCard = ({ course }: Props) => {
           />
         )}
         <div className="absolute top-3 left-3 bg-white/80 text-xs px-2 py-1 rounded">
-          {course.categories?.[0]?.name ?? 'General'}
+          {course.categories?.[0]?.name ?? "General"}
         </div>
         <div className="absolute top-3 right-3 bg-green-500 text-white text-xs px-2 py-1 rounded">
-          ${course.price?.toFixed(2) ?? '0.00'}
+          ${course.price?.toFixed(2) ?? "0.00"}
         </div>
       </div>
 
@@ -36,10 +41,10 @@ const CourseCard = ({ course }: Props) => {
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center font-semibold text-sm text-indigo-700">
               {course.instructor?.name
-                ?.split(' ')
+                ?.split(" ")
                 .map((n) => n[0])
                 .slice(0, 2)
-                .join('')}
+                .join("")}
             </div>
             <div>
               <div className="text-sm font-medium">
@@ -56,8 +61,8 @@ const CourseCard = ({ course }: Props) => {
                   key={i}
                   className={`w-4 h-4 ${
                     i < Math.round(course.averageRating ?? 0)
-                      ? 'text-yellow-400'
-                      : 'text-gray-300'
+                      ? "text-yellow-400"
+                      : "text-gray-300"
                   }`}
                   fill="currentColor"
                   viewBox="0 0 20 20"
@@ -77,9 +82,13 @@ const CourseCard = ({ course }: Props) => {
           <div className="text-sm text-gray-500">
             {course.sectionCount ?? 0} Lessons
           </div>
-          <button className="px-4 py-2 bg-indigo-600 text-white rounded cursor-pointer">
+
+          <PermissionButton
+            permissions={["course:READ"]}
+            className="px-4 py-2 bg-indigo-600 text-white rounded cursor-pointer disabled:bg-gray-300 disabled:cursor-not-allowed"
+          >
             View Course
-          </button>
+          </PermissionButton>
         </div>
       </div>
     </Link>

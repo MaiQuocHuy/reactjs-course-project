@@ -28,6 +28,8 @@ import {
   FolderOpen,
   FileUser,
   Shield,
+  Lock,
+  UserCog,
   Award,
 } from "lucide-react";
 import { Input } from "../ui/input";
@@ -37,6 +39,52 @@ import { useGetPaymentStatisticsQuery } from "@/services/paymentsApi";
 import { useGetRefundStatisticsQuery } from "@/services/refundsApi";
 import { useGetApplicationsQuery } from "@/services/applicationsApi";
 import { useGetRolesListQuery } from "@/services/rolesApi";
+import { usePermissions } from "@/hooks/usePermissions";
+
+// Component to render navigation item with permission check
+const PermissionNavigationItem: React.FC<{
+  item: NavigationItem;
+  isActive: (href: string) => boolean;
+  setSidebarOpen: (open: boolean) => void;
+}> = ({ item, isActive, setSidebarOpen }) => {
+  // Always call hooks, but provide empty array if no permissions
+  const permissions = item.permissions || [];
+  const { hasAnyPermission } = usePermissions(permissions);
+
+  // If item has permissions and user doesn't have them, don't render
+  if (permissions.length > 0 && !hasAnyPermission) {
+    return null;
+  }
+
+  const Icon = item.icon;
+  const active = isActive(item.href);
+
+  return (
+    <Link
+      key={item.name}
+      to={item.href}
+      className={`
+        flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
+        ${
+          active
+            ? "bg-blue-50 text-blue-700 border-r-2 border-blue-600"
+            : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+        }
+      `}
+      onClick={() => setSidebarOpen(false)}
+    >
+      <div className="flex items-center space-x-3">
+        <Icon className={`h-5 w-5 ${active ? "text-blue-600" : "text-gray-400"}`} />
+        <span>{item.name}</span>
+      </div>
+      {item.badge && (
+        <Badge variant={active ? "default" : "secondary"} className="h-5 text-xs">
+          {item.badge}
+        </Badge>
+      )}
+    </Link>
+  );
+};
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -47,6 +95,7 @@ interface NavigationItem {
   href: string;
   icon: React.ElementType;
   badge?: number;
+  permissions?: string[]; // Add optional permissions array
 }
 
 export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
@@ -76,37 +125,82 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const rolesCount = rolesListData?.data?.length || 0;
 
   const navigation: NavigationItem[] = [
-    { name: "Dashboard", href: "/admin", icon: Home },
-    { name: "Users", href: "/admin/users", icon: Users, badge: 12 },
+    { name: "Dashboard", href: "/admin", icon: Home }, // No permission needed for dashboard
+    {
+      name: "Users",
+      href: "/admin/users",
+      icon: Users,
+      badge: 12,
+      permissions: ["user:READ"],
+    },
     {
       name: "Applications",
       href: "/admin/applications",
       icon: FileUser,
       badge: pendingCount,
+      permissions: ["user:READ"], // Applications are user-related
     },
     {
       name: "Categories",
       href: "/admin/categories",
       icon: FolderOpen,
       badge: categoriesCount,
+      permissions: ["course:READ"], // Categories are course-related
     },
-    { name: "Roles", href: "/admin/roles", icon: Shield, badge: rolesCount },
-    { name: "Courses", href: "/admin/courses", icon: BookOpen, badge: 3 },
+    {
+      name: "Roles",
+      href: "/admin/roles",
+      icon: Shield,
+      badge: rolesCount,
+      permissions: ["user:UPDATE"], // Managing roles requires user update permission
+    },
+    {
+      name: "Assign Roles",
+      href: "/admin/assign-roles",
+      icon: UserCog,
+      permissions: ["user:UPDATE"], // Assigning roles requires user update permission
+    },
+    {
+      name: "Courses",
+      href: "/admin/courses",
+      icon: BookOpen,
+      badge: 3,
+      permissions: ["course:READ"],
+    },
     { name: "Certificates", href: "/admin/certificates", icon: Award },
-    { name: "Revenues", href: "/admin/revenues", icon: HandCoins, badge: 1 },
+    {
+      name: "Revenues",
+      href: "/admin/revenues",
+      icon: HandCoins,
+      badge: 1,
+      permissions: ["payment:READ"], // Revenues are payment-related
+    },
     {
       name: "Payments",
       href: "/admin/payments",
       icon: CreditCard,
       badge: paymentsCount,
+      permissions: ["payment:READ"],
     },
     {
       name: "Refunds",
       href: "/admin/refunds",
       icon: RefreshCw,
       badge: refundsCount,
+      permissions: ["payment:READ"], // Refunds are payment-related
     },
-    { name: "Settings", href: "/admin/settings", icon: Settings },
+    {
+      name: "Settings",
+      href: "/admin/settings",
+      icon: Settings,
+      permissions: ["user:UPDATE"], // Settings usually require admin permissions
+    },
+    // {
+    //   name: "Permission Demo",
+    //   href: "/admin/permission-system-demo",
+    //   icon: Lock,
+    //   // No permission needed for demo page
+    // },
   ];
 
   const handleLogout = async () => {
@@ -164,36 +258,14 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
           {/* Navigation */}
           <nav className="flex-1 px-4 py-6 space-y-2">
-            {navigation.map((item) => {
-              const Icon = item.icon;
-              const active = isActive(item.href);
-
-              return (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className={`
-                    flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
-                    ${
-                      active
-                        ? "bg-blue-50 text-blue-700 border-r-2 border-blue-600"
-                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                    }
-                  `}
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <div className="flex items-center space-x-3">
-                    <Icon className={`h-5 w-5 ${active ? "text-blue-600" : "text-gray-400"}`} />
-                    <span>{item.name}</span>
-                  </div>
-                  {item.badge && (
-                    <Badge variant={active ? "default" : "secondary"} className="h-5 text-xs">
-                      {item.badge}
-                    </Badge>
-                  )}
-                </Link>
-              );
-            })}
+            {navigation.map((item) => (
+              <PermissionNavigationItem
+                key={item.name}
+                item={item}
+                isActive={isActive}
+                setSidebarOpen={setSidebarOpen}
+              />
+            ))}
           </nav>
 
           {/* User info */}
