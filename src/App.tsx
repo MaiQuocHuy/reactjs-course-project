@@ -102,6 +102,14 @@ function App() {
               }
             />
             <Route
+              path="/admin/certificates"
+              element={
+                <AdminLayout>
+                  <AdminCertificatesPage />
+                </AdminLayout>
+              }
+            />
+            <Route
               path="/admin/pending-courses"
               element={
                 <AdminLayout>
