@@ -12,7 +12,7 @@ import { coursesApi } from "@/services/courses-api";
 import { categoriesApi } from "@/services/categoriesApi";
 import { rolesApi } from "@/services/rolesApi";
 import { permissionsApi } from "@/services/permissionsApi";
-import { certificatesApi } from "@/services/admin/certificatesApi";
+import { certificatesApi } from "@/services/certificatesApi";
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "./authSlice";
 import { applicationsApi } from "@/services/applicationsApi";

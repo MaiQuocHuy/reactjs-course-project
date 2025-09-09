@@ -4,7 +4,7 @@ import {
   useGetCertificatesQuery,
   useGetCertificatesByCourseQuery,
   useGetCertificatesByUserQuery,
-} from '@/services/admin/certificatesApi';
+} from '@/services/certificatesApi';
 import { useGetAllCoursesQuery } from '@/services/courses-api';
 import { useGetUsersQuery } from '@/services/usersApi';
 import type {
@@ -161,7 +161,7 @@ export function useUsers(searchQuery = ""): UseUsersResult {
     isLoading,
     error,
   } = useGetUsersQuery({
-    size: 100, // Get more users at once
+     // Get more users at once
     role: "STUDENT", // Filter for students only
     isActive: true, // Only active users
   });

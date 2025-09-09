@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useGetCertificateByIdQuery } from "@/services/admin/certificatesApi";
+import { useGetCertificateByIdQuery } from "@/services/certificatesApi";
 import type { Certificate } from "@/types/certificates";
 import { toast } from "sonner";
 
