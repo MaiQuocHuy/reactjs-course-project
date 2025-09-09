@@ -1,10 +1,5 @@
 import "./App.css";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import LoginForm from "./components/LoginForm";
 import { AdminLayout } from "./components/admin/AdminLayout";
 import { DashboardPage } from "./pages/admin/DashboardPage";
@@ -23,6 +18,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { RefundDetailPage } from "./pages/refunds/RefundDetailPage";
 import { CategoriesListPage } from "./pages/admin/categories/CategoriesListPage";
 import { RolesListPage } from "./pages/admin/roles";
+import AdminCertificatesPage from "./pages/certificates";
 
 function App() {
   return (
@@ -67,6 +63,14 @@ function App() {
             element={
               <AdminLayout>
                 <CoursesPage />
+              </AdminLayout>
+            }
+          />
+          <Route
+            path="/admin/certificates"
+            element={
+              <AdminLayout>
+                <AdminCertificatesPage />
               </AdminLayout>
             }
           />
