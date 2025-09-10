@@ -16,6 +16,7 @@ import {
   Edit,
   Trash2,
   Shield,
+  UserPlus,
 } from "lucide-react";
 import {
   Table,
@@ -35,6 +36,7 @@ import { Badge } from "@/components/ui/badge";
 import { useGetRolesQuery, useDeleteRoleMutation } from "@/services/rolesApi";
 import type { RoleWithPermissions } from "@/services/rolesApi";
 import { CreateRoleDialog } from "./CreateRoleDialog";
+import { CreateUserWithRoleDialog } from "./CreateUserWithRoleDialog";
 import { EditRoleDialog } from "./EditRoleDialog";
 import { ViewRoleDialog } from "./ViewRoleDialog";
 import { DeleteRoleDialog } from "./DeleteRoleDialog";
@@ -50,6 +52,8 @@ export const RolesListPage: React.FC = () => {
 
   // Dialog states
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [createUserWithRoleDialogOpen, setCreateUserWithRoleDialogOpen] =
+    useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -153,10 +157,19 @@ export const RolesListPage: React.FC = () => {
             Manage user roles and their permissions
           </p>
         </div>
-        <Button onClick={() => setCreateDialogOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Role
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={() => setCreateUserWithRoleDialogOpen(true)}
+            variant="outline"
+          >
+            <UserPlus className="mr-2 h-4 w-4" />
+            Add User With Role
+          </Button>
+          <Button onClick={() => setCreateDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Role
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -315,7 +328,7 @@ export const RolesListPage: React.FC = () => {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="default">Active</Badge>
+                          <Badge variant="active">Active</Badge>
                         </TableCell>
                         <TableCell>
                           <Button
@@ -425,6 +438,11 @@ export const RolesListPage: React.FC = () => {
           refetch();
           setCreateDialogOpen(false);
         }}
+      />
+
+      <CreateUserWithRoleDialog
+        open={createUserWithRoleDialogOpen}
+        onOpenChange={setCreateUserWithRoleDialogOpen}
       />
 
       {selectedRole && (
