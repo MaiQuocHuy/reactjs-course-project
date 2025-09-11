@@ -5,7 +5,6 @@ import type { ApiResponse, PaginatedResponse } from '@/types/common';
 import type {
   Discount,
   GetDiscountsParams,
-  CreateDiscountRequest,
 } from '@/types/discounts';
 
 export const discountsApi = createApi({
@@ -40,16 +39,26 @@ export const discountsApi = createApi({
     }),
 
     // Create a new discount
-    createDiscount: builder.mutation<Discount, CreateDiscountRequest>({
+    createDiscount: builder.mutation({
       query: (discount) => ({
         url: '/discounts',
         method: 'POST',
         body: discount,
       }),
-      transformResponse: (response: ApiResponse<Discount>) => response.data,
+      transformErrorResponse: (response: { status: number; data: any }) => {
+        let errorMessage = 'Failed to create discount!';
+        if (response.data && 'message' in response.data) {
+          errorMessage = response.data.message;
+        }
+        return {
+          status: response.status,
+          message: errorMessage,
+          data: response.data,
+        };
+      },
       invalidatesTags: ['Discounts'],
     }),
-    
+
     // Delete a discount by ID
     deleteDiscount: builder.mutation<void, string>({
       query: (id) => ({
@@ -58,12 +67,15 @@ export const discountsApi = createApi({
       }),
       invalidatesTags: (_result, _error, id) => [
         { type: 'Discounts', id },
-        { type: 'Discounts', id: 'LIST' }
+        { type: 'Discounts', id: 'LIST' },
       ],
     }),
-    
+
     // Update discount status (activate/deactivate)
-    updateDiscountStatus: builder.mutation<Discount, { id: string; isActive: boolean }>({
+    updateDiscountStatus: builder.mutation<
+      Discount,
+      { id: string; isActive: boolean }
+    >({
       query: ({ id, isActive }) => ({
         url: `/discounts/${id}/status`,
         method: 'PATCH',
@@ -71,7 +83,7 @@ export const discountsApi = createApi({
       }),
       invalidatesTags: (_result, _error, { id }) => [
         { type: 'Discounts', id },
-        { type: 'Discounts', id: 'LIST' }
+        { type: 'Discounts', id: 'LIST' },
       ],
     }),
   }),

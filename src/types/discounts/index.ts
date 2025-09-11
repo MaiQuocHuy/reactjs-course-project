@@ -29,6 +29,6 @@ export interface CreateDiscountRequest {
   ownerUserId?: string;
   startDate: string;
   endDate: string;
-  usageLimit: number;
-  perUserLimit: number;
+  usageLimit: number | null;
+  perUserLimit: number | null;
 }

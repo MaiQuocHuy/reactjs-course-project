@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -42,43 +42,58 @@ import { toast } from 'sonner';
 const schemaShape = {
   code: z
     .string()
-    .min(3, { message: 'Code must be at least 3 characters' })
-    .max(20, { message: 'Code must not exceed 20 characters' })
-    .refine(value => /^[A-Za-z0-9_]+$/.test(value), {
-      message: 'Code can only contain letters, numbers, and underscores'
+    .min(2, { message: 'Code must be at least 2 characters' })
+    .max(50, { message: 'Code must not exceed 50 characters' })
+    .refine((value) => /^[A-Z0-9\-_]+$/.test(value), {
+      message:
+        'Code can only contain uppercase letters, numbers, hyphens, and underscores',
     }),
   discountPercent: z
     .number()
-    .min(0.01, { message: 'Discount must be greater than 0%' })
-    .max(100, { message: 'Discount cannot exceed 100%' })
-    .refine(value => {
-      // Validate to 2 decimal places max as per BigDecimal typical usage
-      const stringValue = value.toString();
-      const decimalParts = stringValue.split('.');
-      return decimalParts.length === 1 || decimalParts[1].length <= 2;
-    }, { message: 'Maximum 2 decimal places allowed' }),
-  description: z.string().min(5, { message: 'Please enter a description' }),
+    .min(0.01, { message: 'Discount must be greater than 0.01%' })
+    .max(30, { message: 'Discount cannot exceed 30%' })
+    .refine(
+      (value) => {
+        // Validate to 2 decimal places max as per BigDecimal typical usage
+        const stringValue = value.toString();
+        const decimalParts = stringValue.split('.');
+        return decimalParts.length === 1 || decimalParts[1].length <= 2;
+      },
+      { message: 'Maximum 2 decimal places allowed' }
+    ),
+  description: z
+    .string()
+    .min(5, { message: 'Please enter a description' })
+    .max(255, { message: 'Description cannot exceed 255 characters' }),
   type: z.enum(['GENERAL', 'REFERRAL']),
   ownerUserId: z.string().optional(),
-  startDate: z.string()
+  startDate: z
+    .string()
     .min(1, { message: 'Start date is required' })
-    .refine(value => {
-      // Ensure start date is not in the past
-      const startDate = new Date(value);
-      const now = new Date();
-      return startDate >= now;
-    }, { message: 'Start date cannot be in the past' }),
-  endDate: z.string()
-    .min(1, { message: 'End date is required' }),
-  usageLimit: z.number()
+    .refine(
+      (value) => {
+        // Ensure start date is not in the past
+        const startDate = new Date(value);
+        const now = new Date();
+        return startDate >= now;
+      },
+      { message: 'Start date cannot be in the past' }
+    ),
+  endDate: z.string().min(1, { message: 'End date is required' }),
+  usageLimit: z
+    .number()
     .int({ message: 'Usage limit must be a whole number' })
-    .min(1, { message: 'Usage limit must be at least 1' }),
-  perUserLimit: z.number()
+    .min(1, { message: 'Usage limit must be at least 1' })
+    .nullable(),
+  perUserLimit: z
+    .number()
     .int({ message: 'Per user limit must be a whole number' })
-    .min(1, { message: 'Per user limit must be at least 1' }),
+    .min(1, { message: 'Per user limit must be at least 1' })
+    .nullable(),
 };
 
-const formSchema = z.object(schemaShape)
+const formSchema = z
+  .object(schemaShape)
   .superRefine((data, ctx) => {
     // Check if ownerUserId is properly set based on the discount type
     if (data.type === 'REFERRAL') {
@@ -87,7 +102,7 @@ const formSchema = z.object(schemaShape)
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: 'Owner User ID is required for referral discounts',
-          path: ['ownerUserId']
+          path: ['ownerUserId'],
         });
       }
     } else {
@@ -96,27 +111,37 @@ const formSchema = z.object(schemaShape)
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: 'Owner user ID must be null for GENERAL discount type',
-          path: ['ownerUserId']
+          path: ['ownerUserId'],
         });
       }
     }
   })
-  .refine(data => {
-    // Validate end date is after start date
-    const startDate = new Date(data.startDate);
-    const endDate = new Date(data.endDate);
-    return endDate > startDate;
-  }, {
-    message: 'End date must be after start date',
-    path: ['endDate']
-  })
-  .refine(data => {
-    // Validate per user limit doesn't exceed usage limit
-    return data.perUserLimit <= data.usageLimit;
-  }, {
-    message: 'Per user limit cannot exceed total usage limit',
-    path: ['perUserLimit']
-  });
+  .refine(
+    (data) => {
+      // Validate end date is after start date
+      const startDate = new Date(data.startDate);
+      const endDate = new Date(data.endDate);
+      return endDate > startDate;
+    },
+    {
+      message: 'End date must be after start date',
+      path: ['endDate'],
+    }
+  )
+  .refine(
+    (data) => {
+      // Validate per user limit doesn't exceed usage limit
+      // Skip validation if either value is null (no limit)
+      if (data.perUserLimit === null || data.usageLimit === null) {
+        return true;
+      }
+      return data.perUserLimit <= data.usageLimit;
+    },
+    {
+      message: 'Per user limit cannot exceed total usage limit',
+      path: ['perUserLimit'],
+    }
+  );
 
 interface CreateDiscountDialogProps {
   isOpen: boolean;
@@ -146,33 +171,46 @@ export const CreateDiscountDialog: React.FC<CreateDiscountDialogProps> = ({
       usageLimit: 100,
       perUserLimit: 1,
     },
+    mode: 'onChange',
   });
+  
+  // Define CSS class for valid inputs
+  const validInputClass = "border-green-500";
+
+  useEffect(() => {
+    // Reset form values when dialog is opened
+    if (isOpen) {
+      form.reset();
+    }
+  }, [isOpen]);
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     try {
-      // For GENERAL type, ensure ownerUserId is null/undefined rather than empty string
-      const ownerUserId = data.type === 'GENERAL' ? undefined : data.ownerUserId;
-      
+      // For GENERAL type, ownerUserId should be undefined
+      // For REFERRAL type, ownerUserId should be provided
+      const ownerUserId =
+        data.type === 'GENERAL' ? undefined : data.ownerUserId;
+
       const discountData: CreateDiscountRequest = {
         ...data,
+        code: data.code.toUpperCase(), // Ensure code is uppercase
         ownerUserId,
         discountPercent: Number(data.discountPercent),
-        usageLimit: Number(data.usageLimit),
-        perUserLimit: Number(data.perUserLimit),
+        usageLimit: data.usageLimit,
+        perUserLimit: data.perUserLimit,
       };
 
-      await createDiscount(discountData).unwrap();
-      toast.success('Discount created', {
-        description: `Discount code ${data.code} was created successfully`,
-      });
-      form.reset();
-      onClose();
-    } catch (error) {
-      toast.error('Error creating discount', {
-        description:
-          'There was a problem creating the discount. Please try again.',
-      });
+      const res = await createDiscount(discountData).unwrap();
+      if (res && res.statusCode === 201) {
+        toast.success('Discount created', {
+          description: `Discount code ${data.code} was created successfully`,
+        });
+        form.reset();
+        onClose();
+      }
+    } catch (error: any) {
       console.error('Error creating discount:', error);
+      toast.error(error.message || 'Failed to create discount!');
     }
   };
 
@@ -186,81 +224,122 @@ export const CreateDiscountDialog: React.FC<CreateDiscountDialogProps> = ({
           padding: '15px',
         }}
       >
-        <DialogHeader>
+        <DialogHeader className="px-3">
           <DialogTitle>Create New Discount</DialogTitle>
           <DialogDescription>
             Fill in the details to create a new discount code.
           </DialogDescription>
         </DialogHeader>
         <div
-          className="overflow-auto"
+          className="overflow-auto p-3"
           style={{ maxHeight: 'calc(100vh - 180px)' }}
         >
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              {/* Discount Code */}
               <FormField
                 control={form.control}
                 name="code"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Discount Code</FormLabel>
-                    <FormControl>
-                      <Input placeholder="WELCOME10" {...field} />
-                    </FormControl>
-                    <FormDescription>
-                      Enter a unique code for this discount.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                render={({ field }) => {
+                  // Check if this field is valid
+                  const fieldError = form.formState.errors.code;
+                  const isFieldDirty = form.formState.dirtyFields.code;
+                  const isValid = isFieldDirty && !fieldError;
+
+                  return (
+                    <FormItem>
+                      <FormLabel>Discount Code</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="WELCOME10"
+                          {...field}
+                          onChange={(e) =>
+                            field.onChange(e.target.value.toUpperCase())
+                          }
+                          className={isValid ? validInputClass : ""}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Enter a unique code (2-50 characters) using only uppercase
+                        letters, numbers, hyphens, and underscores.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
               />
 
+              {/* Description */}
               <FormField
                 control={form.control}
                 name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Welcome discount for new users"
-                        className="resize-none"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                render={({ field }) => {
+                  // Check if this field is valid
+                  const fieldError = form.formState.errors.description;
+                  const isFieldDirty = form.formState.dirtyFields.description;
+                  const isValid = isFieldDirty && !fieldError;
+
+                  return (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Welcome discount for new users"
+                          className={`resize-none ${isValid ? validInputClass : ""}`}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Brief description of this discount (max 255 characters)
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
               />
 
-              {/*Discount Type and Discount Percentage */}
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="discountPercent"
-                  render={({ field }) => (
+              {/*Discount Percentage */}
+              <FormField
+                control={form.control}
+                name="discountPercent"
+                render={({ field }) => {
+                  // Check if this field is valid
+                  const fieldError = form.formState.errors.discountPercent;
+                  const isValid = !fieldError;
+                  
+                  return (
                     <FormItem>
                       <FormLabel>Discount Percentage</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
-                          min={1}
-                          max={100}
+                          min={0.01}
+                          max={30}
+                          step={0.01}
                           {...field}
-                          onChange={(e) =>
-                            field.onChange(Number(e.target.value))
-                          }
+                          onChange={(e) => field.onChange(Number(e.target.value))}
+                          className={isValid ? validInputClass : ""}
                         />
                       </FormControl>
+                      <FormDescription>
+                        Enter a discount percentage between 0.01% and 30%
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
-                  )}
-                />
+                  );
+                }}
+              />
 
-                <FormField
-                  control={form.control}
-                  name="type"
-                  render={({ field }) => (
+              {/* Discount Type*/}
+              <FormField
+                control={form.control}
+                name="type"
+                render={({ field }) => {
+                  // Check if this field is valid
+                  const fieldError = form.formState.errors.type;
+                  const isValid = !fieldError;
+                  
+                  return (
                     <FormItem>
                       <FormLabel>Type</FormLabel>
                       <Select
@@ -274,7 +353,7 @@ export const CreateDiscountDialog: React.FC<CreateDiscountDialogProps> = ({
                         defaultValue={field.value}
                       >
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className={isValid ? validInputClass : ""}>
                             <SelectValue placeholder="Select type" />
                           </SelectTrigger>
                         </FormControl>
@@ -283,68 +362,94 @@ export const CreateDiscountDialog: React.FC<CreateDiscountDialogProps> = ({
                           <SelectItem value="REFERRAL">REFERRAL</SelectItem>
                         </SelectContent>
                       </Select>
+                      <FormDescription
+                        className="truncate"
+                        title="GENERAL: Available to all users | REFERRAL: Associated with a specific user"
+                      >
+                        GENERAL: Available to all users | REFERRAL: Associated
+                        with a specific user
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
-                  )}
-                />
-              </div>
-
-              {/* Optional Owner User ID */}
-              <FormField
-                control={form.control}
-                name="ownerUserId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      {form.watch('type') === 'REFERRAL' 
-                        ? 'Owner User ID (Required)' 
-                        : 'Owner User ID (Leave empty for GENERAL type)'}
-                    </FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder={form.watch('type') === 'REFERRAL' ? "user-001" : "Leave empty"} 
-                        disabled={form.watch('type') === 'GENERAL'}
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      {form.watch('type') === 'REFERRAL' 
-                        ? 'Enter the user ID who owns this referral discount' 
-                        : 'Must be empty for GENERAL discount type'}
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                  );
+                }}
               />
+
+              {/* Owner User ID - Only shown for REFERRAL type */}
+              {form.watch('type') === 'REFERRAL' && (
+                <FormField
+                  control={form.control}
+                  name="ownerUserId"
+                  render={({ field }) => {
+                    // Check if this field is valid
+                    const fieldError = form.formState.errors.ownerUserId;
+                    const isFieldDirty = form.formState.dirtyFields.ownerUserId;
+                    const isValid = isFieldDirty && !fieldError;
+
+                    return (
+                      <FormItem>
+                        <FormLabel>Owner User ID (Required)</FormLabel>
+                        <FormControl>
+                          <Input placeholder="user-001" {...field} className={isValid ? validInputClass : ""} />
+                        </FormControl>
+                        <FormDescription>
+                          Enter the user ID who owns this referral discount
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
+                />
+              )}
 
               {/* Start Date and End Date */}
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="startDate"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Start Date</FormLabel>
-                      <FormControl>
-                        <Input type="datetime-local" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  render={({ field }) => {
+                    // Check if this field is valid
+                    const fieldError = form.formState.errors.startDate;
+                    const isFieldDirty = form.formState.dirtyFields.startDate;
+                    const isValid = isFieldDirty && !fieldError;
+
+                    return (
+                      <FormItem>
+                        <FormLabel>Start Date</FormLabel>
+                        <FormControl>
+                          <Input type="datetime-local" {...field} className={isValid ? validInputClass : ""} />
+                        </FormControl>
+                        <FormDescription>
+                          When this discount becomes valid (must be in the future)
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
                 />
 
                 <FormField
                   control={form.control}
                   name="endDate"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>End Date</FormLabel>
-                      <FormControl>
-                        <Input type="datetime-local" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  render={({ field }) => {
+                    // Check if this field is valid
+                    const fieldError = form.formState.errors.endDate;
+                    const isFieldDirty = form.formState.dirtyFields.endDate;
+                    const isValid = isFieldDirty && !fieldError;
+
+                    return (
+                      <FormItem>
+                        <FormLabel>End Date</FormLabel>
+                        <FormControl>
+                          <Input type="datetime-local" {...field} className={isValid ? validInputClass : ""} />
+                        </FormControl>
+                        <FormDescription>
+                          When this discount expires (must be after start date)
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
                 />
               </div>
 
@@ -352,51 +457,113 @@ export const CreateDiscountDialog: React.FC<CreateDiscountDialogProps> = ({
                 <FormField
                   control={form.control}
                   name="usageLimit"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Usage Limit</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min={1}
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(Number(e.target.value))
-                          }
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  render={({ field }) => {
+                    // Check if this field is valid
+                    const fieldError = form.formState.errors.usageLimit;
+                    const isValid = !fieldError;
+                    
+                    return (
+                      <FormItem>
+                        <FormLabel>Total Usage Limit</FormLabel>
+                        <div className="flex items-center space-x-2">
+                          <FormControl>
+                            <Input
+                              type="number"
+                              min={1}
+                              disabled={field.value === null}
+                              value={field.value === null ? '' : field.value}
+                              onChange={(e) => {
+                                const val =
+                                  e.target.value === ''
+                                    ? ''
+                                    : Number(e.target.value);
+                                field.onChange(val === '' ? null : val);
+                              }}
+                              className={isValid ? validInputClass : ""}
+                            />
+                          </FormControl>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="whitespace-nowrap cursor-pointer"
+                            onClick={() =>
+                              field.onChange(field.value === null ? 100 : null)
+                            }
+                          >
+                            {field.value === null ? 'Set Limit' : 'No Limit'}
+                          </Button>
+                        </div>
+                        <FormDescription
+                          className="truncate"
+                          title="Maximum number of times this discount can be used (or No Limit)"
+                        >
+                          Maximum number of times this discount can be used (or No
+                          Limit)
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
                 />
 
                 <FormField
                   control={form.control}
                   name="perUserLimit"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Per User Limit</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min={1}
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(Number(e.target.value))
-                          }
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  render={({ field }) => {
+                    // Check if this field is valid
+                    const fieldError = form.formState.errors.perUserLimit;
+                    const isValid = !fieldError;
+                    
+                    return (
+                      <FormItem>
+                        <FormLabel>Per User Limit</FormLabel>
+                        <div className="flex items-center space-x-2">
+                          <FormControl>
+                            <Input
+                              type="number"
+                              min={1}
+                              disabled={field.value === null}
+                              value={field.value === null ? '' : field.value}
+                              onChange={(e) => {
+                                const val =
+                                  e.target.value === ''
+                                    ? ''
+                                    : Number(e.target.value);
+                                field.onChange(val === '' ? null : val);
+                              }}
+                              className={isValid ? validInputClass : ""}
+                            />
+                          </FormControl>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="whitespace-nowrap cursor-pointer"
+                            onClick={() =>
+                              field.onChange(field.value === null ? 1 : null)
+                            }
+                          >
+                            {field.value === null ? 'Set Limit' : 'No Limit'}
+                          </Button>
+                        </div>
+                        <FormDescription
+                          className="truncate"
+                          title="Maximum number of times a single user can use this discount (or No Limit)"
+                        >
+                          Maximum number of times a single user can use this
+                          discount (or No Limit)
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
                 />
               </div>
 
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={onClose}>
+                <Button type="button" variant="outline" onClick={onClose} className='cursor-pointer'>
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isLoading}>
+                <Button type="submit" disabled={isLoading} className='cursor-pointer'>
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />

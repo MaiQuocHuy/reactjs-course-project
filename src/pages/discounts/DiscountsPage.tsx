@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -23,8 +22,34 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { ArrowUpDown, Eye, EyeOff, Loader2, PlusCircle, Trash2 } from 'lucide-react';
+import {
+  ArrowUpDown,
+  Eye,
+  EyeOff,
+  Loader2,
+  Mail,
+  MoreHorizontal,
+  PlusCircle,
+  Trash2,
+} from 'lucide-react';
 import { format } from 'date-fns';
 import CreateDiscountDialog from '@/components/discounts/CreateDiscountDialog';
 import { toast } from 'sonner';
@@ -36,13 +61,22 @@ const DiscountsPage: React.FC = () => {
   const [selectedDiscountId, setSelectedDiscountId] = useState<string | null>(
     null
   );
+  // const [isLoading, setIsLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+
+  // Alert dialog states
+  const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
+  const [alertDialogProps, setAlertDialogProps] = useState({
+    title: '',
+    description: '',
+    action: () => {},
+  });
 
   // Fetch discounts with pagination
   const {
     data: discounts,
-    isLoading,
+    isLoading: isLoadingDiscounts,
     error,
   } = useGetAllDiscountsQuery({
     page,
@@ -56,12 +90,17 @@ const DiscountsPage: React.FC = () => {
     useGetDiscountByIdQuery(selectedDiscountId || '', {
       skip: !selectedDiscountId,
     });
-    
+
   // Delete discount mutation
-  const [deleteDiscount, { isLoading: isDeleting }] = useDeleteDiscountMutation();
-  
+  const [deleteDiscount, { isLoading: isDeleting }] =
+    useDeleteDiscountMutation();
+
   // Update discount status mutation
-  const [updateDiscountStatus, { isLoading: isUpdating }] = useUpdateDiscountStatusMutation();
+  const [updateDiscountStatus, { isLoading: isUpdating }] =
+    useUpdateDiscountStatusMutation();
+
+  // Combine loading states
+  const isLoading = isLoadingDiscounts || isDeleting || isUpdating;
 
   // Handle page change
   const handlePageChange = (newPage: number) => {
@@ -84,40 +123,63 @@ const DiscountsPage: React.FC = () => {
     setSelectedDiscountId(discount.id);
     setIsDialogOpen(true);
   };
-  
+
   // Handle delete discount
-  const handleDeleteDiscount = async (e: React.MouseEvent, id: string) => {
+  const handleDeleteDiscount = (e: React.MouseEvent, id: string) => {
     e.stopPropagation(); // Prevent row click from triggering
-    if (window.confirm('Are you sure you want to delete this discount?')) {
-      try {
-        await deleteDiscount(id).unwrap();
-        toast.success('Discount deleted successfully');
-      } catch (error) {
-        console.error('Failed to delete discount:', error);
-        toast.error('Failed to delete discount');
-      }
-    }
+
+    setAlertDialogProps({
+      title: 'Delete Discount',
+      description:
+        'Are you sure you want to delete this discount? This action cannot be undone.',
+      action: async () => {
+        try {
+          await deleteDiscount(id).unwrap();
+          toast.success('Discount deleted successfully');
+        } catch (error) {
+          console.error('Failed to delete discount:', error);
+          toast.error('Failed to delete discount');
+        }
+      },
+    });
+    setIsAlertDialogOpen(true);
   };
-  
+
   // Handle update discount status
-  const handleUpdateClick = async (e: React.MouseEvent, discount: Discount) => {
+  const handleUpdateClick = (e: React.MouseEvent, discount: Discount) => {
     e.stopPropagation(); // Prevent row click from triggering
-    
-    try {
-      const newStatus = !discount.isActive;
-      const message = newStatus ? 'activate' : 'deactivate';
-      
-      if (window.confirm(`Are you sure you want to ${message} this discount?`)) {
-        await updateDiscountStatus({
-          id: discount.id,
-          isActive: newStatus,
-        }).unwrap();
-        toast.success(`Discount ${newStatus ? 'activated' : 'deactivated'} successfully`);
-      }
-    } catch (error) {
-      console.error('Failed to update discount status:', error);
-      toast.error('Failed to update discount status');
-    }
+
+    const newStatus = !discount.isActive;
+    const message = newStatus ? 'activate' : 'deactivate';
+
+    setAlertDialogProps({
+      title: `${newStatus ? 'Activate' : 'Deactivate'} Discount`,
+      description: `Are you sure you want to ${message} this discount?`,
+      action: async () => {
+        try {
+          await updateDiscountStatus({
+            id: discount.id,
+            isActive: newStatus,
+          }).unwrap();
+          toast.success(
+            `Discount ${newStatus ? 'activated' : 'deactivated'} successfully`
+          );
+        } catch (error) {
+          console.error('Failed to update discount status:', error);
+          toast.error('Failed to update discount status');
+        }
+      },
+    });
+    setIsAlertDialogOpen(true);
+  };
+
+  // Handle send email about discount
+  const handleSendEmail = (e: React.MouseEvent, discount: Discount) => {
+    e.stopPropagation(); // Prevent row click from triggering
+
+    toast.info(
+      `Send email feature for discount ${discount.code} will be implemented soon`
+    );
   };
 
   // Format date string
@@ -133,9 +195,10 @@ const DiscountsPage: React.FC = () => {
     <div className="container mx-auto py-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Discount Management</h1>
-        <Button 
+        <Button
           onClick={() => setIsCreateDialogOpen(true)}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 cursor-pointer"
+          disabled={isLoading}
         >
           <PlusCircle size={16} />
           <span>Create Discount</span>
@@ -149,7 +212,8 @@ const DiscountsPage: React.FC = () => {
             variant="outline"
             size="sm"
             onClick={toggleSortDirection}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 cursor-pointer"
+            disabled={isLoading}
           >
             <span>Date</span>
             <ArrowUpDown
@@ -174,34 +238,56 @@ const DiscountsPage: React.FC = () => {
         ) : (
           <>
             <Table>
-              {/* <TableCaption>List of available discounts</TableCaption> */}
               <TableHeader>
                 <TableRow>
-                  <TableHead>Code</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Discount (%)</TableHead>
-                  <TableHead>Start Date</TableHead>
-                  <TableHead>End Date</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Usage</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead className="text-center">No.</TableHead>
+                  <TableHead className="w-[180px]">Code</TableHead>
+                  <TableHead className="text-center">Discount (%)</TableHead>
+                  <TableHead className="text-center">Type</TableHead>
+                  <TableHead className="text-center">Usage Limit</TableHead>
+                  <TableHead className="text-center">Per User Limit</TableHead>
+                  <TableHead className="text-center">Start Date</TableHead>
+                  <TableHead className="text-center">End Date</TableHead>
+                  <TableHead className="text-center">Status</TableHead>
+                  <TableHead className="text-center">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {discounts?.content.map((discount) => (
+                {discounts?.content.map((discount, index) => (
                   <TableRow
                     key={discount.id}
                     onClick={() => handleRowClick(discount)}
                     className="cursor-pointer hover:bg-gray-50"
                   >
-                    <TableCell className="font-medium">
-                      {discount.code}
+                    <TableCell className="font-medium text-center">
+                      {index + 1}
                     </TableCell>
-                    <TableCell>{discount.type}</TableCell>
-                    <TableCell>{discount.discountPercent}%</TableCell>
-                    <TableCell>{formatDate(discount.startDate)}</TableCell>
-                    <TableCell>{formatDate(discount.endDate)}</TableCell>
-                    <TableCell>
+                    <TableCell className="font-medium ">
+                      <div className="truncate" title={discount.code}>
+                        {discount.code}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {discount.discountPercent}%
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {discount.type}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {discount.usageLimit ? discount.usageLimit : 'No Limit'}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {discount.perUserLimit
+                        ? discount.perUserLimit
+                        : 'No Limit'}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {formatDate(discount.startDate)}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {formatDate(discount.endDate)}
+                    </TableCell>
+                    <TableCell className="text-center">
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                           discount.isActive
@@ -213,36 +299,65 @@ const DiscountsPage: React.FC = () => {
                       </span>
                     </TableCell>
                     <TableCell>
-                      {discount.currentUsageCount} / {discount.usageLimit}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          onClick={(e) => handleUpdateClick(e, discount)}
-                          title={discount.isActive ? "Deactivate discount" : "Activate discount"}
-                          className={`h-8 w-8 ${discount.isActive ? 'text-green-600' : 'text-gray-400'}`}
-                        >
-                          {discount.isActive ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
-                          <span className="sr-only">
-                            {discount.isActive ? "Deactivate" : "Activate"}
-                          </span>
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          onClick={(e) => handleDeleteDiscount(e, discount.id)} 
-                          className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
-                          title="Delete discount"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          <span className="sr-only">Delete</span>
-                        </Button>
+                      <div className="flex justify-center">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              disabled={isLoading}
+                              className="cursor-pointer"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              className="cursor-pointer"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleUpdateClick(e, discount);
+                              }}
+                            >
+                              {discount.isActive ? (
+                                <>
+                                  <EyeOff className="h-4 w-4 mr-2" />
+                                  <span>Deactivate</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Eye className="h-4 w-4 mr-2" />
+                                  <span>Activate</span>
+                                </>
+                              )}
+                            </DropdownMenuItem>
+
+                            <DropdownMenuItem
+                              className="cursor-pointer"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSendEmail(e, discount);
+                              }}
+                            >
+                              <Mail className="h-4 w-4 mr-2" />
+                              <span>Send Email</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+
+                            <DropdownMenuItem
+                              className="cursor-pointer"
+                              variant="destructive"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteDiscount(e, discount.id);
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              <span>Delete</span>
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -303,10 +418,18 @@ const DiscountsPage: React.FC = () => {
                 </div>
 
                 <div className="text-sm font-medium">Usage Limit:</div>
-                <div className="text-sm">{selectedDiscount.usageLimit}</div>
+                <div className="text-sm">
+                  {selectedDiscount.usageLimit
+                    ? selectedDiscount.usageLimit
+                    : 'No Limit'}
+                </div>
 
                 <div className="text-sm font-medium">Per User Limit:</div>
-                <div className="text-sm">{selectedDiscount.perUserLimit}</div>
+                <div className="text-sm">
+                  {selectedDiscount.perUserLimit
+                    ? selectedDiscount.perUserLimit
+                    : 'No Limit'}
+                </div>
 
                 <div className="text-sm font-medium">Current Usage:</div>
                 <div className="text-sm">
@@ -324,6 +447,16 @@ const DiscountsPage: React.FC = () => {
                   >
                     {selectedDiscount.isActive ? 'Active' : 'Inactive'}
                   </span>
+                </div>
+
+                <div className="text-sm font-medium">Start At:</div>
+                <div className="text-sm">
+                  {formatDate(selectedDiscount.startDate)}
+                </div>
+
+                <div className="text-sm font-medium">End At:</div>
+                <div className="text-sm">
+                  {formatDate(selectedDiscount.endDate)}
                 </div>
 
                 <div className="text-sm font-medium">Created At:</div>
@@ -346,10 +479,36 @@ const DiscountsPage: React.FC = () => {
       </Dialog>
 
       {/* Create Discount Dialog */}
-      <CreateDiscountDialog 
-        isOpen={isCreateDialogOpen} 
+      <CreateDiscountDialog
+        isOpen={isCreateDialogOpen}
         onClose={() => setIsCreateDialogOpen(false)}
       />
+
+      {/* Confirmation Alert Dialog */}
+      <AlertDialog open={isAlertDialogOpen} onOpenChange={setIsAlertDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{alertDialogProps.title}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {alertDialogProps.description}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="cursor-pointer">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                alertDialogProps.action();
+                setIsAlertDialogOpen(false);
+              }}
+              className="cursor-pointer"
+            >
+              Confirm
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

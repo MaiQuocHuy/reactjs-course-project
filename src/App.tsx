@@ -29,7 +29,6 @@ import PermissionDemoPage from "./pages/admin/PermissionDemoPage";
 import AdminPermissionDemoPage from "./pages/admin/AdminPermissionDemoPage";
 import { AssignRoleToUsersPage } from "./pages/admin/users/AssignRoleToUsersPage";
 import DiscountsPage from "./pages/discounts/DiscountsPage";
-import DiscountDetailPage from "./pages/discounts/DiscountDetailPage";
 
 function App() {
   return (
@@ -215,15 +214,6 @@ function App() {
               element={
                 <AdminLayout>
                   <DiscountsPage />
-                </AdminLayout>
-              }
-            />
-            {/* Discounts Detail Page */}
-              <Route
-              path="/admin/discounts/:id"
-              element={
-                <AdminLayout>
-                  <DiscountDetailPage />
                 </AdminLayout>
               }
             />
