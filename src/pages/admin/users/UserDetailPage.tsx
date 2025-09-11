@@ -329,7 +329,7 @@ export const UserDetailPage: React.FC = () => {
                 <Badge variant={getRoleBadgeVariant(user.role)}>
                   {user.role}
                 </Badge>
-                <Badge variant={user.isActive ? "default" : "destructive"}>
+                <Badge variant={user.isActive ? "active" : "destructive"}>
                   {user.isActive ? "Active" : "Banned"}
                 </Badge>
               </div>
@@ -474,7 +474,7 @@ export const UserDetailPage: React.FC = () => {
                     Account Status
                   </label>
                   <p className="font-medium">
-                    <Badge variant={user.isActive ? "default" : "destructive"}>
+                    <Badge variant={user.isActive ? "active" : "destructive"}>
                       {user.isActive ? "Active" : "Banned"}
                     </Badge>
                   </p>

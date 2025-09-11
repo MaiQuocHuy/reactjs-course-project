@@ -30,6 +30,13 @@ export interface CreateUserRequest {
   isActive?: boolean;
 }
 
+export interface CreateUserWithRoleRequest {
+  username: string;
+  email: string;
+  password: string;
+  role: string; // Can be any custom role name
+}
+
 export interface UpdateUserRequest {
   name: string;
   bio?: string;
@@ -149,6 +156,16 @@ export const usersApi = createApi({
         method: 'GET',
       }),
     }),
+
+    // POST /api/admin/users/newRole - Create user with custom role
+    createUserWithRole: builder.mutation<ApiResponse<User>, CreateUserWithRoleRequest>({
+      query: (data) => ({
+        url: `/admin/users/newRole`,
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['User'],
+    }),
   }),
 });
 
@@ -161,4 +178,5 @@ export const {
   useUpdateUserStatusMutation,
   useDeleteUserMutation,
   useGetAvailableRolesQuery,
+  useCreateUserWithRoleMutation,
 } = usersApi;

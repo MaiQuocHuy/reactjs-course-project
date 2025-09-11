@@ -28,15 +28,6 @@ import {
   AvatarImage,
 } from "../../../components/ui/avatar";
 import { SearchBar } from "../../../components/admin/SearchBar";
-import { FilterBar } from "../../../components/admin/FilterBar";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "../../../components/ui/pagination";
 import {
   PermissionGate,
   PermissionButton,
@@ -50,8 +41,6 @@ import { useGetRolesListQuery } from "../../../services/rolesApi";
 import type { User } from "../../../types/users";
 import type { Role } from "../../../services/rolesApi";
 import { toast } from "sonner";
-
-const ITEMS_PER_PAGE = 10;
 
 interface AssignRoleDialogProps {
   user: User;
@@ -148,7 +137,6 @@ interface LocalFilters {
 }
 
 export const AssignRoleToUsersPage: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<LocalFilters>({
     search: "",
@@ -156,7 +144,7 @@ export const AssignRoleToUsersPage: React.FC = () => {
     status: "ALL",
   });
 
-  // API calls
+  // API calls - Get all users without pagination for custom role assignment
   const { data: usersResponse, isLoading: isUsersLoading } = useGetUsersQuery({
     search: searchQuery,
     role: filters.role !== "ALL" ? filters.role : undefined,
@@ -166,8 +154,8 @@ export const AssignRoleToUsersPage: React.FC = () => {
         : filters.status === "INACTIVE"
         ? false
         : undefined,
-    page: currentPage - 1,
-    size: ITEMS_PER_PAGE,
+    page: 0,
+    size: 100, // Reasonable size to avoid server errors
   });
 
   const { data: rolesResponse, isLoading: isRolesLoading } =
@@ -177,15 +165,28 @@ export const AssignRoleToUsersPage: React.FC = () => {
     useUpdateUserRoleMutation();
 
   const users = usersResponse?.data?.users || [];
-  const totalPages = usersResponse?.data?.totalPages || 0;
   const totalElements = usersResponse?.data?.totalElements || 0;
   const roles = rolesResponse?.data || [];
+
+  // Filter users to exclude main system roles (ADMIN, INSTRUCTOR, STUDENT)
+  const filteredUsers = users.filter((user: User) => {
+    const userRole = user.role?.toUpperCase();
+    return !["ADMIN", "INSTRUCTOR", "STUDENT"].includes(userRole || "");
+  });
+
+  // Filter roles to exclude main system roles from assignment dropdown
+  const assignableRoles = roles.filter((role: Role) => {
+    const roleName = role.name?.toUpperCase();
+    return !["ADMIN", "INSTRUCTOR", "STUDENT"].includes(roleName || "");
+  });
 
   // Handle role assignment
   const handleAssignRole = async (userId: string, roleValue: string) => {
     try {
-      // Find the role in our available roles to validate
-      const selectedRole = roles.find((role) => role.name === roleValue);
+      // Find the role in our available assignable roles to validate
+      const selectedRole = assignableRoles.find(
+        (role) => role.name === roleValue
+      );
       if (!selectedRole) {
         toast.error("Invalid role selected");
         return;
@@ -213,13 +214,21 @@ export const AssignRoleToUsersPage: React.FC = () => {
               Assign Roles to Users
             </h1>
             <p className="text-muted-foreground mt-2">
-              Manage user roles and permissions by assigning roles to users
+              Manage user roles and permissions by assigning custom roles to
+              users
+            </p>
+            <p className="text-sm text-orange-600 mt-1">
+              Note: Only users with custom roles are shown. Users with ADMIN,
+              INSTRUCTOR, or STUDENT roles are excluded.
             </p>
           </div>
 
           <div className="flex items-center space-x-2">
             <Badge variant="outline" className="text-sm">
               Total Users: {totalElements}
+            </Badge>
+            <Badge variant="secondary" className="text-sm">
+              Custom Role Users: {filteredUsers.length}
             </Badge>
           </div>
         </div>
@@ -242,19 +251,94 @@ export const AssignRoleToUsersPage: React.FC = () => {
 
             <div className="flex items-center space-x-4">
               <div className="flex-1">
-                <FilterBar
-                  roleFilter={filters.role as any}
-                  statusFilter={filters.status as any}
-                  onRoleChange={(role) =>
-                    setFilters((prev: LocalFilters) => ({ ...prev, role }))
-                  }
-                  onStatusChange={(status) =>
-                    setFilters((prev: LocalFilters) => ({ ...prev, status }))
-                  }
-                  onClearFilters={() =>
-                    setFilters({ search: "", role: "ALL", status: "ALL" })
-                  }
-                />
+                {/* Custom Filter for Assign Role Page */}
+                <div className="flex items-center space-x-4">
+                  <Select
+                    value={filters.role}
+                    onValueChange={(role) =>
+                      setFilters((prev: LocalFilters) => ({ ...prev, role }))
+                    }
+                  >
+                    <SelectTrigger className="w-[140px]">
+                      <SelectValue placeholder="Role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ALL">All Roles</SelectItem>
+                      {assignableRoles.map((role) => (
+                        <SelectItem key={role.id} value={role.name}>
+                          {role.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <Select
+                    value={filters.status}
+                    onValueChange={(status) =>
+                      setFilters((prev: LocalFilters) => ({ ...prev, status }))
+                    }
+                  >
+                    <SelectTrigger className="w-[140px]">
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ALL">All Status</SelectItem>
+                      <SelectItem value="ACTIVE">Active</SelectItem>
+                      <SelectItem value="INACTIVE">Inactive</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  {(filters.role !== "ALL" || filters.status !== "ALL") && (
+                    <div className="flex items-center space-x-2">
+                      {filters.role !== "ALL" && (
+                        <Badge variant="secondary" className="px-2 py-1">
+                          Role: {filters.role}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="ml-1 h-4 w-4 p-0"
+                            onClick={() =>
+                              setFilters((prev: LocalFilters) => ({
+                                ...prev,
+                                role: "ALL",
+                              }))
+                            }
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </Badge>
+                      )}
+                      {filters.status !== "ALL" && (
+                        <Badge variant="secondary" className="px-2 py-1">
+                          Status: {filters.status}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="ml-1 h-4 w-4 p-0"
+                            onClick={() =>
+                              setFilters((prev: LocalFilters) => ({
+                                ...prev,
+                                status: "ALL",
+                              }))
+                            }
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </Badge>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() =>
+                          setFilters({ search: "", role: "ALL", status: "ALL" })
+                        }
+                        className="text-muted-foreground"
+                      >
+                        Clear all
+                      </Button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </CardContent>
@@ -276,21 +360,23 @@ export const AssignRoleToUsersPage: React.FC = () => {
                   <p className="mt-2 text-sm text-gray-500">Loading users...</p>
                 </div>
               </div>
-            ) : users.length === 0 ? (
+            ) : filteredUsers.length === 0 ? (
               <div className="text-center py-12">
                 <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  No users found
+                  No users with custom roles found
                 </h3>
                 <p className="text-gray-500">
-                  Try adjusting your search or filter criteria
+                  {users.length > 0
+                    ? "All users have system roles (ADMIN, INSTRUCTOR, STUDENT). Only users with custom roles can be assigned new roles here."
+                    : "Try adjusting your search or filter criteria"}
                 </p>
               </div>
             ) : (
               <div className="space-y-4">
                 {/* Users Grid */}
                 <div className="grid gap-4">
-                  {users.map((user: User) => (
+                  {filteredUsers.map((user: User) => (
                     <div
                       key={user.id}
                       className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
@@ -340,7 +426,7 @@ export const AssignRoleToUsersPage: React.FC = () => {
                         <div className="text-right">
                           <div className="text-sm font-medium">Status:</div>
                           <Badge
-                            variant={user.isActive ? "default" : "destructive"}
+                            variant={user.isActive ? "active" : "destructive"}
                             className="mt-1"
                           >
                             {user.isActive ? "Active" : "Inactive"}
@@ -349,7 +435,7 @@ export const AssignRoleToUsersPage: React.FC = () => {
 
                         <AssignRoleDialog
                           user={user}
-                          roles={roles}
+                          roles={assignableRoles}
                           onAssignRole={handleAssignRole}
                           isLoading={isUpdating}
                         />
@@ -358,77 +444,10 @@ export const AssignRoleToUsersPage: React.FC = () => {
                   ))}
                 </div>
 
-                {/* Pagination */}
-                {totalPages > 1 && (
-                  <div className="flex items-center justify-center pt-4">
-                    <Pagination>
-                      <PaginationContent>
-                        <PaginationItem>
-                          <PaginationPrevious
-                            href="#"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              if (currentPage > 1)
-                                setCurrentPage(currentPage - 1);
-                            }}
-                            className={
-                              currentPage <= 1
-                                ? "pointer-events-none opacity-50"
-                                : ""
-                            }
-                          />
-                        </PaginationItem>
-
-                        {Array.from(
-                          { length: Math.min(5, totalPages) },
-                          (_, i) => {
-                            let pageNum;
-                            if (totalPages <= 5) {
-                              pageNum = i + 1;
-                            } else if (currentPage <= 3) {
-                              pageNum = i + 1;
-                            } else if (currentPage >= totalPages - 2) {
-                              pageNum = totalPages - 4 + i;
-                            } else {
-                              pageNum = currentPage - 2 + i;
-                            }
-
-                            return (
-                              <PaginationItem key={pageNum}>
-                                <PaginationLink
-                                  href="#"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    setCurrentPage(pageNum);
-                                  }}
-                                  isActive={pageNum === currentPage}
-                                >
-                                  {pageNum}
-                                </PaginationLink>
-                              </PaginationItem>
-                            );
-                          }
-                        )}
-
-                        <PaginationItem>
-                          <PaginationNext
-                            href="#"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              if (currentPage < totalPages)
-                                setCurrentPage(currentPage + 1);
-                            }}
-                            className={
-                              currentPage >= totalPages
-                                ? "pointer-events-none opacity-50"
-                                : ""
-                            }
-                          />
-                        </PaginationItem>
-                      </PaginationContent>
-                    </Pagination>
-                  </div>
-                )}
+                {/* Summary */}
+                <div className="text-center text-sm text-gray-500 pt-4">
+                  Showing {filteredUsers.length} users with custom roles
+                </div>
               </div>
             )}
           </CardContent>

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import {
@@ -39,6 +40,7 @@ import { useGetRefundStatisticsQuery } from "@/services/refundsApi";
 import { useGetApplicationsQuery } from "@/services/applicationsApi";
 import { useGetRolesListQuery } from "@/services/rolesApi";
 import { usePermissions } from "@/hooks/usePermissions";
+import type { RootState } from "@/store/store";
 
 // Component to render navigation item with permission check
 const PermissionNavigationItem: React.FC<{
@@ -46,12 +48,21 @@ const PermissionNavigationItem: React.FC<{
   isActive: (href: string) => boolean;
   setSidebarOpen: (open: boolean) => void;
 }> = ({ item, isActive, setSidebarOpen }) => {
+  // Get user role from Redux state - role is stored in auth.userRole.name
+  const authUserRole = useSelector((state: RootState) => state.auth.userRole);
+  const userRole = authUserRole?.name;
+  const isAdmin = userRole === "ADMIN";
+
   // Always call hooks, but provide empty array if no permissions
   const permissions = item.permissions || [];
   const { hasAnyPermission } = usePermissions(permissions);
 
-  // If item has permissions and user doesn't have them, don't render
-  if (permissions.length > 0 && !hasAnyPermission) {
+  // If user is ADMIN, show all menu items regardless of permissions
+  // Otherwise, check permissions normally
+  const shouldRender = isAdmin || permissions.length === 0 || hasAnyPermission;
+
+  // If item has permissions and user doesn't have them (and not admin), don't render
+  if (!shouldRender) {
     return null;
   }
 
@@ -144,20 +155,20 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       href: "/admin/categories",
       icon: FolderOpen,
       badge: categoriesCount,
-      permissions: ["course:READ"], // Categories are course-related
+      permissions: ["category:READ"],
     },
     {
       name: "Roles",
       href: "/admin/roles",
       icon: Shield,
       badge: rolesCount,
-      permissions: ["user:UPDATE"], // Managing roles requires user update permission
+      permissions: ["role:READ"],
     },
     {
       name: "Assign Roles",
       href: "/admin/assign-roles",
       icon: UserCog,
-      permissions: ["user:UPDATE"], // Assigning roles requires user update permission
+      permissions: ["role:UPDATE"],
     },
     {
       name: "Courses",
@@ -172,7 +183,13 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       href: "/admin/revenues",
       icon: HandCoins,
       badge: 1,
-      permissions: ["payment:READ"], // Revenues are payment-related
+      permissions: ["revenue:READ"],
+    },
+    {
+      name: "Affiliate Revenue",
+      href: "/admin/affiliate-revenue",
+      icon: Users,
+      permissions: ["affiliate:READ"],
     },
     {
       name: "Payments",
@@ -186,13 +203,13 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       href: "/admin/refunds",
       icon: RefreshCw,
       badge: refundsCount,
-      permissions: ["payment:READ"], // Refunds are payment-related
+      permissions: ["refund:READ"],
     },
     {
       name: "Settings",
       href: "/admin/settings",
       icon: Settings,
-      permissions: ["user:UPDATE"], // Settings usually require admin permissions
+      permissions: ["setting:READ"],
     },
     // {
     //   name: "Permission Demo",
