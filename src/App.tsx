@@ -19,6 +19,7 @@ import RevenuesPage from "./pages/revenues/RevenuesPage";
 import CoursesPage from "./pages/courses/CoursesPage";
 import CourseDetailPage from "./pages/courses/course-detail/CourseDetailPage";
 import CourseReviewDetailPage from "./pages/courses/course-detail/CourseReviewDetailPage";
+import AffiliateRevenueManagementPage from "./pages/admin/AffiliateRevenueManagementPage";
 import { Toaster } from "@/components/ui/sonner";
 import { RefundDetailPage } from "./pages/refunds/RefundDetailPage";
 import { CategoriesListPage } from "./pages/admin/categories/CategoriesListPage";
@@ -138,6 +139,16 @@ function App() {
               element={
                 <AdminLayout>
                   <RevenuesPage />
+                </AdminLayout>
+              }
+            />
+
+            {/* Affiliate Revenue Management */}
+            <Route
+              path="/admin/affiliate-revenue"
+              element={
+                <AdminLayout>
+                  <AffiliateRevenueManagementPage />
                 </AdminLayout>
               }
             />

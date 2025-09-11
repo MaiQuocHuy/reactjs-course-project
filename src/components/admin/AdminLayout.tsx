@@ -191,6 +191,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       permissions: ["revenue:READ"],
     },
     {
+      name: "Affiliate Revenue",
+      href: "/admin/affiliate-revenue",
+      icon: Users,
+      permissions: ["affiliate:READ"],
+    },
+    {
       name: "Payments",
       href: "/admin/payments",
       icon: CreditCard,
