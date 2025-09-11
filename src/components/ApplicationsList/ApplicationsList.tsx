@@ -30,13 +30,13 @@ import { Pagination } from "./Pagination";
 export const getStatusVariant = (status: string) => {
   switch (status.toLowerCase()) {
     case "pending":
-      return "secondary" as const;
+      return "bg-yellow-500 text-white hover:bg-yellow-600";
     case "approved":
-      return "default" as const;
+      return "bg-green-500 text-white hover:bg-green-600";
     case "rejected":
-      return "destructive" as const;
+      return "bg-red-500 text-white hover:bg-red-600";
     default:
-      return "secondary" as const;
+      return "bg-yellow-500 text-white hover:bg-yellow-600";
   }
 };
 
@@ -128,6 +128,9 @@ export const ApplicationsList = () => {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    #
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Applicant
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -147,15 +150,20 @@ export const ApplicationsList = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {paginatedApplications.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
                       {filteredApplications.length === 0 && applications.length > 0
                         ? "No applications match your search criteria"
                         : "No applications found"}
                     </td>
                   </tr>
                 ) : (
-                  paginatedApplications.map((application: Application) => (
+                  paginatedApplications.map((application: Application, index) => (
                     <tr key={application.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">
+                          {(currentPage - 1) * itemsPerPage + index + 1}
+                        </div>
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
                           {application.applicant.name}
@@ -165,10 +173,7 @@ export const ApplicationsList = () => {
                         <div className="text-sm text-gray-500">{application.applicant.email}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <Badge
-                          variant={getStatusVariant(application.status)}
-                          className="capitalize"
-                        >
+                        <Badge className={`capitalize ${getStatusVariant(application.status)}`}>
                           {application.status}
                         </Badge>
                       </td>
@@ -178,7 +183,9 @@ export const ApplicationsList = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex items-center gap-2">
                           <Button
-                            onClick={() => navigate(`/admin/applications/${application.id}`)}
+                            onClick={() =>
+                              navigate(`/admin/applications/${application.applicant.id}`)
+                            }
                             variant="outline"
                             size="sm"
                             className="flex items-center gap-2"

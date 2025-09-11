@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { FileText, Globe, Award, Paperclip, X, Check, ArrowLeft } from "lucide-react";
 import {
-  useGetApplicationByIdQuery,
+  useGetApplicationsByUserIdQuery,
   useReviewApplicationMutation,
 } from "@/services/applicationsApi";
 import { ApplicationDetailSkeleton } from "./ApplicationDetailSkeleton";
@@ -24,17 +24,66 @@ export const ApplicationDetail = () => {
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [showApproveModal, setShowApproveModal] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
-  const { id: applicationId } = useParams<{ id: string }>();
+  const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  // If no applicationId is found in params, redirect back to applications list
-  if (!applicationId) {
+  // If no userId is found in params, redirect back to applications list
+  if (!userId) {
     navigate("/admin/applications");
     return null;
   }
 
-  const { data: application, isLoading, error } = useGetApplicationByIdQuery(applicationId);
+  const { data: applications, isLoading, error } = useGetApplicationsByUserIdQuery(userId);
   const [reviewApplication, { isLoading: isReviewing }] = useReviewApplicationMutation();
+
+  // Get the application index from URL parameters, defaulting to 1 (user-facing)
+  const getSelectedIndexFromUrl = (): number => {
+    const indexParam = searchParams.get("applicationIndex");
+    if (indexParam) {
+      const index = parseInt(indexParam, 10);
+      if (!isNaN(index) && index >= 1) {
+        return index - 1;
+      }
+    }
+    return 0;
+  };
+
+  // Initialize selected application index from URL
+  const [selectedApplicationIndex, setSelectedApplicationIndex] = useState(getSelectedIndexFromUrl);
+
+  // Update URL when applications data is loaded and validate the index
+  useEffect(() => {
+    if (applications && applications.length > 0) {
+      const urlIndex = getSelectedIndexFromUrl();
+      const validIndex = Math.min(urlIndex, applications.length - 1);
+
+      // Always update the URL to show the user-facing index (1-based)
+      updateUrlWithIndex(validIndex);
+      setSelectedApplicationIndex(validIndex);
+    }
+  }, [applications]);
+
+  // Function to update URL with new application index
+  const updateUrlWithIndex = (index: number) => {
+    const newSearchParams = new URLSearchParams(searchParams);
+    // Convert from 0-based internal index to 1-based user-facing index
+    const userFacingIndex = index + 1;
+    newSearchParams.set("applicationIndex", userFacingIndex.toString());
+    setSearchParams(newSearchParams, { replace: true });
+  };
+
+  // Function to change selected application and update URL
+  const changeSelectedApplication = (newIndex: number) => {
+    if (applications && newIndex >= 0 && newIndex < applications.length) {
+      setSelectedApplicationIndex(newIndex);
+      updateUrlWithIndex(newIndex);
+    }
+  };
+
+  // Get the selected application or the first one
+  const application = applications?.[selectedApplicationIndex] || applications?.[0];
+  const hasMultipleApplications = applications && applications.length > 1;
 
   // Parse documents if they exist
   const documents = application?.documents
@@ -66,9 +115,11 @@ export const ApplicationDetail = () => {
 
   // Handle approve application
   const handleApprove = async () => {
+    if (!application) return;
+
     try {
       await reviewApplication({
-        id: applicationId,
+        id: application.id,
         action: "APPROVED",
       }).unwrap();
 
@@ -81,13 +132,13 @@ export const ApplicationDetail = () => {
 
   // Handle reject application
   const handleReject = async () => {
-    if (!rejectionReason.trim()) {
+    if (!rejectionReason.trim() || !application) {
       return;
     }
 
     try {
       await reviewApplication({
-        id: applicationId,
+        id: application.id,
         action: "REJECTED",
         rejectionReason: rejectionReason.trim(),
       }).unwrap();
@@ -141,14 +192,55 @@ export const ApplicationDetail = () => {
 
       {/* Header */}
       <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+        {/* Application Selector for Multiple Applications */}
+        {hasMultipleApplications && (
+          <div className="mb-4 pb-4 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-medium text-gray-700">
+                Applications for this user ({applications.length} total)
+              </h3>
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={() =>
+                    changeSelectedApplication(Math.max(0, selectedApplicationIndex - 1))
+                  }
+                  variant="outline"
+                  size="sm"
+                  disabled={selectedApplicationIndex === 0}
+                >
+                  Previous
+                </Button>
+                <span className="text-sm text-gray-600">
+                  {selectedApplicationIndex + 1} of {applications.length}
+                </span>
+                <Button
+                  onClick={() =>
+                    changeSelectedApplication(
+                      Math.min(applications.length - 1, selectedApplicationIndex + 1)
+                    )
+                  }
+                  variant="outline"
+                  size="sm"
+                  disabled={selectedApplicationIndex === applications.length - 1}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">{application.applicant.name}</h1>
             <p className="text-gray-600">{application.applicant.email}</p>
+            {hasMultipleApplications && (
+              <p className="text-sm text-gray-500 mt-1">Application ID: {application.id}</p>
+            )}
           </div>
           <div className="flex flex-col items-start sm:items-end gap-2">
             <div className="flex items-center gap-4">
-              <Badge variant={getStatusVariant(application.status)} className="text-sm capitalize">
+              <Badge className={`text-sm capitalize ${getStatusVariant(application.status)}`}>
                 {application.status}
               </Badge>
               <span className="text-sm text-gray-500">
