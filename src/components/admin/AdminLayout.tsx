@@ -57,11 +57,20 @@ const PermissionNavigationItem: React.FC<{
   const permissions = item.permissions || [];
   const { hasAnyPermission } = usePermissions(permissions);
 
-  // If user is ADMIN, show all menu items regardless of permissions
-  // Otherwise, check permissions normally
-  const shouldRender = isAdmin || permissions.length === 0 || hasAnyPermission;
+  // Logic for menu visibility:
+  // 1. If item has permissions: check if user has any of those permissions
+  // 2. If item has no permissions: only ADMIN can see it
+  let shouldRender = false;
 
-  // If item has permissions and user doesn't have them (and not admin), don't render
+  if (permissions.length > 0) {
+    // Has permissions defined - check if user has any of them
+    shouldRender = hasAnyPermission;
+  } else {
+    // No permissions defined - only ADMIN can see
+    shouldRender = isAdmin;
+  }
+
+  // If item should not be rendered, return null
   if (!shouldRender) {
     return null;
   }
@@ -154,7 +163,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       href: "/admin/applications",
       icon: FileUser,
       badge: pendingCount,
-      permissions: ["application:READ"],
     },
     {
       name: "Categories",
@@ -168,13 +176,11 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       href: "/admin/roles",
       icon: Shield,
       badge: rolesCount,
-      permissions: ["role:READ"],
     },
     {
       name: "Assign Roles",
       href: "/admin/assign-roles",
       icon: UserCog,
-      permissions: ["role:UPDATE"],
     },
     {
       name: "Courses",
@@ -188,13 +194,11 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       href: "/admin/revenues",
       icon: HandCoins,
       badge: 1,
-      permissions: ["revenue:READ"],
     },
     {
       name: "Affiliate Revenue",
       href: "/admin/affiliate-revenue",
       icon: Users,
-      permissions: ["affiliate:READ"],
     },
     {
       name: "Payments",
@@ -214,7 +218,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       name: "Settings",
       href: "/admin/settings",
       icon: Settings,
-      permissions: ["setting:READ"],
     },
     // {
     //   name: "Permission Demo",
