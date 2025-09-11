@@ -29,8 +29,8 @@ import {
   FolderOpen,
   FileUser,
   Shield,
-  Lock,
   UserCog,
+  Award,
 } from "lucide-react";
 import { Input } from "../ui/input";
 import { useLogoutMutation } from "@/services/authApi";
@@ -84,16 +84,11 @@ const PermissionNavigationItem: React.FC<{
       onClick={() => setSidebarOpen(false)}
     >
       <div className="flex items-center space-x-3">
-        <Icon
-          className={`h-5 w-5 ${active ? "text-blue-600" : "text-gray-400"}`}
-        />
+        <Icon className={`h-5 w-5 ${active ? "text-blue-600" : "text-gray-400"}`} />
         <span>{item.name}</span>
       </div>
       {item.badge && (
-        <Badge
-          variant={active ? "default" : "secondary"}
-          className="h-5 text-xs"
-        >
+        <Badge variant={active ? "default" : "secondary"} className="h-5 text-xs">
           {item.badge}
         </Badge>
       )}
@@ -133,8 +128,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   // Get all pending applications count
   const { data: pendingApplicationsCount } = useGetApplicationsQuery();
   const pendingCount =
-    pendingApplicationsCount?.filter((app) => app.status === "PENDING")
-      .length || 0;
+    pendingApplicationsCount?.filter((app) => app.status === "PENDING").length || 0;
 
   // Get roles count
   const { data: rolesListData } = useGetRolesListQuery();
@@ -154,7 +148,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       href: "/admin/applications",
       icon: FileUser,
       badge: pendingCount,
-      permissions: ["application:READ"],
+      permissions: ["instructor_application:READ"], // Updated to use specific application permissions
     },
     {
       name: "Categories",
@@ -183,6 +177,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       badge: 3,
       permissions: ["course:READ"],
     },
+    { name: "Certificates", href: "/admin/certificates", icon: Award },
     {
       name: "Revenues",
       href: "/admin/revenues",
@@ -265,9 +260,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">SE</span>
               </div>
-              <span className="text-xl font-bold text-gray-900">
-                Sybau Admin
-              </span>
+              <span className="text-xl font-bold text-gray-900">Sybau Admin</span>
             </div>
             <Button
               variant="ghost"
@@ -299,12 +292,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                 <AvatarFallback>AD</AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">
-                  Admin User
-                </p>
-                <p className="text-xs text-gray-500 truncate">
-                  admin@sybau.edu
-                </p>
+                <p className="text-sm font-medium text-gray-900 truncate">Admin User</p>
+                <p className="text-xs text-gray-500 truncate">admin@sybau.edu</p>
               </div>
             </div>
           </div>
@@ -350,17 +339,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               {/* User menu */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="flex items-center space-x-3"
-                  >
+                  <Button variant="ghost" className="flex items-center space-x-3">
                     <Avatar className="h-8 w-8">
                       <AvatarImage src="/api/placeholder/32/32" />
                       <AvatarFallback>AD</AvatarFallback>
                     </Avatar>
-                    <span className="hidden sm:block text-sm font-medium">
-                      Admin User
-                    </span>
+                    <span className="hidden sm:block text-sm font-medium">Admin User</span>
                     <ChevronDown className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>

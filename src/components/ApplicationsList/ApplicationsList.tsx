@@ -9,23 +9,35 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
-import { Search, Eye } from "lucide-react";
+import { Search, Eye, Trash2 } from "lucide-react";
 import type { Application } from "@/types/applications";
-import { useGetApplicationsQuery } from "@/services/applicationsApi";
+import { useGetApplicationsQuery, useDeleteApplicationMutation } from "@/services/applicationsApi";
+import { useInstructorApplicationPermissions } from "@/hooks/usePermissions";
 import { ApplicationListSkeleton } from "./ApplicationsListSkeleton";
 import { Pagination } from "./Pagination";
 
 export const getStatusVariant = (status: string) => {
   switch (status.toLowerCase()) {
     case "pending":
-      return "secondary" as const;
+      return "bg-yellow-500 text-white hover:bg-yellow-600";
     case "approved":
-      return "default" as const;
+      return "bg-green-500 text-white hover:bg-green-600";
     case "rejected":
-      return "destructive" as const;
+      return "bg-red-500 text-white hover:bg-red-600";
     default:
-      return "secondary" as const;
+      return "bg-yellow-500 text-white hover:bg-yellow-600";
   }
 };
 
@@ -33,10 +45,25 @@ export const ApplicationsList = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState<string | null>(null);
   const navigate = useNavigate();
   const itemsPerPage = 10;
 
   const { data: applications = [], isLoading, error } = useGetApplicationsQuery();
+  const [deleteApplication, { isLoading: isDeleting }] = useDeleteApplicationMutation();
+  const { canDeleteApplications } = useInstructorApplicationPermissions();
+
+  const handleDeleteApplication = async (id: string) => {
+    try {
+      await deleteApplication(id).unwrap();
+      setDeleteDialogOpen(null); // Close dialog on success
+      // Optional: Add a toast notification here for success
+    } catch (error) {
+      setDeleteDialogOpen(null); // Close dialog on error too
+      // Optional: Add a toast notification here for error
+      console.error("Failed to delete application:", error);
+    }
+  };
 
   // Handle error state
   if (error) {
@@ -103,6 +130,9 @@ export const ApplicationsList = () => {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    #
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Applicant
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -122,15 +152,20 @@ export const ApplicationsList = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {paginatedApplications.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
                       {filteredApplications.length === 0 && applications.length > 0
                         ? "No applications match your search criteria"
                         : "No applications found"}
                     </td>
                   </tr>
                 ) : (
-                  paginatedApplications.map((application: Application) => (
+                  paginatedApplications.map((application: Application, index) => (
                     <tr key={application.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">
+                          {(currentPage - 1) * itemsPerPage + index + 1}
+                        </div>
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
                           {application.applicant.name}
@@ -140,10 +175,7 @@ export const ApplicationsList = () => {
                         <div className="text-sm text-gray-500">{application.applicant.email}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <Badge
-                          variant={getStatusVariant(application.status)}
-                          className="capitalize"
-                        >
+                        <Badge className={`capitalize ${getStatusVariant(application.status)}`}>
                           {application.status}
                         </Badge>
                       </td>
@@ -151,15 +183,61 @@ export const ApplicationsList = () => {
                         {application.submittedAt}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <Button
-                          onClick={() => navigate(`/admin/applications/${application.id}`)}
-                          variant="outline"
-                          size="sm"
-                          className="flex items-center gap-2"
-                        >
-                          <Eye className="h-4 w-4" />
-                          View Detail
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            onClick={() =>
+                              navigate(`/admin/applications/${application.applicant.id}`)
+                            }
+                            variant="outline"
+                            size="sm"
+                            className="flex items-center gap-2"
+                          >
+                            <Eye className="h-4 w-4" />
+                            View Detail
+                          </Button>
+
+                          {canDeleteApplications && (
+                            <AlertDialog
+                              open={deleteDialogOpen === application.id}
+                              onOpenChange={(open) =>
+                                !isDeleting && setDeleteDialogOpen(open ? application.id : null)
+                              }
+                            >
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                  Delete
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete Application</AlertDialogTitle>{" "}
+                                  <AlertDialogDescription>
+                                    Are you sure you want to delete this application from{" "}
+                                    <strong>{application.applicant.name}</strong>? The application
+                                    will be marked as deleted and hidden from the list.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel disabled={isDeleting}>
+                                    Cancel
+                                  </AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => handleDeleteApplication(application.id)}
+                                    className="bg-red-600 hover:bg-red-700"
+                                    disabled={isDeleting}
+                                  >
+                                    {isDeleting ? "Deleting..." : "Delete"}
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))

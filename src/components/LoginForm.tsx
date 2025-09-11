@@ -26,12 +26,10 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 export default function LoginForm() {
-  // const counter = useAppSelector((state) => state.counter);
   const auth = useAppSelector((state) => state.auth); // Get auth state
 
   const navigate = useNavigate();
 
-  // const dispatch = useAppDispatch();
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -46,7 +44,6 @@ export default function LoginForm() {
   // Redirect if already authenticated
   useEffect(() => {
     if (auth.isAuthenticated) {
-      toast.success(`Chào mừng ${auth.user?.name}!`);
       navigate("/admin");
     }
   }, [auth.isAuthenticated, auth.user]);
@@ -55,7 +52,7 @@ export default function LoginForm() {
     try {
       const res = await loginAdmin(data).unwrap();
 
-      toast.success(res.message || "Đăng nhập thành công");
+      toast.success(res.message || "Login successful");
       navigate("/admin");
     } catch (err: any) {
       console.error("Login error:", err);
@@ -93,9 +90,7 @@ export default function LoginForm() {
     <div className="max-w-sm mx-auto mt-10 p-6 border rounded-xl shadow-sm space-y-4">
       <div className="text-center space-y-2">
         <h2 className="text-xl font-semibold">Đăng nhập</h2>
-        <p className="text-sm text-muted-foreground">
-          Đăng nhập với tài khoản admin của bạn
-        </p>
+        <p className="text-sm text-muted-foreground">Đăng nhập với tài khoản admin của bạn</p>
       </div>
 
       <Form {...form}>

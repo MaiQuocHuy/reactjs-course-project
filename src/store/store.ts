@@ -12,6 +12,7 @@ import { coursesApi } from "@/services/courses-api";
 import { categoriesApi } from "@/services/categoriesApi";
 import { rolesApi } from "@/services/rolesApi";
 import { permissionsApi } from "@/services/permissionsApi";
+import { certificatesApi } from "@/services/certificatesApi";
 import { affiliateApi } from "@/services/affiliateApi";
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "./authSlice";
@@ -28,6 +29,7 @@ export const store = configureStore({
     [categoriesApi.reducerPath]: categoriesApi.reducer,
     [rolesApi.reducerPath]: rolesApi.reducer,
     [permissionsApi.reducerPath]: permissionsApi.reducer,
+    [certificatesApi.reducerPath]: certificatesApi.reducer,
     [affiliateApi.reducerPath]: affiliateApi.reducer,
     // counter: counterSlice.reducer,
     payments: paymentsSlice.reducer,
@@ -45,6 +47,7 @@ export const store = configureStore({
       .concat(categoriesApi.middleware)
       .concat(rolesApi.middleware)
       .concat(permissionsApi.middleware)
+      .concat(certificatesApi.middleware)
       .concat(affiliateApi.middleware),
 });
 
