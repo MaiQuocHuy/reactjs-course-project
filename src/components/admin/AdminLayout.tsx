@@ -28,7 +28,6 @@ import {
   FolderOpen,
   FileUser,
   Shield,
-  Lock,
   UserCog,
   Award,
 } from "lucide-react";
@@ -138,7 +137,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       href: "/admin/applications",
       icon: FileUser,
       badge: pendingCount,
-      permissions: ["user:READ"], // Applications are user-related
+      permissions: ["instructor_application:READ"], // Updated to use specific application permissions
     },
     {
       name: "Categories",

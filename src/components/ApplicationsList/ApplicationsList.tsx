@@ -24,6 +24,7 @@ import { Badge } from "@/components/ui/badge";
 import { Search, Eye, Trash2 } from "lucide-react";
 import type { Application } from "@/types/applications";
 import { useGetApplicationsQuery, useDeleteApplicationMutation } from "@/services/applicationsApi";
+import { useInstructorApplicationPermissions } from "@/hooks/usePermissions";
 import { ApplicationListSkeleton } from "./ApplicationsListSkeleton";
 import { Pagination } from "./Pagination";
 
@@ -50,6 +51,7 @@ export const ApplicationsList = () => {
 
   const { data: applications = [], isLoading, error } = useGetApplicationsQuery();
   const [deleteApplication, { isLoading: isDeleting }] = useDeleteApplicationMutation();
+  const { canDeleteApplications } = useInstructorApplicationPermissions();
 
   const handleDeleteApplication = async (id: string) => {
     try {
@@ -194,43 +196,47 @@ export const ApplicationsList = () => {
                             View Detail
                           </Button>
 
-                          <AlertDialog
-                            open={deleteDialogOpen === application.id}
-                            onOpenChange={(open) =>
-                              !isDeleting && setDeleteDialogOpen(open ? application.id : null)
-                            }
-                          >
-                            <AlertDialogTrigger asChild>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                                Delete
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Delete Application</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Are you sure you want to delete this application from{" "}
-                                  <strong>{application.applicant.name}</strong>? This action cannot
-                                  be undone.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => handleDeleteApplication(application.id)}
-                                  className="bg-red-600 hover:bg-red-700"
-                                  disabled={isDeleting}
+                          {canDeleteApplications && (
+                            <AlertDialog
+                              open={deleteDialogOpen === application.id}
+                              onOpenChange={(open) =>
+                                !isDeleting && setDeleteDialogOpen(open ? application.id : null)
+                              }
+                            >
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
                                 >
-                                  {isDeleting ? "Deleting..." : "Delete"}
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
+                                  <Trash2 className="h-4 w-4" />
+                                  Delete
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete Application</AlertDialogTitle>{" "}
+                                  <AlertDialogDescription>
+                                    Are you sure you want to delete this application from{" "}
+                                    <strong>{application.applicant.name}</strong>? The application
+                                    will be marked as deleted and hidden from the list.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel disabled={isDeleting}>
+                                    Cancel
+                                  </AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => handleDeleteApplication(application.id)}
+                                    className="bg-red-600 hover:bg-red-700"
+                                    disabled={isDeleting}
+                                  >
+                                    {isDeleting ? "Deleting..." : "Delete"}
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          )}
                         </div>
                       </td>
                     </tr>
