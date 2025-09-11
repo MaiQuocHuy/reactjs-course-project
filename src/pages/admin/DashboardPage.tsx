@@ -41,7 +41,7 @@ import {
 } from '../../components/ui/table';
 import PendingCourses from '@/components/courses/PendingCourses';
 import { useGetUsersQuery } from '@/services/usersApi';
-import { useGetAllCoursesQuery } from '@/services/courses-api';
+import { useGetAllCoursesQuery } from '@/services/coursesApi';
 import { useGetPaymentsQuery } from '@/services/paymentsApi';
 import { useGetRefundsQuery } from '@/services/refundsApi';
 

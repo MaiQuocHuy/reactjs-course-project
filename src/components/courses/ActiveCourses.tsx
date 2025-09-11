@@ -3,7 +3,7 @@ import CourseCard from '@/components/courses/CourseCard';
 import NoCourseFound from '@/components/courses/NoCourseFound';
 import CourseSkeleton from '@/components/courses/CourseSkeleton';
 import type { Course as CourseType } from '@/types/courses';
-import { useGetAllCoursesQuery } from '@/services/courses-api';
+import { useGetAllCoursesQuery } from '@/services/coursesApi';
 
 const ActiveCourses: React.FC = () => {
   // Local UI state
