@@ -61,12 +61,24 @@ export function FilterBar({ filters, onFilterChange, isLoading }: FilterBarProps
   }, [localSearch, filters.search, onFilterChange]);
 
   const handleModeChange = (mode: FilterMode) => {
-    onFilterChange({
+    const updates: Partial<CertificateFilters> = {
       mode,
       search: "",
       selectedCourseId: "",
       selectedUserId: "",
-    });
+    };
+
+    // Auto-select first course when switching to course mode
+    if (mode === "course" && courses.length > 0) {
+      updates.selectedCourseId = courses[0].id;
+    }
+
+    // Auto-select first user when switching to user mode
+    if (mode === "user" && users.length > 0) {
+      updates.selectedUserId = users[0].id;
+    }
+
+    onFilterChange(updates);
     setLocalSearch("");
   };
 

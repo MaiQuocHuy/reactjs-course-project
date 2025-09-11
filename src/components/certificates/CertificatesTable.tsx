@@ -49,35 +49,6 @@ export function CertificatesTable({
     }
   };
 
-  const handleDownload = (certificate: Certificate, e: React.MouseEvent) => {
-    e.stopPropagation();
-
-    if (certificate.fileStatus !== "GENERATED") {
-      return;
-    }
-
-    const downloadUrl = certificate.fileUrl;
-
-    if (!downloadUrl) {
-      console.error("No download URL available for certificate:", certificate.id);
-      return;
-    }
-
-    // Transform URL to be absolute if needed
-    const url = downloadUrl.startsWith("http")
-      ? downloadUrl
-      : `${window.location.origin}${downloadUrl}`;
-
-    // Create a temporary link element to trigger download
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `certificate-${certificate.id}.pdf`;
-    link.target = "_blank";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   if (isLoading) {
     return (
       <div className="space-y-3">
@@ -101,6 +72,7 @@ export function CertificatesTable({
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead className="w-16">#</TableHead>
             <TableHead>Student</TableHead>
             <TableHead>Course</TableHead>
             <TableHead>Instructor</TableHead>
@@ -109,12 +81,13 @@ export function CertificatesTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {certificates.map((certificate) => (
+          {certificates.map((certificate, index) => (
             <TableRow
               key={certificate.id}
               className="cursor-pointer hover:bg-muted/50 transition-colors"
               onClick={() => onCertificateClick(certificate)}
             >
+              <TableCell className="text-gray-500 font-medium">{index + 1}</TableCell>
               <TableCell>
                 <div className="flex items-center space-x-3">
                   <div>
@@ -155,21 +128,6 @@ export function CertificatesTable({
                   >
                     <FileText className="h-4 w-4 mr-1" />
                     View
-                  </Button>
-
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => handleDownload(certificate, e)}
-                    disabled={certificate.fileStatus !== "GENERATED"}
-                    title={
-                      certificate.fileStatus === "PENDING"
-                        ? "Certificate is still being generated"
-                        : "Download certificate"
-                    }
-                  >
-                    <Download className="h-4 w-4 mr-1" />
-                    Download
                   </Button>
                 </div>
               </TableCell>
