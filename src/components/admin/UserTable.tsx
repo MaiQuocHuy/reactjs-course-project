@@ -51,7 +51,7 @@ const getRoleBadgeVariant = (role: User["role"]) => {
 const getStatusBadgeVariant = (status: User["status"]) => {
   switch (status) {
     case "ACTIVE":
-      return "default";
+      return "active";
     case "BANNED":
       return "destructive";
     case "INACTIVE":

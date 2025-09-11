@@ -101,8 +101,46 @@ export const AssignPermissionsDialog: React.FC<
     setExpandedResources(newExpanded);
   };
 
+  const toggleAllResourcePermissions = (resourceName: string) => {
+    const resourcePermissions =
+      resources[resourceName]?.filter((p: any) => p?.canAssignToRole) || [];
+
+    const resourcePermissionKeys = resourcePermissions.map(
+      (p: any) => p.permissionKey
+    );
+
+    // Check if all permissions in this resource are selected
+    const allSelected = resourcePermissionKeys.every((key: string) =>
+      selectedPermissions.has(key)
+    );
+
+    const newSelected = new Set(selectedPermissions);
+
+    if (allSelected) {
+      // Deselect all permissions in this resource
+      resourcePermissionKeys.forEach((key: string) => {
+        newSelected.delete(key);
+      });
+    } else {
+      // Select all permissions in this resource
+      resourcePermissionKeys.forEach((key: string) => {
+        newSelected.add(key);
+      });
+    }
+
+    setSelectedPermissions(newSelected);
+  };
+
   const handleSave = async () => {
     if (!roleId) return;
+
+    // Validation: Role must have at least 1 permission
+    if (selectedPermissions.size === 0) {
+      toast.error(
+        "Role must have at least 1 permission. Please select at least one permission before saving."
+      );
+      return;
+    }
 
     try {
       const permissionsToUpdate: UpdateRolePermissionsRequest = {
@@ -225,11 +263,13 @@ export const AssignPermissionsDialog: React.FC<
                     return (
                       <div key={resourceName} className="border rounded-lg">
                         {/* Resource Header */}
-                        <div
-                          className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50"
-                          onClick={() => toggleResourceExpansion(resourceName)}
-                        >
-                          <div className="flex items-center gap-3">
+                        <div className="flex items-center justify-between p-4">
+                          <div
+                            className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 flex-1 py-2 px-2 rounded"
+                            onClick={() =>
+                              toggleResourceExpansion(resourceName)
+                            }
+                          >
                             {isExpanded ? (
                               <ChevronDown className="h-4 w-4 text-gray-500" />
                             ) : (
@@ -241,6 +281,29 @@ export const AssignPermissionsDialog: React.FC<
                             </h3>
                           </div>
                           <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleAllResourcePermissions(resourceName);
+                              }}
+                              className="text-xs h-7"
+                            >
+                              {availablePermissions.every((p: any) =>
+                                selectedPermissions.has(p.permissionKey)
+                              ) ? (
+                                <>
+                                  <X className="h-3 w-3 mr-1" />
+                                  Deselect All
+                                </>
+                              ) : (
+                                <>
+                                  <CheckCircle className="h-3 w-3 mr-1" />
+                                  Select All
+                                </>
+                              )}
+                            </Button>
                             <Badge
                               variant={
                                 selectedCount > 0 ? "default" : "secondary"
@@ -321,9 +384,26 @@ export const AssignPermissionsDialog: React.FC<
         </div>
 
         <DialogFooter className="flex items-center justify-between pt-4">
-          <div className="text-sm text-gray-600">
-            <span className="font-medium">{selectedPermissions.size}</span>{" "}
-            permissions selected
+          <div className="text-sm">
+            <div className="flex items-center gap-2">
+              <span className="font-medium text-gray-600">
+                <span
+                  className={
+                    selectedPermissions.size === 0
+                      ? "text-red-600"
+                      : "text-gray-900"
+                  }
+                >
+                  {selectedPermissions.size}
+                </span>{" "}
+                permissions selected
+              </span>
+              {selectedPermissions.size === 0 && (
+                <Badge variant="destructive" className="text-xs">
+                  At least 1 required
+                </Badge>
+              )}
+            </div>
           </div>
           <div className="flex gap-2">
             <Button
@@ -336,8 +416,12 @@ export const AssignPermissionsDialog: React.FC<
             </Button>
             <Button
               onClick={handleSave}
-              disabled={isUpdating}
-              className="bg-blue-600 hover:bg-blue-700"
+              disabled={isUpdating || selectedPermissions.size === 0}
+              className={
+                selectedPermissions.size === 0
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700"
+              }
             >
               {isUpdating ? (
                 <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" />
