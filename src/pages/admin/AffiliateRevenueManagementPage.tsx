@@ -69,9 +69,9 @@ const AffiliateRevenueManagementPage = () => {
   // State for filters and pagination
   const [filters, setFilters] = useState<PayoutParams>({
     page: 0,
-    size: 10,
-    sortBy: "createdAt",
-    sortDirection: "DESC",
+    size: 20,
+    sort: "createdAt",
+    direction: "desc",
   });
 
   const [selectedPayouts, setSelectedPayouts] = useState<string[]>([]);
@@ -90,22 +90,21 @@ const AffiliateRevenueManagementPage = () => {
     refetch: refetchPayouts,
   } = useGetAffiliatePayoutsQuery(filters);
 
-  const { data: statsResponse } = useGetAffiliateStatisticsQuery({
-    startDate: dateRange.startDate,
-    endDate: dateRange.endDate,
-  });
+  const { data: statsResponse } = useGetAffiliateStatisticsQuery();
 
   const [markAsPaid] = useMarkPayoutAsPaidMutation();
   const [cancelPayout] = useCancelPayoutMutation();
   const [bulkAction] = useBulkActionPayoutsMutation();
   const [exportPayouts] = useExportPayoutsMutation();
 
-  const payouts = payoutsResponse?.data?.items || [];
-  const pagination = payoutsResponse?.data || {
-    totalItems: 0,
+  const payouts = payoutsResponse?.data?.content || [];
+  const pagination = payoutsResponse?.data?.page || {
+    number: 0,
+    size: 20,
     totalPages: 0,
-    currentPage: 0,
-    pageSize: 10,
+    totalElements: 0,
+    first: true,
+    last: true,
   };
   const stats = statsResponse?.data;
 
@@ -484,30 +483,30 @@ const AffiliateRevenueManagementPage = () => {
             <div>
               <CardTitle>Affiliate Payouts</CardTitle>
               <CardDescription>
-                Showing {filteredPayouts.length} of {pagination.totalItems}{" "}
+                Showing {filteredPayouts.length} of {pagination.totalElements}{" "}
                 payouts
               </CardDescription>
             </div>
 
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">
-                Page {pagination.currentPage + 1} of {pagination.totalPages}
+                Page {pagination.number + 1} of {pagination.totalPages}
               </span>
 
               <div className="flex gap-1">
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handlePageChange(pagination.currentPage - 1)}
-                  disabled={pagination.currentPage === 0}
+                  onClick={() => handlePageChange(pagination.number - 1)}
+                  disabled={pagination.number === 0}
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handlePageChange(pagination.currentPage + 1)}
-                  disabled={pagination.currentPage >= pagination.totalPages - 1}
+                  onClick={() => handlePageChange(pagination.number + 1)}
+                  disabled={pagination.number >= pagination.totalPages - 1}
                 >
                   <ChevronRight className="w-4 h-4" />
                 </Button>

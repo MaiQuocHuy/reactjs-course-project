@@ -9,11 +9,15 @@ export interface ApiResponse<T> {
 }
 
 export interface PaginatedResponse<T> {
-  items: T[];
-  totalItems: number;
-  totalPages: number;
-  currentPage: number;
-  pageSize: number;
+  content: T[];
+  page: {
+    number: number;
+    size: number;
+    totalPages: number;
+    totalElements: number;
+    first: boolean;
+    last: boolean;
+  };
 }
 
 export interface AffiliatePayout {
@@ -43,7 +47,7 @@ export interface AffiliatePayout {
   cancelledAt?: string;
 }
 
-export interface AffiliatePayoutStatistics {
+export interface AffiliateStatistics {
   totalPayouts: number;
   pendingPayouts: number;
   paidPayouts: number;
@@ -61,9 +65,10 @@ export interface PayoutParams {
   startDate?: string;
   endDate?: string;
   userId?: string;
-  courseId?: string;
-  sortBy?: string;
-  sortDirection?: 'ASC' | 'DESC';
+  minAmount?: number;
+  maxAmount?: number;
+  sort?: string;
+  direction?: 'asc' | 'desc';
 }
 
 export const affiliateApi = createApi({
@@ -76,36 +81,42 @@ export const affiliateApi = createApi({
       ApiResponse<PaginatedResponse<AffiliatePayout>>,
       PayoutParams
     >({
-      query: (params = {}) => ({
-        url: '/admin/affiliate/payouts',
-        method: 'GET',
-        params: {
+      query: (params = {}) => {
+        const queryParams: any = {
           page: params.page || 0,
-          size: params.size || 10,
-          ...(params.status && { status: params.status }),
-          ...(params.startDate && { startDate: params.startDate }),
-          ...(params.endDate && { endDate: params.endDate }),
-          ...(params.userId && { userId: params.userId }),
-          ...(params.courseId && { courseId: params.courseId }),
-          ...(params.sortBy && { sortBy: params.sortBy }),
-          ...(params.sortDirection && { sortDirection: params.sortDirection }),
-        },
-      }),
+          size: params.size || 20,
+        };
+        
+        // Add sort parameter in Spring Boot format
+        if (params.sort && params.direction) {
+          queryParams.sort = `${params.sort},${params.direction}`;
+        }
+        
+        // Add filter parameters
+        if (params.status) queryParams.status = params.status;
+        if (params.startDate) queryParams.startDate = params.startDate;
+        if (params.endDate) queryParams.endDate = params.endDate;
+        if (params.userId) queryParams.userId = params.userId;
+        if (params.minAmount) queryParams.minAmount = params.minAmount;
+        if (params.maxAmount) queryParams.maxAmount = params.maxAmount;
+        
+        return {
+          url: '/admin/affiliate/payouts',
+          method: 'GET',
+          params: queryParams,
+        };
+      },
       providesTags: ['AffiliatePayout'],
     }),
 
     // Get affiliate payout statistics (Admin only)
     getAffiliateStatistics: builder.query<
-      ApiResponse<AffiliatePayoutStatistics>,
-      { startDate?: string; endDate?: string }
+      ApiResponse<AffiliateStatistics>,
+      void
     >({
-      query: (params = {}) => ({
+      query: () => ({
         url: '/admin/affiliate/statistics',
         method: 'GET',
-        params: {
-          ...(params.startDate && { startDate: params.startDate }),
-          ...(params.endDate && { endDate: params.endDate }),
-        },
       }),
       providesTags: ['AffiliateStats'],
     }),
@@ -143,7 +154,7 @@ export const affiliateApi = createApi({
 
     // Bulk action on payouts (Admin only)
     bulkActionPayouts: builder.mutation<
-      ApiResponse<{ processed: number; failed: number }>,
+      ApiResponse<string>,
       { payoutIds: string[]; action: 'MARK_PAID' | 'CANCEL'; reason?: string }
     >({
       query: ({ payoutIds, action, reason }) => ({
@@ -164,7 +175,8 @@ export const affiliateApi = createApi({
           ...(params.startDate && { startDate: params.startDate }),
           ...(params.endDate && { endDate: params.endDate }),
           ...(params.userId && { userId: params.userId }),
-          ...(params.courseId && { courseId: params.courseId }),
+          ...(params.minAmount && { minAmount: params.minAmount }),
+          ...(params.maxAmount && { maxAmount: params.maxAmount }),
         },
       }),
       transformResponse: (response: any) => response,
