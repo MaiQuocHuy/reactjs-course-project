@@ -53,6 +53,16 @@ const DiscountDetails = (props: Props) => {
               <div className="text-sm font-medium">Type:</div>
               <div className="text-sm">{selectedDiscount.type}</div>
 
+              {selectedDiscount.ownerUser ? (
+                <>
+                  <div className="text-sm font-medium">Owner User:</div>
+                  <div className="text-sm">
+                    {selectedDiscount.ownerUser.id} -{' '}
+                    {selectedDiscount.ownerUser.name}
+                  </div>
+                </>
+              ) : null}
+
               <div className="text-sm font-medium">Discount:</div>
               <div className="text-sm">{selectedDiscount.discountPercent}%</div>
 

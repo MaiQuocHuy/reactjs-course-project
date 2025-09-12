@@ -52,8 +52,8 @@ const DiscountTable = ({
           <TableRow>
             <TableHead className="text-center">No.</TableHead>
             <TableHead className="w-[180px]">Code</TableHead>
-            <TableHead className="text-center">Discount (%)</TableHead>
             <TableHead className="text-center">Type</TableHead>
+            <TableHead className="text-center">Discount (%)</TableHead>
             <TableHead className="text-center">Usage Limit</TableHead>
             <TableHead className="text-center">Per User Limit</TableHead>
             <TableHead className="text-center">Start Date</TableHead>
@@ -69,30 +69,43 @@ const DiscountTable = ({
               onClick={() => onRowClick(discount)}
               className="cursor-pointer hover:bg-gray-50"
             >
+              {/* Order */}
               <TableCell className="font-medium text-center">
                 {index + 1}
               </TableCell>
+
+              {/* Code */}
               <TableCell className="font-medium ">
                 <div className="truncate" title={discount.code}>
                   {discount.code}
                 </div>
               </TableCell>
+
+              {/* Type */}
+              <TableCell className="text-center">{discount.type}</TableCell>
+
+              {/* Discount Percent */}
               <TableCell className="text-center">
                 {discount.discountPercent}%
               </TableCell>
-              <TableCell className="text-center">{discount.type}</TableCell>
+
+              {/* Usage Limit & Per User Limit */}
               <TableCell className="text-center">
                 {discount.usageLimit ? discount.usageLimit : 'No Limit'}
               </TableCell>
               <TableCell className="text-center">
                 {discount.perUserLimit ? discount.perUserLimit : 'No Limit'}
               </TableCell>
+
+              {/* Start Date & End Date */}
               <TableCell className="text-center">
                 {formatDate(discount.startDate)}
               </TableCell>
               <TableCell className="text-center">
                 {formatDate(discount.endDate)}
               </TableCell>
+
+              {/* Status */}
               <TableCell className="text-center">
                 <span
                   className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -104,6 +117,8 @@ const DiscountTable = ({
                   {discount.isActive ? 'Active' : 'Inactive'}
                 </span>
               </TableCell>
+
+              {/* Actions */}
               <TableCell>
                 <div className="flex justify-center">
                   <DropdownMenu>
@@ -119,6 +134,7 @@ const DiscountTable = ({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                      {/* Update Status */}
                       <DropdownMenuItem
                         className="cursor-pointer"
                         onClick={(e) => {
@@ -139,18 +155,22 @@ const DiscountTable = ({
                         )}
                       </DropdownMenuItem>
 
-                      <DropdownMenuItem
-                        className="cursor-pointer"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onSendEmail(e, discount);
-                        }}
-                      >
-                        <Mail className="h-4 w-4 mr-2" />
-                        <span>Send Email</span>
-                      </DropdownMenuItem>
+                      {/* Send Email */}
+                      {discount.type === 'GENERAL' && (
+                        <DropdownMenuItem
+                          className="cursor-pointer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSendEmail(e, discount);
+                          }}
+                        >
+                          <Mail className="h-4 w-4 mr-2" />
+                          <span>Send Email</span>
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuSeparator />
 
+                      {/* Delete Discount */}
                       <DropdownMenuItem
                         className="cursor-pointer text-red-600 hover:bg-red-50 hover:text-red-700 focus:bg-red-50 focus:text-red-700"
                         onClick={(e) => {
