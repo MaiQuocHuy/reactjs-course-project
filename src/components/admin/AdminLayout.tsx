@@ -145,7 +145,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   // Get discounts count
   const { data: discountsListData } = useGetAllDiscountsQuery({});
   const discountsCount =
-    (discountsListData && discountsListData.content.length) || 0;
+    (discountsListData && discountsListData.page.totalElements) || 0;
 
   const navigation: NavigationItem[] = [
     { name: 'Dashboard', href: '/admin', icon: Home }, // No permission needed for dashboard

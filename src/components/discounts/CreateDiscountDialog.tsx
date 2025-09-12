@@ -54,10 +54,8 @@ const schemaShape = {
     .max(30, { message: 'Discount cannot exceed 30%' })
     .refine(
       (value) => {
-        // Validate to 2 decimal places max as per BigDecimal typical usage
-        const stringValue = value.toString();
-        const decimalParts = stringValue.split('.');
-        return decimalParts.length === 1 || decimalParts[1].length <= 2;
+        // Check if value has more than 2 decimal places
+        return Number(value.toFixed(2)) === value;
       },
       { message: 'Maximum 2 decimal places allowed' }
     ),
@@ -143,6 +141,18 @@ const formSchema = z
     }
   );
 
+const getCurrentDate = () => {
+  const now = new Date();
+  return now;
+};
+
+const getNextWeekDate = () => {
+  const now = getCurrentDate();
+  const nextWeek = new Date(now);
+  nextWeek.setDate(now.getDate() + 7);
+  return nextWeek;
+};
+
 interface CreateDiscountDialogProps {
   isOpen: boolean;
   onClose: () => void;
@@ -163,19 +173,16 @@ export const CreateDiscountDialog: React.FC<CreateDiscountDialogProps> = ({
       description: '',
       type: 'GENERAL',
       ownerUserId: '',
-      startDate: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss"),
-      endDate: format(
-        new Date(new Date().setMonth(new Date().getMonth() + 1)),
-        "yyyy-MM-dd'T'HH:mm:ss"
-      ),
+      startDate: format(getCurrentDate(), "yyyy-MM-dd'T'HH:mm:ss"),
+      endDate: format(getNextWeekDate(), "yyyy-MM-dd'T'HH:mm:ss"),
       usageLimit: 100,
       perUserLimit: 1,
     },
     mode: 'onChange',
   });
-  
+
   // Define CSS class for valid inputs
-  const validInputClass = "border-green-500";
+  const VALID_INPUT_STYLES = 'border-green-500 focus:border-green-600';
 
   useEffect(() => {
     // Reset form values when dialog is opened
@@ -200,14 +207,12 @@ export const CreateDiscountDialog: React.FC<CreateDiscountDialogProps> = ({
         perUserLimit: data.perUserLimit,
       };
 
-      const res = await createDiscount(discountData).unwrap();
-      if (res && res.statusCode === 201) {
-        toast.success('Discount created', {
-          description: `Discount code ${data.code} was created successfully`,
-        });
-        form.reset();
-        onClose();
-      }
+      await createDiscount(discountData).unwrap();
+      toast.success('Discount created', {
+        description: `Discount code ${data.code} was created successfully`,
+      });
+      form.reset();
+      onClose();
     } catch (error: any) {
       console.error('Error creating discount:', error);
       toast.error(error.message || 'Failed to create discount!');
@@ -256,12 +261,12 @@ export const CreateDiscountDialog: React.FC<CreateDiscountDialogProps> = ({
                           onChange={(e) =>
                             field.onChange(e.target.value.toUpperCase())
                           }
-                          className={isValid ? validInputClass : ""}
+                          className={isValid ? VALID_INPUT_STYLES : ''}
                         />
                       </FormControl>
                       <FormDescription>
-                        Enter a unique code (2-50 characters) using only uppercase
-                        letters, numbers, hyphens, and underscores.
+                        Enter a unique code (2-50 characters) using only
+                        uppercase letters, numbers, hyphens, and underscores.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -285,7 +290,9 @@ export const CreateDiscountDialog: React.FC<CreateDiscountDialogProps> = ({
                       <FormControl>
                         <Textarea
                           placeholder="Welcome discount for new users"
-                          className={`resize-none ${isValid ? validInputClass : ""}`}
+                          className={`resize-none ${
+                            isValid ? VALID_INPUT_STYLES : ''
+                          }`}
                           {...field}
                         />
                       </FormControl>
@@ -306,7 +313,7 @@ export const CreateDiscountDialog: React.FC<CreateDiscountDialogProps> = ({
                   // Check if this field is valid
                   const fieldError = form.formState.errors.discountPercent;
                   const isValid = !fieldError;
-                  
+
                   return (
                     <FormItem>
                       <FormLabel>Discount Percentage</FormLabel>
@@ -317,8 +324,10 @@ export const CreateDiscountDialog: React.FC<CreateDiscountDialogProps> = ({
                           max={30}
                           step={0.01}
                           {...field}
-                          onChange={(e) => field.onChange(Number(e.target.value))}
-                          className={isValid ? validInputClass : ""}
+                          onChange={(e) =>
+                            field.onChange(Number(e.target.value))
+                          }
+                          className={isValid ? VALID_INPUT_STYLES : ''}
                         />
                       </FormControl>
                       <FormDescription>
@@ -338,7 +347,7 @@ export const CreateDiscountDialog: React.FC<CreateDiscountDialogProps> = ({
                   // Check if this field is valid
                   const fieldError = form.formState.errors.type;
                   const isValid = !fieldError;
-                  
+
                   return (
                     <FormItem>
                       <FormLabel>Type</FormLabel>
@@ -353,7 +362,9 @@ export const CreateDiscountDialog: React.FC<CreateDiscountDialogProps> = ({
                         defaultValue={field.value}
                       >
                         <FormControl>
-                          <SelectTrigger className={isValid ? validInputClass : ""}>
+                          <SelectTrigger
+                            className={isValid ? VALID_INPUT_STYLES : ''}
+                          >
                             <SelectValue placeholder="Select type" />
                           </SelectTrigger>
                         </FormControl>
@@ -390,7 +401,11 @@ export const CreateDiscountDialog: React.FC<CreateDiscountDialogProps> = ({
                       <FormItem>
                         <FormLabel>Owner User ID (Required)</FormLabel>
                         <FormControl>
-                          <Input placeholder="user-001" {...field} className={isValid ? validInputClass : ""} />
+                          <Input
+                            placeholder="user-001"
+                            {...field}
+                            className={isValid ? VALID_INPUT_STYLES : ''}
+                          />
                         </FormControl>
                         <FormDescription>
                           Enter the user ID who owns this referral discount
@@ -417,10 +432,15 @@ export const CreateDiscountDialog: React.FC<CreateDiscountDialogProps> = ({
                       <FormItem>
                         <FormLabel>Start Date</FormLabel>
                         <FormControl>
-                          <Input type="datetime-local" {...field} className={isValid ? validInputClass : ""} />
+                          <Input
+                            type="datetime-local"
+                            {...field}
+                            className={isValid ? VALID_INPUT_STYLES : ''}
+                          />
                         </FormControl>
                         <FormDescription>
-                          When this discount becomes valid (must be in the future)
+                          When this discount becomes valid (must be in the
+                          future)
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -441,7 +461,11 @@ export const CreateDiscountDialog: React.FC<CreateDiscountDialogProps> = ({
                       <FormItem>
                         <FormLabel>End Date</FormLabel>
                         <FormControl>
-                          <Input type="datetime-local" {...field} className={isValid ? validInputClass : ""} />
+                          <Input
+                            type="datetime-local"
+                            {...field}
+                            className={isValid ? VALID_INPUT_STYLES : ''}
+                          />
                         </FormControl>
                         <FormDescription>
                           When this discount expires (must be after start date)
@@ -461,7 +485,7 @@ export const CreateDiscountDialog: React.FC<CreateDiscountDialogProps> = ({
                     // Check if this field is valid
                     const fieldError = form.formState.errors.usageLimit;
                     const isValid = !fieldError;
-                    
+
                     return (
                       <FormItem>
                         <FormLabel>Total Usage Limit</FormLabel>
@@ -479,7 +503,7 @@ export const CreateDiscountDialog: React.FC<CreateDiscountDialogProps> = ({
                                     : Number(e.target.value);
                                 field.onChange(val === '' ? null : val);
                               }}
-                              className={isValid ? validInputClass : ""}
+                              className={isValid ? VALID_INPUT_STYLES : ''}
                             />
                           </FormControl>
                           <Button
@@ -497,8 +521,8 @@ export const CreateDiscountDialog: React.FC<CreateDiscountDialogProps> = ({
                           className="truncate"
                           title="Maximum number of times this discount can be used (or No Limit)"
                         >
-                          Maximum number of times this discount can be used (or No
-                          Limit)
+                          Maximum number of times this discount can be used (or
+                          No Limit)
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -513,7 +537,7 @@ export const CreateDiscountDialog: React.FC<CreateDiscountDialogProps> = ({
                     // Check if this field is valid
                     const fieldError = form.formState.errors.perUserLimit;
                     const isValid = !fieldError;
-                    
+
                     return (
                       <FormItem>
                         <FormLabel>Per User Limit</FormLabel>
@@ -531,7 +555,7 @@ export const CreateDiscountDialog: React.FC<CreateDiscountDialogProps> = ({
                                     : Number(e.target.value);
                                 field.onChange(val === '' ? null : val);
                               }}
-                              className={isValid ? validInputClass : ""}
+                              className={isValid ? VALID_INPUT_STYLES : ''}
                             />
                           </FormControl>
                           <Button
@@ -560,10 +584,19 @@ export const CreateDiscountDialog: React.FC<CreateDiscountDialogProps> = ({
               </div>
 
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={onClose} className='cursor-pointer'>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onClose}
+                  className="cursor-pointer"
+                >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isLoading} className='cursor-pointer'>
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  className="cursor-pointer"
+                >
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />

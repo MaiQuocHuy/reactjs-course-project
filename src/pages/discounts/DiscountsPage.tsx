@@ -1,12 +1,5 @@
 import React, { useState } from 'react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+
 import { Pagination } from '@/components/shared/Pagination';
 import {
   useGetAllDiscountsQuery,
@@ -15,13 +8,6 @@ import {
   useUpdateDiscountStatusMutation,
 } from '@/services/discountsApi';
 import type { Discount } from '@/types/discounts';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from '@/components/ui/dialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,27 +18,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import {
-  ArrowUpDown,
-  Eye,
-  EyeOff,
-  Loader2,
-  Mail,
-  MoreHorizontal,
-  PlusCircle,
-  Trash2,
-} from 'lucide-react';
-import { format } from 'date-fns';
+import { ArrowUpDown, Loader2, PlusCircle } from 'lucide-react';
 import CreateDiscountDialog from '@/components/discounts/CreateDiscountDialog';
 import { toast } from 'sonner';
+import DiscountTable from '@/components/discounts/DiscountTable';
+import DiscountDetails from '@/components/discounts/DiscountDetails';
 
 const DiscountsPage: React.FC = () => {
   const [page, setPage] = useState(0);
@@ -61,7 +32,6 @@ const DiscountsPage: React.FC = () => {
   const [selectedDiscountId, setSelectedDiscountId] = useState<string | null>(
     null
   );
-  // const [isLoading, setIsLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
@@ -100,7 +70,7 @@ const DiscountsPage: React.FC = () => {
     useUpdateDiscountStatusMutation();
 
   // Combine loading states
-  const isLoading = isLoadingDiscounts || isDeleting || isUpdating;
+  const isLoading = isLoadingDiscounts;
 
   // Handle page change
   const handlePageChange = (newPage: number) => {
@@ -182,14 +152,22 @@ const DiscountsPage: React.FC = () => {
     );
   };
 
-  // Format date string
-  const formatDate = (dateString: string) => {
-    try {
-      return format(new Date(dateString), 'MMM dd, yyyy');
-    } catch (e) {
-      return dateString;
-    }
-  };
+  if (isLoadingDiscounts) {
+    return (
+      <div className="flex justify-center items-center p-8">
+        <Loader2 className="h-6 w-6 animate-spin" />
+        <span className="ml-2">Loading discounts...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-8 text-center text-red-500">
+        Error loading discounts. Please try again later.
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto py-6">
@@ -226,257 +204,36 @@ const DiscountsPage: React.FC = () => {
           </Button>
         </div>
 
-        {isLoading ? (
-          <div className="flex justify-center items-center p-8">
-            <Loader2 className="h-6 w-6 animate-spin" />
-            <span className="ml-2">Loading discounts...</span>
-          </div>
-        ) : error ? (
-          <div className="p-8 text-center text-red-500">
-            Error loading discounts. Please try again later.
-          </div>
-        ) : (
-          <>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="text-center">No.</TableHead>
-                  <TableHead className="w-[180px]">Code</TableHead>
-                  <TableHead className="text-center">Discount (%)</TableHead>
-                  <TableHead className="text-center">Type</TableHead>
-                  <TableHead className="text-center">Usage Limit</TableHead>
-                  <TableHead className="text-center">Per User Limit</TableHead>
-                  <TableHead className="text-center">Start Date</TableHead>
-                  <TableHead className="text-center">End Date</TableHead>
-                  <TableHead className="text-center">Status</TableHead>
-                  <TableHead className="text-center">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {discounts?.content.map((discount, index) => (
-                  <TableRow
-                    key={discount.id}
-                    onClick={() => handleRowClick(discount)}
-                    className="cursor-pointer hover:bg-gray-50"
-                  >
-                    <TableCell className="font-medium text-center">
-                      {index + 1}
-                    </TableCell>
-                    <TableCell className="font-medium ">
-                      <div className="truncate" title={discount.code}>
-                        {discount.code}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {discount.discountPercent}%
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {discount.type}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {discount.usageLimit ? discount.usageLimit : 'No Limit'}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {discount.perUserLimit
-                        ? discount.perUserLimit
-                        : 'No Limit'}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {formatDate(discount.startDate)}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {formatDate(discount.endDate)}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          discount.isActive
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}
-                      >
-                        {discount.isActive ? 'Active' : 'Inactive'}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex justify-center">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              disabled={isLoading}
-                              className="cursor-pointer"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem
-                              className="cursor-pointer"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleUpdateClick(e, discount);
-                              }}
-                            >
-                              {discount.isActive ? (
-                                <>
-                                  <EyeOff className="h-4 w-4 mr-2" />
-                                  <span>Deactivate</span>
-                                </>
-                              ) : (
-                                <>
-                                  <Eye className="h-4 w-4 mr-2" />
-                                  <span>Activate</span>
-                                </>
-                              )}
-                            </DropdownMenuItem>
+        <div>
+          <DiscountTable
+            discounts={discounts?.content}
+            onRowClick={handleRowClick}
+            onDeleteDiscount={handleDeleteDiscount}
+            onUpdateStatus={handleUpdateClick}
+            onSendEmail={handleSendEmail}
+            isLoading={isUpdating || isDeleting}
+          />
 
-                            <DropdownMenuItem
-                              className="cursor-pointer"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleSendEmail(e, discount);
-                              }}
-                            >
-                              <Mail className="h-4 w-4 mr-2" />
-                              <span>Send Email</span>
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-
-                            <DropdownMenuItem
-                              className="cursor-pointer"
-                              variant="destructive"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteDiscount(e, discount.id);
-                              }}
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              <span>Delete</span>
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-
-            {/* Pagination component */}
-            {discounts && discounts.page && discounts.page.totalPages >= 1 && (
-              <Pagination
-                currentPage={page}
-                itemsPerPage={pageSize}
-                pageInfo={discounts.page}
-                onPageChange={handlePageChange}
-                onItemsPerPageChange={handlePageSizeChange}
-              />
-            )}
-          </>
-        )}
+          {/* Pagination component */}
+          {discounts && discounts.page && discounts.page.totalPages >= 1 && (
+            <Pagination
+              currentPage={page}
+              itemsPerPage={pageSize}
+              pageInfo={discounts.page}
+              onPageChange={handlePageChange}
+              onItemsPerPageChange={handlePageSizeChange}
+            />
+          )}
+        </div>
       </div>
 
       {/* Discount Detail Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Discount Details</DialogTitle>
-            <DialogDescription>
-              Detailed information about the selected discount.
-            </DialogDescription>
-          </DialogHeader>
-
-          {isLoadingDetails ? (
-            <div className="flex justify-center items-center p-4">
-              <Loader2 className="h-6 w-6 animate-spin" />
-              <span className="ml-2">Loading details...</span>
-            </div>
-          ) : selectedDiscount ? (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-                <div className="text-sm font-medium">Code:</div>
-                <div className="text-sm">{selectedDiscount.code}</div>
-
-                <div className="text-sm font-medium">Type:</div>
-                <div className="text-sm">{selectedDiscount.type}</div>
-
-                <div className="text-sm font-medium">Discount:</div>
-                <div className="text-sm">
-                  {selectedDiscount.discountPercent}%
-                </div>
-
-                <div className="text-sm font-medium">Description:</div>
-                <div className="text-sm">{selectedDiscount.description}</div>
-
-                <div className="text-sm font-medium">Valid Period:</div>
-                <div className="text-sm">
-                  {formatDate(selectedDiscount.startDate)} to{' '}
-                  {formatDate(selectedDiscount.endDate)}
-                </div>
-
-                <div className="text-sm font-medium">Usage Limit:</div>
-                <div className="text-sm">
-                  {selectedDiscount.usageLimit
-                    ? selectedDiscount.usageLimit
-                    : 'No Limit'}
-                </div>
-
-                <div className="text-sm font-medium">Per User Limit:</div>
-                <div className="text-sm">
-                  {selectedDiscount.perUserLimit
-                    ? selectedDiscount.perUserLimit
-                    : 'No Limit'}
-                </div>
-
-                <div className="text-sm font-medium">Current Usage:</div>
-                <div className="text-sm">
-                  {selectedDiscount.currentUsageCount}
-                </div>
-
-                <div className="text-sm font-medium">Status:</div>
-                <div className="text-sm">
-                  <span
-                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      selectedDiscount.isActive
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-gray-100 text-gray-800'
-                    }`}
-                  >
-                    {selectedDiscount.isActive ? 'Active' : 'Inactive'}
-                  </span>
-                </div>
-
-                <div className="text-sm font-medium">Start At:</div>
-                <div className="text-sm">
-                  {formatDate(selectedDiscount.startDate)}
-                </div>
-
-                <div className="text-sm font-medium">End At:</div>
-                <div className="text-sm">
-                  {formatDate(selectedDiscount.endDate)}
-                </div>
-
-                <div className="text-sm font-medium">Created At:</div>
-                <div className="text-sm">
-                  {formatDate(selectedDiscount.createdAt)}
-                </div>
-
-                <div className="text-sm font-medium">Updated At:</div>
-                <div className="text-sm">
-                  {formatDate(selectedDiscount.updatedAt)}
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="text-center py-4">
-              No discount details available
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      <DiscountDetails
+        isLoadingDetails={isLoadingDetails}
+        isDialogOpen={isDialogOpen}
+        onDialogOpen={(open) => setIsDialogOpen(open)}
+        selectedDiscount={selectedDiscount}
+      />
 
       {/* Create Discount Dialog */}
       <CreateDiscountDialog

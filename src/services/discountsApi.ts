@@ -3,6 +3,7 @@ import { createApi } from '@reduxjs/toolkit/query/react';
 import { baseQueryWithReauth } from '@/lib/baseQueryWithReauth';
 import type { ApiResponse, PaginatedResponse } from '@/types/common';
 import type {
+  CreateDiscountRequest,
   Discount,
   GetDiscountsParams,
 } from '@/types/discounts';
@@ -39,7 +40,7 @@ export const discountsApi = createApi({
     }),
 
     // Create a new discount
-    createDiscount: builder.mutation({
+    createDiscount: builder.mutation<ApiResponse<Discount>, CreateDiscountRequest>({
       query: (discount) => ({
         url: '/discounts',
         method: 'POST',
