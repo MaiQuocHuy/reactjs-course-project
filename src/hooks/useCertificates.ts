@@ -5,7 +5,7 @@ import {
   useGetCertificatesByCourseQuery,
   useGetCertificatesByUserQuery,
 } from '@/services/certificatesApi';
-import { useGetAllCoursesQuery } from '@/services/courses-api';
+import { useGetAllCoursesQuery } from '@/services/coursesApi';
 import { useGetUsersQuery } from '@/services/usersApi';
 import type {
   CertificateFilters,

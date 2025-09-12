@@ -1,6 +1,6 @@
 import type { PaymentDetailResponse, PaymentUser } from "../payments";
 
-// Types for API responses
+
 export interface RefundPaymentBasic {
   id: string;
   amount: number;
