@@ -313,7 +313,7 @@ const DiscountsPage: React.FC = () => {
   };
 
   // Handle sending the email
-  const handleSendEmailConfirm = async () => {
+  const handleSendEmailConfirm = () => {
     if (!selectedDiscountForEmail) return;
 
     // Validate subject length
@@ -323,7 +323,7 @@ const DiscountsPage: React.FC = () => {
     }
 
     try {
-      await sendEmail({
+      sendEmail({
         subject: emailSubject,
         discount_id: selectedDiscountForEmail.id,
       }).unwrap();
