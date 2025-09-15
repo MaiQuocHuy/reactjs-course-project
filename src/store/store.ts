@@ -1,6 +1,3 @@
-// src/store.ts
-
-// import counterSlice from "@/features/counter/counterSlice";
 import paymentsSlice from "@/features/payments/paymentsSlice";
 import refundsSlice from "@/features/refunds/refundsSlice";
 import searchFilterSlice from "@/features/shared/searchFilterSlice";
@@ -8,7 +5,7 @@ import { authApi } from "@/services/authApi";
 import { usersApi } from "@/services/usersApi";
 import { paymentsApi } from "@/services/paymentsApi";
 import { refundsApi } from "@/services/refundsApi";
-import { coursesApi } from "@/services/courses-api";
+import { coursesApi } from "@/services/coursesApi";
 import { categoriesApi } from "@/services/categoriesApi";
 import { rolesApi } from "@/services/rolesApi";
 import { permissionsApi } from "@/services/permissionsApi";
@@ -18,6 +15,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "./authSlice";
 import { applicationsApi } from "@/services/applicationsApi";
 import { notificationsApi } from "@/services/notificationsApi";
+import { discountsApi } from "@/services/discountsApi";
 export const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -33,7 +31,8 @@ export const store = configureStore({
     [permissionsApi.reducerPath]: permissionsApi.reducer,
     [certificatesApi.reducerPath]: certificatesApi.reducer,
     [affiliateApi.reducerPath]: affiliateApi.reducer,
-    // counter: counterSlice.reducer,
+    [discountsApi.reducerPath]: discountsApi.reducer,
+
     payments: paymentsSlice.reducer,
     refunds: refundsSlice.reducer,
     searchFilter: searchFilterSlice.reducer,
@@ -51,7 +50,8 @@ export const store = configureStore({
       .concat(permissionsApi.middleware)
       .concat(certificatesApi.middleware)
       .concat(affiliateApi.middleware)
-      .concat(notificationsApi.middleware),
+      .concat(notificationsApi.middleware)
+      .concat(discountsApi.middleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

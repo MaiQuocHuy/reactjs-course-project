@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import CourseContent from '@/components/courses/course-detail/course-content/CourseContent';
-import { useGetCourseByIdQuery } from '@/services/courses-api';
+import { useGetCourseByIdQuery } from '@/services/coursesApi';
 import CourseSkeleton from '@/components/courses/CourseSkeleton';
 import NoCourseFound from '@/components/courses/NoCourseFound';
 import { Button } from '@/components/ui/button';

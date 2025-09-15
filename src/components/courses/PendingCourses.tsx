@@ -1,7 +1,7 @@
 import {
   useGetPendingCoursesQuery,
   useUpdateCourseStatusMutation,
-} from '@/services/courses-api';
+} from '@/services/coursesApi';
 import { useCallback, useState } from 'react';
 import CourseSkeleton from './CourseSkeleton';
 import NoCourseFound from './NoCourseFound';

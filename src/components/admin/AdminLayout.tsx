@@ -30,6 +30,7 @@ import {
   FileUser,
   Shield,
   UserCog,
+  TicketPercent,
   Award,
 } from "lucide-react";
 import { Input } from "../ui/input";
@@ -40,6 +41,7 @@ import { useGetRefundStatisticsQuery } from "@/services/refundsApi";
 import { useGetApplicationsQuery } from "@/services/applicationsApi";
 import { useGetRolesListQuery } from "@/services/rolesApi";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useGetAllDiscountsQuery } from "@/services/discountsApi";
 import type { RootState } from "@/store/store";
 import { NotificationTrigger } from "../notifications/NotificationTrigger";
 
@@ -58,11 +60,20 @@ const PermissionNavigationItem: React.FC<{
   const permissions = item.permissions || [];
   const { hasAnyPermission } = usePermissions(permissions);
 
-  // If user is ADMIN, show all menu items regardless of permissions
-  // Otherwise, check permissions normally
-  const shouldRender = isAdmin || permissions.length === 0 || hasAnyPermission;
+  // Logic for menu visibility:
+  // 1. If item has permissions: check if user has any of those permissions
+  // 2. If item has no permissions: only ADMIN can see it
+  let shouldRender = false;
 
-  // If item has permissions and user doesn't have them (and not admin), don't render
+  if (permissions.length > 0) {
+    // Has permissions defined - check if user has any of them
+    shouldRender = hasAnyPermission;
+  } else {
+    // No permissions defined - only ADMIN can see
+    shouldRender = isAdmin;
+  }
+
+  // If item should not be rendered, return null
   if (!shouldRender) {
     return null;
   }
@@ -85,11 +96,16 @@ const PermissionNavigationItem: React.FC<{
       onClick={() => setSidebarOpen(false)}
     >
       <div className="flex items-center space-x-3">
-        <Icon className={`h-5 w-5 ${active ? "text-blue-600" : "text-gray-400"}`} />
+        <Icon
+          className={`h-5 w-5 ${active ? "text-blue-600" : "text-gray-400"}`}
+        />
         <span>{item.name}</span>
       </div>
       {item.badge && (
-        <Badge variant={active ? "default" : "secondary"} className="h-5 text-xs">
+        <Badge
+          variant={active ? "default" : "secondary"}
+          className="h-5 text-xs"
+        >
           {item.badge}
         </Badge>
       )}
@@ -129,11 +145,17 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   // Get all pending applications count
   const { data: pendingApplicationsCount } = useGetApplicationsQuery();
   const pendingCount =
-    pendingApplicationsCount?.filter((app) => app.status === "PENDING").length || 0;
+    pendingApplicationsCount?.filter((app) => app.status === "PENDING")
+      .length || 0;
 
   // Get roles count
   const { data: rolesListData } = useGetRolesListQuery();
   const rolesCount = rolesListData?.data?.length || 0;
+
+  // Get discounts count
+  const { data: discountsListData } = useGetAllDiscountsQuery({});
+  const discountsCount =
+    (discountsListData && discountsListData.page.totalElements) || 0;
 
   const navigation: NavigationItem[] = [
     { name: "Dashboard", href: "/admin", icon: Home }, // No permission needed for dashboard
@@ -163,13 +185,11 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       href: "/admin/roles",
       icon: Shield,
       badge: rolesCount,
-      permissions: ["role:READ"],
     },
     {
       name: "Assign Roles",
       href: "/admin/assign-roles",
       icon: UserCog,
-      permissions: ["role:UPDATE"],
     },
     {
       name: "Courses",
@@ -184,13 +204,11 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       href: "/admin/revenues",
       icon: HandCoins,
       badge: 1,
-      permissions: ["revenue:READ"],
     },
     {
       name: "Affiliate Revenue",
       href: "/admin/affiliate-revenue",
       icon: Users,
-      permissions: ["affiliate:READ"],
     },
     {
       name: "Payments",
@@ -207,10 +225,23 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       permissions: ["refund:READ"],
     },
     {
+      name: "Discounts",
+      href: "/admin/discounts",
+      icon: TicketPercent,
+      badge: discountsCount,
+      // permissions: ["payment:READ"],
+    },
+    {
+      name: "Discounts",
+      href: "/admin/discounts",
+      icon: TicketPercent,
+      badge: discountsCount,
+      // permissions: ["payment:READ"],
+    },
+    {
       name: "Settings",
       href: "/admin/settings",
       icon: Settings,
-      permissions: ["setting:READ"],
     },
     // {
     //   name: "Permission Demo",
@@ -261,7 +292,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">SE</span>
               </div>
-              <span className="text-xl font-bold text-gray-900">Sybau Admin</span>
+              <span className="text-xl font-bold text-gray-900">
+                Sybau Admin
+              </span>
             </div>
             <Button
               variant="ghost"
@@ -293,8 +326,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                 <AvatarFallback>AD</AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">Admin User</p>
-                <p className="text-xs text-gray-500 truncate">admin@sybau.edu</p>
+                <p className="text-sm font-medium text-gray-900 truncate">
+                  Admin User
+                </p>
+                <p className="text-xs text-gray-500 truncate">
+                  admin@sybau.edu
+                </p>
               </div>
             </div>
           </div>
@@ -335,12 +372,17 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               {/* User menu */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="flex items-center space-x-3">
+                  <Button
+                    variant="ghost"
+                    className="flex items-center space-x-3"
+                  >
                     <Avatar className="h-8 w-8">
                       <AvatarImage src="/api/placeholder/32/32" />
                       <AvatarFallback>AD</AvatarFallback>
                     </Avatar>
-                    <span className="hidden sm:block text-sm font-medium">Admin User</span>
+                    <span className="hidden sm:block text-sm font-medium">
+                      Admin User
+                    </span>
                     <ChevronDown className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>

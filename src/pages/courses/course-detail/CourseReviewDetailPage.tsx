@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import CourseContent from '@/components/courses/course-detail/course-content/CourseContent';
 import { 
   useGetPendingCoursesByIdQuery,
-} from '@/services/courses-api';
+} from '@/services/coursesApi';
 import CourseSkeleton from '@/components/courses/CourseSkeleton';
 import NoCourseFound from '@/components/courses/NoCourseFound';
 import { Button } from '@/components/ui/button';

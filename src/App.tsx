@@ -24,6 +24,7 @@ import { PermissionProvider } from "@/components/providers/PermissionProvider";
 import PermissionDemoPage from "./pages/admin/PermissionDemoPage";
 import AdminPermissionDemoPage from "./pages/admin/AdminPermissionDemoPage";
 import { AssignRoleToUsersPage } from "./pages/admin/users/AssignRoleToUsersPage";
+import DiscountsPage from "./pages/discounts/DiscountsPage";
 
 function App() {
   return (
@@ -207,6 +208,16 @@ function App() {
               element={
                 <AdminLayout>
                   <RefundDetailPage />
+                </AdminLayout>
+              }
+            />
+
+            {/* Discounts */}
+             <Route
+              path="/admin/discounts"
+              element={
+                <AdminLayout>
+                  <DiscountsPage />
                 </AdminLayout>
               }
             />

@@ -24,16 +24,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
   DropdownMenu,
@@ -47,10 +37,10 @@ import {
   useGetAffiliateStatisticsQuery,
   useMarkPayoutAsPaidMutation,
   useCancelPayoutMutation,
-  useBulkActionPayoutsMutation,
   useExportPayoutsMutation,
   type PayoutParams,
 } from "@/services/affiliateApi";
+import { AffiliatePayoutDetailDialog } from "@/components/admin/AffiliatePayoutDetailDialog";
 import {
   Search,
   Download,
@@ -74,14 +64,13 @@ const AffiliateRevenueManagementPage = () => {
     direction: "desc",
   });
 
-  const [selectedPayouts, setSelectedPayouts] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [dateRange, setDateRange] = useState({
     startDate: "",
     endDate: "",
   });
-  const [bulkActionDialog, setBulkActionDialog] = useState(false);
-  const [cancelReason, setCancelReason] = useState("");
+  const [selectedPayoutId, setSelectedPayoutId] = useState<string | null>(null);
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
 
   // API hooks
   const {
@@ -94,7 +83,6 @@ const AffiliateRevenueManagementPage = () => {
 
   const [markAsPaid] = useMarkPayoutAsPaidMutation();
   const [cancelPayout] = useCancelPayoutMutation();
-  const [bulkAction] = useBulkActionPayoutsMutation();
   const [exportPayouts] = useExportPayoutsMutation();
 
   const payouts = payoutsResponse?.data?.content || [];
@@ -162,26 +150,6 @@ const AffiliateRevenueManagementPage = () => {
     }
   };
 
-  // Handle bulk actions
-  const handleBulkAction = async (action: "MARK_PAID" | "CANCEL") => {
-    try {
-      await bulkAction({
-        payoutIds: selectedPayouts,
-        action,
-        reason: action === "CANCEL" ? cancelReason : undefined,
-      }).unwrap();
-
-      toast.success("Bulk action completed successfully");
-
-      setSelectedPayouts([]);
-      setCancelReason("");
-      setBulkActionDialog(false);
-      refetchPayouts();
-    } catch (error) {
-      toast.error("Failed to perform bulk action");
-    }
-  };
-
   // Handle export
   const handleExport = async () => {
     try {
@@ -219,22 +187,10 @@ const AffiliateRevenueManagementPage = () => {
     handleFilterChange("endDate", undefined);
   };
 
-  // Handle select all
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedPayouts(filteredPayouts.map((p) => p.id));
-    } else {
-      setSelectedPayouts([]);
-    }
-  };
-
-  // Handle individual select
-  const handleSelectPayout = (payoutId: string, checked: boolean) => {
-    if (checked) {
-      setSelectedPayouts((prev) => [...prev, payoutId]);
-    } else {
-      setSelectedPayouts((prev) => prev.filter((id) => id !== payoutId));
-    }
+  // Handle row click to show detail
+  const handleRowClick = (payoutId: string) => {
+    setSelectedPayoutId(payoutId);
+    setDetailDialogOpen(true);
   };
 
   // Get status variant
@@ -279,54 +235,6 @@ const AffiliateRevenueManagementPage = () => {
             <Download className="w-4 h-4 mr-2" />
             Export
           </Button>
-
-          {selectedPayouts.length > 0 && (
-            <Dialog open={bulkActionDialog} onOpenChange={setBulkActionDialog}>
-              <DialogTrigger asChild>
-                <Button>Bulk Actions ({selectedPayouts.length})</Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Bulk Actions</DialogTitle>
-                  <DialogDescription>
-                    Perform actions on {selectedPayouts.length} selected payouts
-                  </DialogDescription>
-                </DialogHeader>
-
-                <div className="space-y-4">
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={() => handleBulkAction("MARK_PAID")}
-                      className="flex-1"
-                    >
-                      <CheckCircle className="w-4 h-4 mr-2" />
-                      Mark as Paid
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      onClick={() => handleBulkAction("CANCEL")}
-                      className="flex-1"
-                    >
-                      <XCircle className="w-4 h-4 mr-2" />
-                      Cancel
-                    </Button>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="cancelReason">
-                      Cancel Reason (Optional)
-                    </Label>
-                    <Textarea
-                      id="cancelReason"
-                      placeholder="Enter reason for cancellation..."
-                      value={cancelReason}
-                      onChange={(e) => setCancelReason(e.target.value)}
-                    />
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
-          )}
         </div>
       </div>
 
@@ -519,15 +427,7 @@ const AffiliateRevenueManagementPage = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-12">
-                    <Checkbox
-                      checked={
-                        filteredPayouts.length > 0 &&
-                        selectedPayouts.length === filteredPayouts.length
-                      }
-                      onCheckedChange={handleSelectAll}
-                    />
-                  </TableHead>
+                  <TableHead className="w-16">#</TableHead>
                   <TableHead>Referrer</TableHead>
                   <TableHead>Course</TableHead>
                   <TableHead>Discount Code</TableHead>
@@ -539,15 +439,14 @@ const AffiliateRevenueManagementPage = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredPayouts.map((payout) => (
-                  <TableRow key={payout.id}>
-                    <TableCell>
-                      <Checkbox
-                        checked={selectedPayouts.includes(payout.id)}
-                        onCheckedChange={(checked) =>
-                          handleSelectPayout(payout.id, checked as boolean)
-                        }
-                      />
+                {filteredPayouts.map((payout, index) => (
+                  <TableRow
+                    key={payout.id}
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => handleRowClick(payout.id)}
+                  >
+                    <TableCell className="text-center text-muted-foreground">
+                      {(filters.page || 0) * (filters.size || 20) + index + 1}
                     </TableCell>
                     <TableCell>
                       <div>
@@ -585,7 +484,7 @@ const AffiliateRevenueManagementPage = () => {
                     <TableCell>
                       {format(new Date(payout.createdAt), "MMM dd, yyyy")}
                     </TableCell>
-                    <TableCell>
+                    <TableCell onClick={(e) => e.stopPropagation()}>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="sm">
@@ -610,7 +509,16 @@ const AffiliateRevenueManagementPage = () => {
                               </DropdownMenuItem>
                             </>
                           )}
-                          <DropdownMenuItem>View Details</DropdownMenuItem>
+                          <AffiliatePayoutDetailDialog
+                            payoutId={payout.id}
+                            trigger={
+                              <DropdownMenuItem
+                                onSelect={(e) => e.preventDefault()}
+                              >
+                                View Details
+                              </DropdownMenuItem>
+                            }
+                          />
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -633,6 +541,20 @@ const AffiliateRevenueManagementPage = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Detail Dialog */}
+      {selectedPayoutId && (
+        <AffiliatePayoutDetailDialog
+          payoutId={selectedPayoutId}
+          open={detailDialogOpen}
+          onOpenChange={(open) => {
+            setDetailDialogOpen(open);
+            if (!open) {
+              setSelectedPayoutId(null);
+            }
+          }}
+        />
+      )}
     </div>
   );
 };
