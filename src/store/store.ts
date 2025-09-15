@@ -17,6 +17,7 @@ import { affiliateApi } from "@/services/affiliateApi";
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "./authSlice";
 import { applicationsApi } from "@/services/applicationsApi";
+import { notificationsApi } from "@/services/notificationsApi";
 export const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -25,6 +26,7 @@ export const store = configureStore({
     [paymentsApi.reducerPath]: paymentsApi.reducer,
     [refundsApi.reducerPath]: refundsApi.reducer,
     [applicationsApi.reducerPath]: applicationsApi.reducer,
+    [notificationsApi.reducerPath]: notificationsApi.reducer,
     [coursesApi.reducerPath]: coursesApi.reducer,
     [categoriesApi.reducerPath]: categoriesApi.reducer,
     [rolesApi.reducerPath]: rolesApi.reducer,
@@ -48,7 +50,8 @@ export const store = configureStore({
       .concat(rolesApi.middleware)
       .concat(permissionsApi.middleware)
       .concat(certificatesApi.middleware)
-      .concat(affiliateApi.middleware),
+      .concat(affiliateApi.middleware)
+      .concat(notificationsApi.middleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;
