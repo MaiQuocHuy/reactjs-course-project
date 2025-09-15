@@ -14,14 +14,10 @@ export const applicationsApi = createApi({
       providesTags: ['Application'],
     }),
 
-    getApplicationById: builder.query<Application, string>({
-      query: (id) => `admin/applications/${id}`,
-      transformResponse: (response: ApiResponse<Application>) => {
-        const application = response.data;
-    
-       return application;
-  },
-      providesTags: (_result, _error, id) => [{ type: 'Application', id }],
+    getApplicationsByUserId: builder.query<Application[], string>({
+      query: (userId) => `admin/applications/${userId}`,
+      transformResponse: (response: ApiResponse<Application[]>) => response.data,
+      providesTags: (_result, _error, userId) => [{ type: 'Application', id: userId }],
     }),
 
     reviewApplication: builder.mutation<ApiResponse<void>, ReviewApplicationRequest>({
@@ -35,11 +31,20 @@ export const applicationsApi = createApi({
         { type: 'Application', id }
       ],
     }),
+
+    deleteApplication: builder.mutation<ApiResponse<void>, string>({
+      query: (id) => ({
+        url: `admin/applications/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ['Application'],
+    }),
   })
 });
 
 export const {
   useGetApplicationsQuery,
-  useGetApplicationByIdQuery,
+  useGetApplicationsByUserIdQuery,
   useReviewApplicationMutation,
+  useDeleteApplicationMutation,
 } = applicationsApi;

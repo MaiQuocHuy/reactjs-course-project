@@ -129,3 +129,20 @@ export const useAdminPermissions = () => {
     canViewPermissions: permissionStatus['permission:READ'],
   };
 };
+
+/**
+ * Hook for instructor application permissions
+ */
+export const useInstructorApplicationPermissions = () => {
+  const { permissionStatus } = usePermissions([
+    'instructor_application:READ',
+    'instructor_application:APPROVE',
+    'instructor_application:DELETE',
+  ]);
+  
+  return {
+    canViewApplications: permissionStatus['instructor_application:READ'],
+    canReviewApplications: permissionStatus['instructor_application:APPROVE'],
+    canDeleteApplications: permissionStatus['instructor_application:DELETE'],
+  };
+};
