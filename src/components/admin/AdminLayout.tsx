@@ -41,6 +41,7 @@ import { useGetApplicationsQuery } from "@/services/applicationsApi";
 import { useGetRolesListQuery } from "@/services/rolesApi";
 import { usePermissions } from "@/hooks/usePermissions";
 import type { RootState } from "@/store/store";
+import { NotificationTrigger } from "../notifications/NotificationTrigger";
 
 // Component to render navigation item with permission check
 const PermissionNavigationItem: React.FC<{
@@ -329,12 +330,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
             <div className="flex items-center space-x-4">
               {/* Notifications */}
-              <Button variant="ghost" size="sm" className="relative">
-                <Bell className="h-5 w-5" />
-                <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">
-                  3
-                </span>
-              </Button>
+              <NotificationTrigger />
 
               {/* User menu */}
               <DropdownMenu>
