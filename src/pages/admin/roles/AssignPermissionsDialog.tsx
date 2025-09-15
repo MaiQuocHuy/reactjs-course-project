@@ -360,9 +360,6 @@ export const AssignPermissionsDialog: React.FC<
                                             <CheckCircle className="h-4 w-4 text-blue-600" />
                                           )}
                                         </div>
-                                        <p className="text-sm font-medium text-gray-900 mb-1">
-                                          {permission.permissionKey}
-                                        </p>
                                         <p className="text-xs text-gray-500">
                                           {permission.description}
                                         </p>
