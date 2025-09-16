@@ -18,24 +18,41 @@ import {
 } from '../ui/dropdown-menu';
 import { Button } from '../ui/button';
 import type { Discount } from '@/types/discounts';
+import {
+  useDeleteDiscountMutation,
+  useUpdateDiscountStatusMutation,
+} from '@/services/discountsApi';
+import { toast } from 'sonner';
+
+interface AlertDialogProps {
+  title: string;
+  description: string;
+  action: () => void;
+}
 
 type Props = {
   discounts?: Discount[];
   onRowClick: (discount: Discount) => void;
-  onDeleteDiscount: (e: React.MouseEvent, id: string) => void;
-  onUpdateStatus: (e: React.MouseEvent, discount: Discount) => void;
   onSendEmail: (e: React.MouseEvent, discount: Discount) => void;
-  isLoading: boolean;
+  setAlertDialogProps: (props: AlertDialogProps) => void;
+  setIsAlertDialogOpen: (isOpen: boolean) => void;
 };
 
 const DiscountTable = ({
   discounts,
   onRowClick,
-  onDeleteDiscount,
-  onUpdateStatus,
   onSendEmail,
-  isLoading,
+  setAlertDialogProps,
+  setIsAlertDialogOpen,
 }: Props) => {
+  // Update discount status mutation
+  const [updateDiscountStatus, { isLoading: isUpdating }] =
+    useUpdateDiscountStatusMutation();
+
+  // Delete discount mutation
+  const [deleteDiscount, { isLoading: isDeleting }] =
+    useDeleteDiscountMutation();
+
   // Format date string
   const formatDate = (dateString: string) => {
     try {
@@ -43,6 +60,67 @@ const DiscountTable = ({
     } catch (e) {
       return dateString;
     }
+  };
+
+  // Check if date is expired
+  const isDateExpired = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      const today = new Date();
+      today.setHours(23, 59, 59, 999); // Set to end of today
+      return date < today;
+    } catch (e) {
+      return false;
+    }
+  };
+
+  // Handle update discount status
+  const handleUpdateStatus = (e: React.MouseEvent, discount: Discount) => {
+    e.stopPropagation(); // Prevent row click from triggering
+
+    const newStatus = !discount.isActive;
+    const message = newStatus ? 'activate' : 'deactivate';
+
+    setAlertDialogProps({
+      title: `${newStatus ? 'Activate' : 'Deactivate'} Discount`,
+      description: `Are you sure you want to ${message} this discount?`,
+      action: async () => {
+        try {
+          await updateDiscountStatus({
+            id: discount.id,
+            isActive: newStatus,
+          }).unwrap();
+          toast.success(
+            `Discount ${newStatus ? 'activated' : 'deactivated'} successfully`
+          );
+        } catch (error) {
+          console.error('Failed to update discount status:', error);
+          toast.error('Failed to update discount status');
+        }
+      },
+    });
+    setIsAlertDialogOpen(true);
+  };
+
+  // Handle delete discount
+  const handleDeleteDiscount = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation(); // Prevent row click from triggering
+
+    setAlertDialogProps({
+      title: 'Delete Discount',
+      description:
+        'Are you sure you want to delete this discount? This action cannot be undone.',
+      action: async () => {
+        try {
+          await deleteDiscount(id).unwrap();
+          toast.success('Discount deleted successfully');
+        } catch (error) {
+          console.error('Failed to delete discount:', error);
+          toast.error('Failed to delete discount');
+        }
+      },
+    });
+    setIsAlertDialogOpen(true);
   };
 
   return (
@@ -102,7 +180,15 @@ const DiscountTable = ({
                 {formatDate(discount.startDate)}
               </TableCell>
               <TableCell className="text-center">
-                {formatDate(discount.endDate)}
+                <span
+                  className={
+                    isDateExpired(discount.endDate)
+                      ? 'text-red-600 font-medium'
+                      : ''
+                  }
+                >
+                  {formatDate(discount.endDate)}
+                </span>
               </TableCell>
 
               {/* Status */}
@@ -126,7 +212,7 @@ const DiscountTable = ({
                       <Button
                         variant="ghost"
                         size="icon"
-                        disabled={isLoading}
+                        disabled={isUpdating || isDeleting}
                         className="cursor-pointer"
                         onClick={(e) => e.stopPropagation()}
                       >
@@ -139,7 +225,7 @@ const DiscountTable = ({
                         className="cursor-pointer"
                         onClick={(e) => {
                           e.stopPropagation();
-                          onUpdateStatus(e, discount);
+                          handleUpdateStatus(e, discount);
                         }}
                       >
                         {discount.isActive ? (
@@ -175,7 +261,7 @@ const DiscountTable = ({
                         className="cursor-pointer text-red-600 hover:bg-red-50 hover:text-red-700 focus:bg-red-50 focus:text-red-700"
                         onClick={(e) => {
                           e.stopPropagation();
-                          onDeleteDiscount(e, discount.id);
+                          handleDeleteDiscount(e, discount.id);
                         }}
                       >
                         <Trash2 className="h-4 w-4 mr-2" />

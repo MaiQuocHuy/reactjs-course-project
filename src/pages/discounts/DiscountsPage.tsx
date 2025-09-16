@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ArrowUpDown, Loader2, PlusCircle, X } from 'lucide-react';
 
 import { Pagination } from '@/components/shared/Pagination';
 import {
@@ -7,24 +8,14 @@ import {
   useGetDiscountsByTypeQuery,
   useGetDiscountByCodeQuery,
   useGetDiscountsByOwnerUserIdQuery,
-  useDeleteDiscountMutation,
-  useUpdateDiscountStatusMutation,
   useSendEmailMutation,
 } from '@/services/discountsApi';
-import type { Discount } from '@/types/discounts';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+import { useGetUsersQuery } from '@/services/usersApi';
+import { useDebounce } from '@/hooks/useDebounce';
+import type { Discount, SendDiscountEmailRequest } from '@/types/discounts';
+import type { User } from '@/types/users';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -41,11 +32,17 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { ArrowUpDown, Loader2, PlusCircle, X } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CreateDiscountDialog from '@/components/discounts/CreateDiscountDialog';
 import { toast } from 'sonner';
 import DiscountTable from '@/components/discounts/DiscountTable';
 import DiscountDetails from '@/components/discounts/DiscountDetails';
+import WarningAlert from '@/components/discounts/WarningAlert';
+import EmailSubject from '@/components/discounts/SendEmailDialog/EmailSubject';
+import AdvanceSearchBar from '@/components/discounts/SendEmailDialog/AdvanceSearchBar';
+import SelectedUsersList from '@/components/discounts/SendEmailDialog/SelectedUsersList';
+import DiscountTableSkeleton from '@/components/discounts/DiscountTableSkeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const DiscountsPage: React.FC = () => {
   const [page, setPage] = useState(0);
@@ -62,6 +59,12 @@ const DiscountsPage: React.FC = () => {
   const [emailSubject, setEmailSubject] = useState('');
   const [selectedDiscountForEmail, setSelectedDiscountForEmail] =
     useState<Discount | null>(null);
+
+  // Email tabs and user selection states
+  const [emailTab, setEmailTab] = useState<'all' | 'specific'>('all');
+  const [userSearchQuery, setUserSearchQuery] = useState('');
+  const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
+  const [specificUsersError, setSpecificUsersError] = useState('');
 
   // Filter states
   const [filterType, setFilterType] = useState<'ALL' | 'GENERAL' | 'REFERRAL'>(
@@ -80,6 +83,9 @@ const DiscountsPage: React.FC = () => {
     description: '',
     action: () => {},
   });
+
+  // Debounced search for user selection
+  const debouncedSearchQuery = useDebounce(userSearchQuery, 300);
 
   // Fetch discounts with pagination based on active filter
   const {
@@ -167,7 +173,7 @@ const DiscountsPage: React.FC = () => {
 
   const isLoadingDiscounts =
     isLoadingAll || isLoadingType || isLoadingCode || isLoadingOwner;
-  const error = errorAll || errorType || errorCode || errorOwner;
+  const error = errorAll || errorType;
 
   // Fetch selected discount details
   const { data: selectedDiscount, isLoading: isLoadingDetails } =
@@ -175,16 +181,39 @@ const DiscountsPage: React.FC = () => {
       skip: !selectedDiscountId,
     });
 
-  // Delete discount mutation
-  const [deleteDiscount, { isLoading: isDeleting }] =
-    useDeleteDiscountMutation();
-
-  // Update discount status mutation
-  const [updateDiscountStatus, { isLoading: isUpdating }] =
-    useUpdateDiscountStatusMutation();
+  // Fetch users for search (only when searching for specific users)
+  const { data: searchUsersData, isLoading: isLoadingUsers } = useGetUsersQuery(
+    {
+      search: debouncedSearchQuery,
+      role: 'STUDENT',
+      isActive: true,
+      page: 0,
+      size: 10,
+    },
+    {
+      skip: !debouncedSearchQuery.trim(),
+    }
+  );
 
   // Send email mutation
   const [sendEmail, { isLoading: isSendingEmail }] = useSendEmailMutation();
+
+  // Helper functions for user selection
+  const addUserToSelection = (user: User) => {
+    if (!selectedUsers.find((u) => u.id === user.id)) {
+      setSelectedUsers((prev) => [...prev, user]);
+      setSpecificUsersError('');
+    }
+  };
+
+  const removeUserFromSelection = (userId: string) => {
+    setSelectedUsers((prev) => prev.filter((u) => u.id !== userId));
+  };
+
+  const clearSelectedUsers = () => {
+    setSelectedUsers([]);
+    setSpecificUsersError('');
+  };
 
   // Handle page change
   const handlePageChange = (newPage: number) => {
@@ -205,6 +234,12 @@ const DiscountsPage: React.FC = () => {
   // Filter handlers
   const handleFilterByType = (type: 'ALL' | 'GENERAL' | 'REFERRAL') => {
     setFilterType(type);
+
+    // If type is GENERAL, clear owner user ID
+    if (type === 'GENERAL' || type === 'ALL') {
+      setFilterOwnerUserId('');
+    }
+
     if (type === 'ALL') {
       setActiveFilter('all');
     } else {
@@ -217,6 +252,9 @@ const DiscountsPage: React.FC = () => {
     setFilterCode(code);
     if (code.trim()) {
       setActiveFilter('code');
+      if (filterType !== 'ALL') {
+        setFilterType('ALL');
+      }
     } else {
       setActiveFilter('all');
     }
@@ -225,10 +263,16 @@ const DiscountsPage: React.FC = () => {
 
   const handleFilterByOwnerUserId = (ownerUserId: string) => {
     setFilterOwnerUserId(ownerUserId);
+
+    // If owner user ID is provided, set type to REFERRAL
     if (ownerUserId.trim()) {
+      if (filterType !== 'REFERRAL') {
+        setFilterType('REFERRAL');
+      }
       setActiveFilter('owner');
     } else {
       setActiveFilter('all');
+      setFilterType('ALL');
     }
     setPage(0);
   };
@@ -247,55 +291,6 @@ const DiscountsPage: React.FC = () => {
     setIsDialogOpen(true);
   };
 
-  // Handle delete discount
-  const handleDeleteDiscount = (e: React.MouseEvent, id: string) => {
-    e.stopPropagation(); // Prevent row click from triggering
-
-    setAlertDialogProps({
-      title: 'Delete Discount',
-      description:
-        'Are you sure you want to delete this discount? This action cannot be undone.',
-      action: async () => {
-        try {
-          await deleteDiscount(id).unwrap();
-          toast.success('Discount deleted successfully');
-        } catch (error) {
-          console.error('Failed to delete discount:', error);
-          toast.error('Failed to delete discount');
-        }
-      },
-    });
-    setIsAlertDialogOpen(true);
-  };
-
-  // Handle update discount status
-  const handleUpdateClick = (e: React.MouseEvent, discount: Discount) => {
-    e.stopPropagation(); // Prevent row click from triggering
-
-    const newStatus = !discount.isActive;
-    const message = newStatus ? 'activate' : 'deactivate';
-
-    setAlertDialogProps({
-      title: `${newStatus ? 'Activate' : 'Deactivate'} Discount`,
-      description: `Are you sure you want to ${message} this discount?`,
-      action: async () => {
-        try {
-          await updateDiscountStatus({
-            id: discount.id,
-            isActive: newStatus,
-          }).unwrap();
-          toast.success(
-            `Discount ${newStatus ? 'activated' : 'deactivated'} successfully`
-          );
-        } catch (error) {
-          console.error('Failed to update discount status:', error);
-          toast.error('Failed to update discount status');
-        }
-      },
-    });
-    setIsAlertDialogOpen(true);
-  };
-
   // Handle send email about discount
   const handleSendEmail = (e: React.MouseEvent, discount: Discount) => {
     e.stopPropagation(); // Prevent row click from triggering
@@ -309,6 +304,9 @@ const DiscountsPage: React.FC = () => {
     // Set the selected discount and open the email dialog
     setSelectedDiscountForEmail(discount);
     setEmailSubject('');
+    setEmailTab('all');
+    clearSelectedUsers();
+    setUserSearchQuery('');
     setIsEmailDialogOpen(true);
   };
 
@@ -322,27 +320,86 @@ const DiscountsPage: React.FC = () => {
       return;
     }
 
+    // Validate specific users selection if specific tab is active
+    if (emailTab === 'specific') {
+      if (selectedUsers.length === 0) {
+        setSpecificUsersError(
+          'Please select at least one student to send the email to.'
+        );
+        return;
+      }
+    }
+
     try {
-      sendEmail({
+      const emailData: SendDiscountEmailRequest = {
         subject: emailSubject,
         discount_id: selectedDiscountForEmail.id,
-      }).unwrap();
+      };
 
-      toast.success('Discount email sent successfully');
+      if (emailTab === 'specific') {
+        const user_ids = selectedUsers.map((user) => user.id);
+        // Convert to string if only one user is selected
+        if (user_ids.length === 1) {
+          emailData.user_ids = user_ids[0];
+        } else {
+          emailData.user_ids = user_ids;
+        }
+      }
+
+      sendEmail(emailData).unwrap();
+
+      toast.success(
+        `Discount email sent successfully to ${
+          emailTab === 'all'
+            ? 'all students'
+            : `${selectedUsers.length} selected students`
+        }`
+      );
       setIsEmailDialogOpen(false);
       setEmailSubject('');
       setSelectedDiscountForEmail(null);
+      clearSelectedUsers();
+      setUserSearchQuery('');
     } catch (error) {
       console.error('Failed to send discount email:', error);
       toast.error('Failed to send discount email');
     }
   };
 
-  if (isLoadingDiscounts) {
+  // Handle cancel send email
+  const handleCancelSendEmail = () => {
+    setIsEmailDialogOpen(false);
+    setEmailSubject('');
+    setSelectedDiscountForEmail(null);
+    clearSelectedUsers();
+    setUserSearchQuery('');
+  };
+
+  if (isLoadingAll) {
     return (
-      <div className="flex justify-center items-center p-8">
-        <Loader2 className="h-6 w-6 animate-spin" />
-        <span className="ml-2">Loading discounts...</span>
+      <div className="container mx-auto py-6">
+        <div className="flex justify-between items-center mb-6">
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-10 w-40" />
+        </div>
+
+        <div className="bg-white rounded-lg shadow mb-6">
+          {/* Filters skeleton */}
+          <div className="p-4 flex justify-between items-center border-b">
+            <Skeleton className="h-6 w-48" />
+            <div className="flex items-center gap-4">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <Skeleton className="h-4 w-16" />
+                  <Skeleton className="h-8 w-32" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Discount Table Skeleton */}
+          <DiscountTableSkeleton />
+        </div>
       </div>
     );
   }
@@ -370,6 +427,7 @@ const DiscountsPage: React.FC = () => {
       </div>
 
       <div className="bg-white rounded-lg shadow mb-6">
+        {/* Filters */}
         <div className="p-4 flex justify-between items-center border-b">
           <h2 className="text-lg font-semibold">Available Discounts</h2>
 
@@ -377,7 +435,13 @@ const DiscountsPage: React.FC = () => {
             {/* Filter by Type */}
             <div className="flex items-center gap-2">
               <label className="text-sm font-medium">Type:</label>
-              <Select value={filterType} onValueChange={handleFilterByType}>
+              <Select
+                value={filterType}
+                onValueChange={handleFilterByType}
+                disabled={
+                  filterCode.trim() !== '' || filterOwnerUserId.trim() !== ''
+                }
+              >
                 <SelectTrigger className="w-32">
                   <SelectValue />
                 </SelectTrigger>
@@ -394,9 +458,10 @@ const DiscountsPage: React.FC = () => {
               <label className="text-sm font-medium">Code:</label>
               <Input
                 placeholder="Enter discount code"
-                value={filterCode}
+                value={filterCode.toUpperCase()}
                 onChange={(e) => handleFilterByCode(e.target.value)}
-                className="w-40"
+                className={`w-40`}
+                disabled={filterOwnerUserId.trim() !== ''}
               />
             </div>
 
@@ -408,6 +473,7 @@ const DiscountsPage: React.FC = () => {
                 value={filterOwnerUserId}
                 onChange={(e) => handleFilterByOwnerUserId(e.target.value)}
                 className="w-40"
+                disabled={filterCode.trim() !== ''}
               />
             </div>
 
@@ -435,35 +501,55 @@ const DiscountsPage: React.FC = () => {
                 variant="outline"
                 size="sm"
                 onClick={clearFilters}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 cursor-pointer"
               >
                 <X size={16} />
                 Clear
               </Button>
             )}
           </div>
-        </div>{' '}
-        <div>
-          <DiscountTable
-            discounts={discounts?.content}
-            onRowClick={handleRowClick}
-            onDeleteDiscount={handleDeleteDiscount}
-            onUpdateStatus={handleUpdateClick}
-            onSendEmail={handleSendEmail}
-            isLoading={isUpdating || isDeleting}
-          />
-
-          {/* Pagination component */}
-          {discounts && discounts.page && discounts.page.totalPages >= 1 && (
-            <Pagination
-              currentPage={page}
-              itemsPerPage={pageSize}
-              pageInfo={discounts.page}
-              onPageChange={handlePageChange}
-              onItemsPerPageChange={handlePageSizeChange}
-            />
-          )}
         </div>
+
+        {/* Discount Table */}
+        {isLoadingType || isLoadingCode || isLoadingOwner ? (
+          <DiscountTableSkeleton />
+        ) : (
+          <>
+            {errorCode || errorOwner ? (
+              <div className="p-8 text-center">
+                <div className="text-gray-500 text-lg font-medium mb-2">
+                  No Discounts Found
+                </div>
+                <div className="text-gray-400 text-sm">
+                  Please modify the filters to find relevant discounts
+                </div>
+              </div>
+            ) : (
+              <div>
+                <DiscountTable
+                  discounts={discounts?.content}
+                  onRowClick={handleRowClick}
+                  onSendEmail={handleSendEmail}
+                  setAlertDialogProps={setAlertDialogProps}
+                  setIsAlertDialogOpen={setIsAlertDialogOpen}
+                />
+
+                {/* Pagination component */}
+                {discounts &&
+                  discounts.page &&
+                  discounts.page.totalElements >= 10 && (
+                    <Pagination
+                      currentPage={page}
+                      itemsPerPage={pageSize}
+                      pageInfo={discounts.page}
+                      onPageChange={handlePageChange}
+                      onItemsPerPageChange={handlePageSizeChange}
+                    />
+                  )}
+              </div>
+            )}
+          </>
+        )}
       </div>
 
       {/* Discount Detail Dialog */}
@@ -481,38 +567,19 @@ const DiscountsPage: React.FC = () => {
       />
 
       {/* Confirmation Alert Dialog */}
-      <AlertDialog open={isAlertDialogOpen} onOpenChange={setIsAlertDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{alertDialogProps.title}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {alertDialogProps.description}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="cursor-pointer">
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                alertDialogProps.action();
-                setIsAlertDialogOpen(false);
-              }}
-              className="cursor-pointer"
-            >
-              Confirm
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <WarningAlert
+        isAlertDialogOpen={isAlertDialogOpen}
+        setIsAlertDialogOpen={setIsAlertDialogOpen}
+        alertDialogProps={alertDialogProps}
+      />
 
       {/* Send Email Dialog */}
       <Dialog open={isEmailDialogOpen} onOpenChange={setIsEmailDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Send Discount Email</DialogTitle>
             <DialogDescription>
-              Send an email notification for the referral discount{' '}
+              Send an email notification for the discount{' '}
               <strong>{selectedDiscountForEmail?.code}</strong>.
               <br />
               <span className="text-amber-600 font-medium mt-2 block">
@@ -521,55 +588,77 @@ const DiscountsPage: React.FC = () => {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email-subject">Email Subject</Label>
-              <Textarea
-                id="email-subject"
-                placeholder="Enter email subject (5-200 characters)"
-                value={emailSubject}
-                onChange={(e) => setEmailSubject(e.target.value)}
-                className={
-                  emailSubject.length > 0 &&
-                  (emailSubject.length < 5 || emailSubject.length > 200)
-                    ? 'border-red-500'
-                    : ''
+          <div className="space-y-6">
+            {/* Email Subject */}
+            <EmailSubject
+              emailSubject={emailSubject}
+              setEmailSubject={setEmailSubject}
+            />
+
+            {/* Recipient Selection Tabs */}
+            <div className="space-y-4">
+              <Label>Select Recipients</Label>
+              <Tabs
+                value={emailTab}
+                onValueChange={(value) =>
+                  setEmailTab(value as 'all' | 'specific')
                 }
-                rows={3}
-              />
-              <div className="text-sm text-muted-foreground">
-                {emailSubject.length}/200 characters
-                {emailSubject.length > 0 && emailSubject.length < 5 && (
-                  <span className="text-red-500 ml-2">
-                    Minimum 5 characters required
-                  </span>
-                )}
-                {emailSubject.length > 200 && (
-                  <span className="text-red-500 ml-2">
-                    Maximum 200 characters exceeded
-                  </span>
-                )}
-              </div>
+              >
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="all">Send to All Students</TabsTrigger>
+                  <TabsTrigger value="specific">
+                    Send to Specific Users
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="all" className="mt-4">
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <p className="text-sm text-muted-foreground">
+                      The email will be sent to all active students in the
+                      system.
+                    </p>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="specific" className="mt-4 space-y-4">
+                  {/* User Search */}
+                  <AdvanceSearchBar
+                    userSearchQuery={userSearchQuery}
+                    setUserSearchQuery={setUserSearchQuery}
+                    isLoadingUsers={isLoadingUsers}
+                    searchUsersData={searchUsersData?.data?.users}
+                    selectedUsers={selectedUsers}
+                    addUserToSelection={addUserToSelection}
+                  />
+
+                  {/* Selected Users List */}
+                  <SelectedUsersList
+                    selectedUsers={selectedUsers}
+                    clearSelectedUsers={clearSelectedUsers}
+                    specificUsersError={specificUsersError}
+                    onRemoveUser={removeUserFromSelection}
+                  />
+                </TabsContent>
+              </Tabs>
             </div>
           </div>
 
           <DialogFooter className="sm:justify-between">
             <Button
               variant="outline"
-              onClick={() => {
-                setIsEmailDialogOpen(false);
-                setEmailSubject('');
-                setSelectedDiscountForEmail(null);
-              }}
+              onClick={handleCancelSendEmail}
+              className="cursor-pointer"
             >
               Cancel
             </Button>
             <Button
+              className="cursor-pointer"
               onClick={handleSendEmailConfirm}
               disabled={
                 emailSubject.length < 5 ||
                 emailSubject.length > 200 ||
-                isSendingEmail
+                isSendingEmail ||
+                (emailTab === 'specific' && selectedUsers.length === 0)
               }
             >
               {isSendingEmail ? (
@@ -578,7 +667,11 @@ const DiscountsPage: React.FC = () => {
                   Sending...
                 </>
               ) : (
-                'Send Email'
+                `Send Email${
+                  emailTab === 'specific'
+                    ? ` to ${selectedUsers.length} Students`
+                    : ' to All Students'
+                }`
               )}
             </Button>
           </DialogFooter>
