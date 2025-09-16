@@ -138,6 +138,7 @@ const CourseCard = ({ course }: Props) => {
             permissions={['course:READ']}
             className="px-4 py-2 bg-indigo-600 text-white rounded cursor-pointer disabled:bg-gray-300 disabled:cursor-not-allowed"
             onClick={(e) => {
+              e.preventDefault();
               e.stopPropagation();
               window.open(`/admin/courses/${course.id}`, '_blank');
             }}

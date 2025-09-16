@@ -28,8 +28,10 @@ export const coursesApi = createApi({
     getAllCourses: builder.query<ApiCoursesResponse, CourseFilters>({
       query: (params = {}) => {
         const searchParams = new URLSearchParams();
-        // Always fetch only active courses for this endpoint
-        searchParams.append('status', 'true');
+        // Default to active courses, but allow override
+        const status =
+          params.status === undefined ? 'true' : String(params.status);
+        searchParams.append('status', status);
         if (params.page !== undefined)
           searchParams.append('page', String(params.page));
         if (params.size !== undefined)
@@ -79,7 +81,7 @@ export const coursesApi = createApi({
         }
       },
       transformResponse: (response: any) => response.data,
-      providesTags: (result, error, id) => [{ type: 'Courses', id }],
+      providesTags: (_result, _error, id) => [{ type: 'Courses', id }],
     }),
 
     // Get pending / resubmit courses
@@ -154,7 +156,7 @@ export const coursesApi = createApi({
         // console.log(response.data);
         return response.data;
       },
-      providesTags: (result, error, id) => [{ type: 'PendingCourses', id }],
+      providesTags: (_result, _error, id) => [{ type: 'PendingCourses', id }],
     }),
 
     // Update course status (accept or reject)
