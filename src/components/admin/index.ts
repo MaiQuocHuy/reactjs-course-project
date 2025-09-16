@@ -3,6 +3,7 @@ export { UserDetail } from './UserDetail';
 export { SearchBar } from './SearchBar';
 export { FilterBar } from './FilterBar';
 export { AdminLayout } from './AdminLayout';
+export { UserManagementSkeleton } from './UserManagementSkeleton';
 export { 
   BanUserDialog, 
   UnbanUserDialog, 

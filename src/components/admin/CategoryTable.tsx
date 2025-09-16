@@ -18,6 +18,8 @@ interface CategoryTableProps {
   onDelete: (category: Category) => void;
   onView: (category: Category) => void;
   isLoading?: boolean;
+  currentPage?: number;
+  pageSize?: number;
 }
 
 export const CategoryTable: React.FC<CategoryTableProps> = ({
@@ -26,6 +28,8 @@ export const CategoryTable: React.FC<CategoryTableProps> = ({
   onDelete,
   onView,
   isLoading = false,
+  currentPage = 0,
+  pageSize = 10,
 }) => {
   if (isLoading) {
     return (
@@ -33,6 +37,7 @@ export const CategoryTable: React.FC<CategoryTableProps> = ({
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[60px]">#</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Description</TableHead>
               <TableHead>Slug</TableHead>
@@ -43,6 +48,9 @@ export const CategoryTable: React.FC<CategoryTableProps> = ({
           <TableBody>
             {[...Array(5)].map((_, index) => (
               <TableRow key={index}>
+                <TableCell className="text-center">
+                  <div className="h-4 w-6 bg-gray-200 rounded animate-pulse mx-auto"></div>
+                </TableCell>
                 <TableCell>
                   <div className="h-4 w-32 bg-gray-200 rounded animate-pulse"></div>
                 </TableCell>
@@ -76,6 +84,7 @@ export const CategoryTable: React.FC<CategoryTableProps> = ({
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[60px]">#</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Description</TableHead>
               <TableHead>Slug</TableHead>
@@ -85,7 +94,7 @@ export const CategoryTable: React.FC<CategoryTableProps> = ({
           </TableHeader>
           <TableBody>
             <TableRow>
-              <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+              <TableCell colSpan={6} className="text-center py-8 text-gray-500">
                 No categories found
               </TableCell>
             </TableRow>
@@ -100,6 +109,7 @@ export const CategoryTable: React.FC<CategoryTableProps> = ({
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead className="w-[60px]">#</TableHead>
             <TableHead>Name</TableHead>
             <TableHead>Description</TableHead>
             <TableHead>Slug</TableHead>
@@ -108,8 +118,11 @@ export const CategoryTable: React.FC<CategoryTableProps> = ({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {categories.map((category) => (
+          {categories.map((category, index) => (
             <TableRow key={category.id} className="hover:bg-gray-50">
+              <TableCell className="text-center font-medium">
+                {currentPage * pageSize + index + 1}
+              </TableCell>
               <TableCell className="font-medium">{category.name}</TableCell>
               <TableCell className="max-w-xs">
                 <div className="truncate" title={category.description}>
@@ -124,6 +137,11 @@ export const CategoryTable: React.FC<CategoryTableProps> = ({
               <TableCell>
                 <Badge
                   variant={category.courseCount > 0 ? "default" : "secondary"}
+                  className={
+                    category.courseCount > 0
+                      ? "bg-green-600 hover:bg-green-700"
+                      : ""
+                  }
                 >
                   {category.courseCount} courses
                 </Badge>
