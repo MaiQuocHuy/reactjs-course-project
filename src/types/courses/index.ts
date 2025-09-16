@@ -84,3 +84,15 @@ export interface ApiCoursesResponse {
   page: Page;
 }
 
+export interface CourseFilters {
+  page?: number;
+  size?: number;
+  sort?: string;
+  search?: string;
+  categoryId?: string;
+  level?: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
+  minPrice?: number;
+  maxPrice?: number;
+  averageRating?: number;
+  status?: boolean;
+}

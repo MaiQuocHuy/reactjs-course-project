@@ -1,26 +1,21 @@
 import { useCallback } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import CourseContent from '@/components/courses/course-detail/course-content/CourseContent';
 import { useGetCourseByIdQuery } from '@/services/coursesApi';
-import CourseSkeleton from '@/components/courses/CourseSkeleton';
 import NoCourseFound from '@/components/courses/NoCourseFound';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import CourseDetailSkeleton from './CourseDetailSkeleton';
 
 const CourseDetailPage = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  
+
   const {
     data: courseData,
     isLoading,
     error,
     refetch,
-  } = id ? useGetCourseByIdQuery(id) : { data: undefined };
-  console.log(courseData);
-  
+  } = useGetCourseByIdQuery(id, { skip: !id });
 
   const handleRetry = useCallback(() => {
     if (refetch) {
@@ -29,7 +24,7 @@ const CourseDetailPage = () => {
   }, [refetch]);
 
   if (isLoading) {
-    return <CourseSkeleton />;
+    return <CourseDetailSkeleton />;
   }
 
   if (error) {
@@ -49,18 +44,6 @@ const CourseDetailPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2">
-        <Button
-          variant="outline"
-          size="lg"
-          className="cursor-pointer"
-          onClick={() => navigate('/admin/courses')}
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <span className="text-lg font-medium">Back to Courses</span>
-      </div>
-
       {/* Instructor information */}
       {/* {instructor && <InstructorInfo instructor={instructor} />} */}
 

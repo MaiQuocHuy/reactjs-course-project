@@ -1,8 +1,13 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 
 import { baseQueryWithReauth } from '@/lib/baseQueryWithReauth';
-import type { ApiResponse } from '@/types/common';
-import type { ApiCoursesResponse, Section } from '@/types/courses';
+import type { ApiResponse, PaginatedResponse } from '@/types/common';
+import type {
+  ApiCoursesResponse,
+  Course,
+  CourseFilters,
+  Section,
+} from '@/types/courses';
 import type {
   ApiCoursesReviewResponse,
   CourseReviewDetail,
@@ -14,19 +19,11 @@ export const coursesApi = createApi({
   tagTypes: ['Courses', 'PendingCourses'],
   endpoints: (builder) => ({
     // Get all active courses
-    getAllCourses: builder.query<
-      ApiResponse<ApiCoursesResponse>,
-      {
-        page?: number;
-        size?: number;
-        sort?: string;
-        minPrice?: number;
-        maxPrice?: number;
-        search?: string;
-      }
-    >({
+    getAllCourses: builder.query<ApiCoursesResponse, CourseFilters>({
       query: (params = {}) => {
         const searchParams = new URLSearchParams();
+        // Always fetch only active courses for this endpoint
+        searchParams.append('status', 'true');
         if (params.page !== undefined)
           searchParams.append('page', String(params.page));
         if (params.size !== undefined)
@@ -37,6 +34,11 @@ export const coursesApi = createApi({
         if (params.maxPrice !== undefined)
           searchParams.append('maxPrice', String(params.maxPrice));
         if (params.search) searchParams.append('search', params.search);
+        if (params.categoryId)
+          searchParams.append('categoryId', params.categoryId);
+        if (params.level) searchParams.append('level', params.level);
+        if (params.averageRating !== undefined)
+          searchParams.append('averageRating', String(params.averageRating));
 
         const queryString = searchParams.toString();
         return {
@@ -44,10 +46,12 @@ export const coursesApi = createApi({
           method: 'GET',
         };
       },
+      transformResponse: (response: ApiResponse<PaginatedResponse<Course>>) =>
+        response.data,
       providesTags: (result) =>
         result
           ? [
-              ...result.data.content.map((c) => ({
+              ...result.content.map((c) => ({
                 type: 'Courses' as const,
                 id: c.id,
               })),
@@ -57,7 +61,7 @@ export const coursesApi = createApi({
     }),
 
     // Get course detail
-    getCourseById: builder.query<Section[], string>({
+    getCourseById: builder.query<Section[], string | undefined>({
       query: (id) => ({
         url: `/admin/courses/${id}`,
         method: 'GET',
@@ -120,7 +124,7 @@ export const coursesApi = createApi({
     }),
 
     // Get course detail
-    getPendingCoursesById: builder.query<CourseReviewDetail, string>({
+    getPendingCoursesById: builder.query<CourseReviewDetail, string | undefined>({
       query: (id) => ({
         url: `/admin/courses/review-course/${id}`,
         method: 'GET',
