@@ -10,8 +10,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '../ui/dropdown-menu';
-import { Badge } from '../ui/badge';
+} from "../ui/dropdown-menu";
+import { Badge } from "../ui/badge";
 import {
   Users,
   CreditCard,
@@ -32,16 +32,16 @@ import {
   UserCog,
   TicketPercent,
   Award,
-} from 'lucide-react';
-import { Input } from '../ui/input';
-import { useLogoutMutation } from '@/services/authApi';
-import { useGetAllCategoriesDropdownQuery } from '@/services/categoriesApi';
-import { useGetPaymentStatisticsQuery } from '@/services/paymentsApi';
-import { useGetRefundStatisticsQuery } from '@/services/refundsApi';
-import { useGetApplicationsQuery } from '@/services/applicationsApi';
-import { useGetRolesListQuery } from '@/services/rolesApi';
-import { usePermissions } from '@/hooks/usePermissions';
-import { useGetAllDiscountsQuery } from '@/services/discountsApi';
+} from "lucide-react";
+import { Input } from "../ui/input";
+import { useLogoutMutation } from "@/services/authApi";
+import { useGetAllCategoriesDropdownQuery } from "@/services/categoriesApi";
+import { useGetPaymentStatisticsQuery } from "@/services/paymentsApi";
+import { useGetRefundStatisticsQuery } from "@/services/refundsApi";
+import { useGetApplicationsQuery } from "@/services/applicationsApi";
+import { useGetRolesListQuery } from "@/services/rolesApi";
+import { usePermissions } from "@/hooks/usePermissions";
+import { useGetAllDiscountsQuery } from "@/services/discountsApi";
 import type { RootState } from "@/store/store";
 
 // Component to render navigation item with permission check
@@ -59,11 +59,20 @@ const PermissionNavigationItem: React.FC<{
   const permissions = item.permissions || [];
   const { hasAnyPermission } = usePermissions(permissions);
 
-  // If user is ADMIN, show all menu items regardless of permissions
-  // Otherwise, check permissions normally
-  const shouldRender = isAdmin || permissions.length === 0 || hasAnyPermission;
+  // Logic for menu visibility:
+  // 1. If item has permissions: check if user has any of those permissions
+  // 2. If item has no permissions: only ADMIN can see it
+  let shouldRender = false;
 
-  // If item has permissions and user doesn't have them (and not admin), don't render
+  if (permissions.length > 0) {
+    // Has permissions defined - check if user has any of them
+    shouldRender = hasAnyPermission;
+  } else {
+    // No permissions defined - only ADMIN can see
+    shouldRender = isAdmin;
+  }
+
+  // If item should not be rendered, return null
   if (!shouldRender) {
     return null;
   }
@@ -79,15 +88,15 @@ const PermissionNavigationItem: React.FC<{
         flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200
         ${
           active
-            ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-600'
-            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+            ? "bg-blue-50 text-blue-700 border-r-2 border-blue-600"
+            : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
         }
       `}
       onClick={() => setSidebarOpen(false)}
     >
       <div className="flex items-center space-x-3">
         <Icon
-          className={`h-5 w-5 ${active ? 'text-blue-600' : 'text-gray-400'}`}
+          className={`h-5 w-5 ${active ? "text-blue-600" : "text-gray-400"}`}
         />
         <span>{item.name}</span>
       </div>
@@ -135,7 +144,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   // Get all pending applications count
   const { data: pendingApplicationsCount } = useGetApplicationsQuery();
   const pendingCount =
-    pendingApplicationsCount?.filter((app) => app.status === 'PENDING')
+    pendingApplicationsCount?.filter((app) => app.status === "PENDING")
       .length || 0;
 
   // Get roles count
@@ -148,88 +157,90 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     (discountsListData && discountsListData.page.totalElements) || 0;
 
   const navigation: NavigationItem[] = [
-    { name: 'Dashboard', href: '/admin', icon: Home }, // No permission needed for dashboard
+    { name: "Dashboard", href: "/admin", icon: Home }, // No permission needed for dashboard
     {
-      name: 'Users',
-      href: '/admin/users',
+      name: "Users",
+      href: "/admin/users",
       icon: Users,
       badge: 12,
-      permissions: ['user:READ'],
+      permissions: ["user:READ"],
     },
     {
-      name: 'Applications',
-      href: '/admin/applications',
+      name: "Applications",
+      href: "/admin/applications",
       icon: FileUser,
       badge: pendingCount,
       permissions: ["instructor_application:READ"], // Updated to use specific application permissions
     },
     {
-      name: 'Categories',
-      href: '/admin/categories',
+      name: "Categories",
+      href: "/admin/categories",
       icon: FolderOpen,
       badge: categoriesCount,
       permissions: ["category:READ"],
     },
     {
-      name: 'Roles',
-      href: '/admin/roles',
+      name: "Roles",
+      href: "/admin/roles",
       icon: Shield,
       badge: rolesCount,
-      permissions: ["role:READ"],
     },
     {
-      name: 'Assign Roles',
-      href: '/admin/assign-roles',
+      name: "Assign Roles",
+      href: "/admin/assign-roles",
       icon: UserCog,
-      permissions: ["role:UPDATE"],
     },
     {
-      name: 'Courses',
-      href: '/admin/courses',
+      name: "Courses",
+      href: "/admin/courses",
       icon: BookOpen,
       badge: 3,
-      permissions: ['course:READ'],
+      permissions: ["course:READ"],
     },
     { name: "Certificates", href: "/admin/certificates", icon: Award },
     {
-      name: 'Revenues',
-      href: '/admin/revenues',
+      name: "Revenues",
+      href: "/admin/revenues",
       icon: HandCoins,
       badge: 1,
-      permissions: ["revenue:READ"],
     },
     {
       name: "Affiliate Revenue",
       href: "/admin/affiliate-revenue",
       icon: Users,
-      permissions: ["affiliate:READ"],
     },
     {
-      name: 'Payments',
-      href: '/admin/payments',
+      name: "Payments",
+      href: "/admin/payments",
       icon: CreditCard,
       badge: paymentsCount,
-      permissions: ['payment:READ'],
+      permissions: ["payment:READ"],
     },
     {
-      name: 'Refunds',
-      href: '/admin/refunds',
+      name: "Refunds",
+      href: "/admin/refunds",
       icon: RefreshCw,
       badge: refundsCount,
       permissions: ["refund:READ"],
     },
     {
-      name: 'Discounts',
-      href: '/admin/discounts',
+      name: "Discounts",
+      href: "/admin/discounts",
       icon: TicketPercent,
       badge: discountsCount,
       // permissions: ["payment:READ"],
     },
     {
-      name: 'Settings',
-      href: '/admin/settings',
+      name: "Discounts",
+      href: "/admin/discounts",
+      icon: TicketPercent,
+      badge: discountsCount,
+      // permissions: ["payment:READ"],
+    },
+    {
+      name: "Settings",
+      href: "/admin/settings",
       icon: Settings,
-      permissions: ["setting:READ"],
     },
     // {
     //   name: "Permission Demo",
@@ -242,16 +253,16 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const handleLogout = async () => {
     try {
       await logOut().unwrap();
-      localStorage.removeItem('user');
-      localStorage.removeItem('accessToken');
-      window.location.href = '/login'; // Redirect to login after logout
+      localStorage.removeItem("user");
+      localStorage.removeItem("accessToken");
+      window.location.href = "/login"; // Redirect to login after logout
     } catch (error) {
-      console.error('Logout failed:', error);
+      console.error("Logout failed:", error);
     }
   };
   const isActive = (href: string) => {
-    if (href === '/admin') {
-      return location.pathname === '/admin';
+    if (href === "/admin") {
+      return location.pathname === "/admin";
     }
     return location.pathname.startsWith(href);
   };
@@ -270,7 +281,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       <div
         className={`
         fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-xl transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 lg:flex lg:flex-shrink-0
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+        ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
       `}
       >
         <div className="flex flex-col h-full">
@@ -280,7 +291,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">SE</span>
               </div>
-              <span className="text-xl font-bold text-gray-900">Sybau Admin</span>
+              <span className="text-xl font-bold text-gray-900">
+                Sybau Admin
+              </span>
             </div>
             <Button
               variant="ghost"
@@ -312,8 +325,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                 <AvatarFallback>AD</AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">Admin User</p>
-                <p className="text-xs text-gray-500 truncate">admin@sybau.edu</p>
+                <p className="text-sm font-medium text-gray-900 truncate">
+                  Admin User
+                </p>
+                <p className="text-xs text-gray-500 truncate">
+                  admin@sybau.edu
+                </p>
               </div>
             </div>
           </div>
@@ -336,7 +353,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               </Button>
 
               {/* Search */}
-              {!location.pathname.includes('/admin/revenues') && (
+              {!location.pathname.includes("/admin/revenues") && (
                 <div className="relative hidden sm:block">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input
@@ -359,12 +376,17 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               {/* User menu */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="flex items-center space-x-3">
+                  <Button
+                    variant="ghost"
+                    className="flex items-center space-x-3"
+                  >
                     <Avatar className="h-8 w-8">
                       <AvatarImage src="/api/placeholder/32/32" />
                       <AvatarFallback>AD</AvatarFallback>
                     </Avatar>
-                    <span className="hidden sm:block text-sm font-medium">Admin User</span>
+                    <span className="hidden sm:block text-sm font-medium">
+                      Admin User
+                    </span>
                     <ChevronDown className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>

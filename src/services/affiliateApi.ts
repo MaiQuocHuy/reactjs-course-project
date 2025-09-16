@@ -47,6 +47,60 @@ export interface AffiliatePayout {
   cancelledAt?: string;
 }
 
+export interface AffiliatePayoutDetail {
+  id: string;
+  payoutStatus: 'PENDING' | 'PAID' | 'CANCELLED';
+  commissionPercent: number;
+  commissionAmount: number;
+  createdAt: string;
+  paidAt?: string;
+  cancelledAt?: string;
+  referrer: {
+    id: string;
+    name: string;
+    email: string;
+    joinedAt: string;
+  };
+  course: {
+    id: string;
+    title: string;
+    description?: string;
+    price: number;
+    instructorName: string;
+    instructorEmail: string;
+    courseCreatedAt: string;
+    isPublished: boolean;
+    isApproved: boolean;
+  };
+  discount?: {
+    id: string;
+    code: string;
+    type: 'GENERAL' | 'REFERRAL';
+    discountPercent: number;
+    description?: string;
+    startDate?: string;
+    endDate?: string;
+    usageLimit?: number;
+    perUserLimit?: number;
+    isActive: boolean;
+    discountCreatedAt: string;
+  };
+  purchaser?: {
+    id: string;
+    name: string;
+    email: string;
+    joinedAt: string;
+  };
+  usageInfo?: {
+    id: string;
+    usedAt: string;
+    discountPercent: number;
+    discountAmount: number;
+    originalCoursePrice: number;
+    finalPrice: number;
+  };
+}
+
 export interface AffiliateStatistics {
   totalPayouts: number;
   pendingPayouts: number;
@@ -130,6 +184,15 @@ export const affiliateApi = createApi({
       providesTags: (_result, _error, id) => [{ type: 'AffiliatePayout', id }],
     }),
 
+    // Get detailed affiliate payout information (Admin only)
+    getAffiliatePayoutDetail: builder.query<ApiResponse<AffiliatePayoutDetail>, string>({
+      query: (id) => ({
+        url: `/admin/affiliate/payouts/${id}/detail`,
+        method: 'GET',
+      }),
+      providesTags: (_result, _error, id) => [{ type: 'AffiliatePayout', id }],
+    }),
+
     // Mark payout as paid (Admin only)
     markPayoutAsPaid: builder.mutation<ApiResponse<AffiliatePayout>, string>({
       query: (id) => ({
@@ -148,19 +211,6 @@ export const affiliateApi = createApi({
         url: `/admin/affiliate/payouts/${id}/cancel`,
         method: 'PATCH',
         body: { reason },
-      }),
-      invalidatesTags: ['AffiliatePayout', 'AffiliateStats'],
-    }),
-
-    // Bulk action on payouts (Admin only)
-    bulkActionPayouts: builder.mutation<
-      ApiResponse<string>,
-      { payoutIds: string[]; action: 'MARK_PAID' | 'CANCEL'; reason?: string }
-    >({
-      query: ({ payoutIds, action, reason }) => ({
-        url: '/admin/affiliate/payouts/bulk-action',
-        method: 'POST',
-        body: { payoutIds, action, reason },
       }),
       invalidatesTags: ['AffiliatePayout', 'AffiliateStats'],
     }),
@@ -188,8 +238,8 @@ export const {
   useGetAffiliatePayoutsQuery,
   useGetAffiliateStatisticsQuery,
   useGetAffiliatePayoutByIdQuery,
+  useGetAffiliatePayoutDetailQuery,
   useMarkPayoutAsPaidMutation,
   useCancelPayoutMutation,
-  useBulkActionPayoutsMutation,
   useExportPayoutsMutation,
 } = affiliateApi;
