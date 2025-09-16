@@ -85,22 +85,21 @@ const AdvanceSearchBar = (props: Props) => {
                       <UserPlus className="h-3 w-3 mr-1" />
                       Add
                     </Button>
-                    <Link
-                      to={`/admin/users/${user.id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
+
+                    <Button
+                      asChild
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 px-2 cursor-pointer"
                     >
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-7 px-2 cursor-pointer"
-                        asChild
+                      <Link
+                        to={`/admin/users/${user.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
                       >
-                        <span>
-                          <Eye className="h-3 w-3" />
-                        </span>
-                      </Button>
-                    </Link>
+                        <Eye className="h-3 w-3" />
+                      </Link>
+                    </Button>
                   </div>
                 </div>
               ))}
