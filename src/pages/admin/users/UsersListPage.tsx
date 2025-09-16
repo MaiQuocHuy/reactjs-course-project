@@ -19,6 +19,7 @@ import {
 import { UserTable } from "../../../components/admin/UserTable";
 import { SearchBar } from "../../../components/admin/SearchBar";
 import { FilterBar } from "../../../components/admin/FilterBar";
+import { UserManagementSkeleton } from "../../../components/admin/UserManagementSkeleton";
 import {
   BanUserDialog,
   UnbanUserDialog,
@@ -123,12 +124,16 @@ export const UsersListPage: React.FC = () => {
   const instructorsCount = instructorsResponse?.data?.totalElements || 0;
   const bannedUsersCount = bannedUsersResponse?.data?.totalElements || 0;
 
-  // Map API user data to component format (convert isActive to status)
-  const mappedUsers: User[] = users.map((user) => ({
-    ...user,
-    status: user.isActive ? ("ACTIVE" as UserStatus) : ("BANNED" as UserStatus),
-    avatar: user.thumbnailUrl || user.avatar,
-  }));
+  // Map API user data to component format (convert isActive to status) and filter out system user
+  const mappedUsers: User[] = users
+    .filter((user) => user.email !== "system@ktc.com") // Filter out system user
+    .map((user) => ({
+      ...user,
+      status: user.isActive
+        ? ("ACTIVE" as UserStatus)
+        : ("BANNED" as UserStatus),
+      avatar: user.thumbnailUrl || user.avatar,
+    }));
 
   // Handle filter changes (trigger new API call)
   const handleSearchChange = (search: string) => {
@@ -192,7 +197,7 @@ export const UsersListPage: React.FC = () => {
           id: selectedUser.id,
           data: { isActive: false },
         }).unwrap();
-        refetch(); // Refresh the data after successful update
+        // No need for refetch() - invalidatesTags will handle cache invalidation
       } catch (error) {
         console.error("Failed to ban user:", error);
       }
@@ -208,7 +213,7 @@ export const UsersListPage: React.FC = () => {
           id: selectedUser.id,
           data: { isActive: true },
         }).unwrap();
-        refetch(); // Refresh the data after successful update
+        // No need for refetch() - invalidatesTags will handle cache invalidation
       } catch (error) {
         console.error("Failed to unban user:", error);
       }
@@ -224,7 +229,7 @@ export const UsersListPage: React.FC = () => {
           id: selectedUser.id,
           data: userData,
         }).unwrap();
-        refetch(); // Refresh the data after successful update
+        // No need for refetch() - invalidatesTags will handle cache invalidation
       } catch (error) {
         console.error("Failed to update user:", error);
       }
@@ -240,7 +245,7 @@ export const UsersListPage: React.FC = () => {
           id: selectedUser.id,
           data: { role },
         }).unwrap();
-        refetch(); // Refresh the data after successful update
+        // No need for refetch() - invalidatesTags will handle cache invalidation
       } catch (error) {
         console.error("Failed to assign role:", error);
       }
@@ -352,16 +357,7 @@ export const UsersListPage: React.FC = () => {
 
   // Loading and error states
   if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="flex justify-center items-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900 mx-auto mb-4"></div>
-            <p>Loading users...</p>
-          </div>
-        </div>
-      </div>
-    );
+    return <UserManagementSkeleton />;
   }
 
   if (error) {
@@ -487,6 +483,8 @@ export const UsersListPage: React.FC = () => {
               onEditUser={handleEditUser}
               onAssignRole={handleAssignRole}
               onViewUser={handleViewUser}
+              currentPage={currentPage - 1}
+              pageSize={pageSize}
             />
 
             {/* Pagination */}

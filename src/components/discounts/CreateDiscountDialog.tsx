@@ -3,6 +3,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { format } from 'date-fns';
+import { Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { useCreateDiscountMutation } from '@/services/discountsApi';
 import type { CreateDiscountRequest } from '@/types/discounts';
@@ -34,9 +36,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Loader2 } from 'lucide-react';
-// Using Sonner for toast notifications
-import { toast } from 'sonner';
 
 // Define the schema shape first for better TypeScript support
 const schemaShape = {
@@ -146,8 +145,8 @@ const getCurrentDate = () => {
   return now;
 };
 
-const getNextWeekDate = () => {
-  const now = getCurrentDate();
+const getNextWeekDate = (startDate?: Date) => {
+  const now = startDate || getCurrentDate();
   const nextWeek = new Date(now);
   nextWeek.setDate(now.getDate() + 7);
   return nextWeek;
@@ -435,6 +434,18 @@ export const CreateDiscountDialog: React.FC<CreateDiscountDialogProps> = ({
                           <Input
                             type="datetime-local"
                             {...field}
+                            onChange={(e) => {
+                              field.onChange(e.target.value);
+                              // Auto-update end date to be 1 week from start date
+                              if (e.target.value) {
+                                const startDate = new Date(e.target.value);
+                                const endDate = getNextWeekDate(startDate);
+                                form.setValue(
+                                  'endDate',
+                                  format(endDate, "yyyy-MM-dd'T'HH:mm:ss")
+                                );
+                              }
+                            }}
                             className={isValid ? VALID_INPUT_STYLES : ''}
                           />
                         </FormControl>
@@ -454,8 +465,7 @@ export const CreateDiscountDialog: React.FC<CreateDiscountDialogProps> = ({
                   render={({ field }) => {
                     // Check if this field is valid
                     const fieldError = form.formState.errors.endDate;
-                    const isFieldDirty = form.formState.dirtyFields.endDate;
-                    const isValid = isFieldDirty && !fieldError;
+                    const isValid = !fieldError;
 
                     return (
                       <FormItem>

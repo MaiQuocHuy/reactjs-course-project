@@ -338,6 +338,8 @@ export const CategoriesListPage: React.FC = () => {
             onEdit={handleEdit}
             onDelete={handleDelete}
             isLoading={isLoading}
+            currentPage={currentPage}
+            pageSize={pageSize}
           />
 
           {/* Pagination */}
