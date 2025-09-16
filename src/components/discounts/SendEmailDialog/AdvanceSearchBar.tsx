@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/label';
 import { useDebounce } from '@/hooks/useDebounce';
 import type { User } from '@/types/users';
 import { Eye, Loader2, UserPlus, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import UserInfo from './UserInfo';
 
 type Props = {
@@ -84,18 +85,22 @@ const AdvanceSearchBar = (props: Props) => {
                       <UserPlus className="h-3 w-3 mr-1" />
                       Add
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-7 px-2 cursor-pointer"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        window.open(`/admin/users/${user.id}`, '_blank');
-                      }}
+                    <Link
+                      to={`/admin/users/${user.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
                     >
-                      <Eye className="h-3 w-3" />
-                    </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 px-2 cursor-pointer"
+                        asChild
+                      >
+                        <span>
+                          <Eye className="h-3 w-3" />
+                        </span>
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               ))}

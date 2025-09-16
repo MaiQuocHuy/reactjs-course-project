@@ -1,4 +1,5 @@
 import { X } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -51,14 +52,12 @@ const SelectedUsersList = (props: Props) => {
         ) : (
           <div className="p-2 flex flex-wrap gap-2">
             {selectedUsers.map((user) => (
-              <div
+              <Link
                 key={user.id}
-                className="flex items-center space-x-3 p-2 bg-muted/50 rounded-md border w-fit max-w-xs cursor-pointer hover:bg-muted"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  window.open(`/admin/users/${user.id}`, '_blank');
-                }}
+                to={`/admin/users/${user.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center space-x-3 p-2 bg-muted/50 rounded-md border w-fit max-w-xs cursor-pointer hover:bg-muted no-underline"
               >
                 <UserInfo user={user} />
                 <Button
@@ -73,7 +72,7 @@ const SelectedUsersList = (props: Props) => {
                 >
                   <X className="h-3 w-3" />
                 </Button>
-              </div>
+              </Link>
             ))}
           </div>
         )}
