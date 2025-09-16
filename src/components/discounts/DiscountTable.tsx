@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { format } from 'date-fns';
 import { Eye, EyeOff, Mail, MoreHorizontal, Trash2 } from 'lucide-react';
 
@@ -23,28 +24,22 @@ import {
   useUpdateDiscountStatusMutation,
 } from '@/services/discountsApi';
 import { toast } from 'sonner';
-
-interface AlertDialogProps {
-  title: string;
-  description: string;
-  action: () => void;
-}
+import WarningAlert from './WarningAlert';
 
 type Props = {
   discounts?: Discount[];
   onRowClick: (discount: Discount) => void;
   onSendEmail: (e: React.MouseEvent, discount: Discount) => void;
-  setAlertDialogProps: (props: AlertDialogProps) => void;
-  setIsAlertDialogOpen: (isOpen: boolean) => void;
 };
 
-const DiscountTable = ({
-  discounts,
-  onRowClick,
-  onSendEmail,
-  setAlertDialogProps,
-  setIsAlertDialogOpen,
-}: Props) => {
+const DiscountTable = ({ discounts, onRowClick, onSendEmail }: Props) => {
+  const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
+  const [alertDialogProps, setAlertDialogProps] = useState({
+    title: '',
+    description: '',
+    action: () => {},
+  });
+
   // Update discount status mutation
   const [updateDiscountStatus, { isLoading: isUpdating }] =
     useUpdateDiscountStatusMutation();
@@ -275,6 +270,13 @@ const DiscountTable = ({
           ))}
         </TableBody>
       </Table>
+
+      {/* Confirmation Alert Dialog */}
+      <WarningAlert
+        isAlertDialogOpen={isAlertDialogOpen}
+        setIsAlertDialogOpen={setIsAlertDialogOpen}
+        alertDialogProps={alertDialogProps}
+      />
     </div>
   );
 };

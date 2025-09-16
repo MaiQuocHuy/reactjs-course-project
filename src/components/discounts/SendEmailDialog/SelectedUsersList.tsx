@@ -53,14 +53,23 @@ const SelectedUsersList = (props: Props) => {
             {selectedUsers.map((user) => (
               <div
                 key={user.id}
-                className="flex items-center space-x-3 p-2 bg-muted/50 rounded-md border w-fit max-w-xs"
+                className="flex items-center space-x-3 p-2 bg-muted/50 rounded-md border w-fit max-w-xs cursor-pointer hover:bg-muted"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  window.open(`/admin/users/${user.id}`, '_blank');
+                }}
               >
                 <UserInfo user={user} />
                 <Button
                   size="sm"
                   variant="ghost"
-                  onClick={() => onRemoveUser(user.id)}
-                  className="h-7 w-7 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 flex-shrink-0 ml-2"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onRemoveUser(user.id);
+                  }}
+                  className="h-7 w-7 p-0 text-red-600 cursor-pointer hover:text-red-700 hover:bg-red-50 flex-shrink-0 ml-2"
                 >
                   <X className="h-3 w-3" />
                 </Button>

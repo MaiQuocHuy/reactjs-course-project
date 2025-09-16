@@ -37,7 +37,6 @@ import CreateDiscountDialog from '@/components/discounts/CreateDiscountDialog';
 import { toast } from 'sonner';
 import DiscountTable from '@/components/discounts/DiscountTable';
 import DiscountDetails from '@/components/discounts/DiscountDetails';
-import WarningAlert from '@/components/discounts/WarningAlert';
 import EmailSubject from '@/components/discounts/SendEmailDialog/EmailSubject';
 import AdvanceSearchBar from '@/components/discounts/SendEmailDialog/AdvanceSearchBar';
 import SelectedUsersList from '@/components/discounts/SendEmailDialog/SelectedUsersList';
@@ -75,14 +74,6 @@ const DiscountsPage: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState<
     'all' | 'type' | 'code' | 'owner'
   >('all');
-
-  // Alert dialog states
-  const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
-  const [alertDialogProps, setAlertDialogProps] = useState({
-    title: '',
-    description: '',
-    action: () => {},
-  });
 
   // Debounced search for user selection
   const debouncedSearchQuery = useDebounce(userSearchQuery, 300);
@@ -530,14 +521,12 @@ const DiscountsPage: React.FC = () => {
                   discounts={discounts?.content}
                   onRowClick={handleRowClick}
                   onSendEmail={handleSendEmail}
-                  setAlertDialogProps={setAlertDialogProps}
-                  setIsAlertDialogOpen={setIsAlertDialogOpen}
                 />
 
                 {/* Pagination component */}
                 {discounts &&
                   discounts.page &&
-                  discounts.page.totalElements >= 10 && (
+                  discounts.page.totalPages >= 1 && (
                     <Pagination
                       currentPage={page}
                       itemsPerPage={pageSize}
@@ -564,13 +553,6 @@ const DiscountsPage: React.FC = () => {
       <CreateDiscountDialog
         isOpen={isCreateDialogOpen}
         onClose={() => setIsCreateDialogOpen(false)}
-      />
-
-      {/* Confirmation Alert Dialog */}
-      <WarningAlert
-        isAlertDialogOpen={isAlertDialogOpen}
-        setIsAlertDialogOpen={setIsAlertDialogOpen}
-        alertDialogProps={alertDialogProps}
       />
 
       {/* Send Email Dialog */}

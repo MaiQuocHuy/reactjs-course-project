@@ -71,7 +71,6 @@ const AdvanceSearchBar = (props: Props) => {
                   className="flex items-center justify-between p-2 hover:bg-muted rounded-md"
                 >
                   <div className={`flex items-center space-x-3 flex-1 min-w-0`}>
-                    
                     <UserInfo user={user} />
                   </div>
                   <div className="flex space-x-1">
@@ -80,12 +79,21 @@ const AdvanceSearchBar = (props: Props) => {
                       variant="outline"
                       onClick={() => addUserToSelection(user)}
                       disabled={selectedUsers.some((u) => u.id === user.id)}
-                      className="h-7 px-2"
+                      className="h-7 px-2 cursor-pointer"
                     >
                       <UserPlus className="h-3 w-3 mr-1" />
                       Add
                     </Button>
-                    <Button size="sm" variant="ghost" className="h-7 px-2">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 px-2 cursor-pointer"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        window.open(`/admin/users/${user.id}`, '_blank');
+                      }}
+                    >
                       <Eye className="h-3 w-3" />
                     </Button>
                   </div>
