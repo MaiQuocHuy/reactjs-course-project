@@ -1,4 +1,5 @@
 import { X } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -53,14 +54,16 @@ const SelectedUsersList = (props: Props) => {
             {selectedUsers.map((user) => (
               <div
                 key={user.id}
-                className="flex items-center space-x-3 p-2 bg-muted/50 rounded-md border w-fit max-w-xs cursor-pointer hover:bg-muted"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  window.open(`/admin/users/${user.id}`, '_blank');
-                }}
+                className="flex items-center justify-between space-x-3 p-2 bg-muted/50 rounded-md border w-fit max-w-xs hover:bg-muted"
               >
-                <UserInfo user={user} />
+                <Link
+                  to={`/admin/users/${user.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="no-underline flex items-center space-x-3 flex-1 min-w-0"
+                >
+                  <UserInfo user={user} />
+                </Link>
                 <Button
                   size="sm"
                   variant="ghost"
@@ -69,7 +72,7 @@ const SelectedUsersList = (props: Props) => {
                     e.stopPropagation();
                     onRemoveUser(user.id);
                   }}
-                  className="h-7 w-7 p-0 text-red-600 cursor-pointer hover:text-red-700 hover:bg-red-50 flex-shrink-0 ml-2"
+                  className="h-7 w-7 p-0 text-red-600 cursor-pointer hover:text-red-700 hover:bg-red-50 flex-shrink-0"
                 >
                   <X className="h-3 w-3" />
                 </Button>
