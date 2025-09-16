@@ -33,6 +33,8 @@ interface UserTableProps {
   onEditUser: (userId: string) => void;
   onAssignRole: (userId: string) => void;
   onViewUser: (userId: string) => void;
+  currentPage?: number;
+  pageSize?: number;
 }
 
 const getRoleBadgeVariant = (role: User["role"]) => {
@@ -68,6 +70,8 @@ export const UserTable: React.FC<UserTableProps> = ({
   onEditUser,
   onAssignRole,
   onViewUser,
+  currentPage = 0,
+  pageSize = 10,
 }) => {
   const { hasPermission: canUpdateUser } = usePermission("user:UPDATE");
   const { hasPermission: canReadUser } = usePermission("user:READ");
@@ -77,20 +81,23 @@ export const UserTable: React.FC<UserTableProps> = ({
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead className="w-[60px]">#</TableHead>
             <TableHead>User</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Role</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead>Last Login</TableHead>
             <TableHead className="w-[100px]">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {users.map((user) => (
+          {users.map((user, index) => (
             <TableRow
               key={user.id}
               className="cursor-pointer hover:bg-muted/50"
             >
+              <TableCell className="text-center font-medium">
+                {currentPage * pageSize + index + 1}
+              </TableCell>
               <TableCell>
                 <div
                   className="flex items-center space-x-3"
@@ -123,17 +130,6 @@ export const UserTable: React.FC<UserTableProps> = ({
                 <Badge variant={getStatusBadgeVariant(user.status)}>
                   {user.status}
                 </Badge>
-              </TableCell>
-              <TableCell>
-                {user.lastLoginAt
-                  ? new Date(user.lastLoginAt).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })
-                  : "Never"}
               </TableCell>
               <TableCell>
                 <DropdownMenu>

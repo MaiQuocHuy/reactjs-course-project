@@ -112,6 +112,7 @@ export const usersApi = createApi({
         method: 'PUT',
         body: data,
       }),
+      invalidatesTags: ['User'],
     }),
 
     // PUT /api/admin/users/{id}/role - Update user role
@@ -124,6 +125,7 @@ export const usersApi = createApi({
         method: 'PUT',
         body: data,
       }),
+      invalidatesTags: ['User'],
     }),
 
     // PATCH /api/admin/users/{id}/status - Update user status (ban/unban)
@@ -136,6 +138,7 @@ export const usersApi = createApi({
         method: 'PUT',
         body: data,
       }),
+      invalidatesTags: ['User'],
     }),
 
     // DELETE /api/admin/users/{id} - Delete user
