@@ -13,6 +13,12 @@ import type {
   CourseReviewDetail,
 } from '@/types/courses-review';
 
+// Price range metadata type
+export interface PriceRangeMetadata {
+  minPrice: number;
+  maxPrice: number;
+}
+
 export const coursesApi = createApi({
   reducerPath: 'coursesApi',
   baseQuery: baseQueryWithReauth,
@@ -62,10 +68,16 @@ export const coursesApi = createApi({
 
     // Get course detail
     getCourseById: builder.query<Section[], string | undefined>({
-      query: (id) => ({
-        url: `/admin/courses/${id}`,
-        method: 'GET',
-      }),
+      query: (id) => {
+        if (!id) {
+          throw new Error('Course ID is required');
+        } else {
+          return {
+            url: `/admin/courses/${id}`,
+            method: 'GET',
+          };
+        }
+      },
       transformResponse: (response: any) => response.data,
       providesTags: (result, error, id) => [{ type: 'Courses', id }],
     }),
@@ -124,11 +136,20 @@ export const coursesApi = createApi({
     }),
 
     // Get course detail
-    getPendingCoursesById: builder.query<CourseReviewDetail, string | undefined>({
-      query: (id) => ({
-        url: `/admin/courses/review-course/${id}`,
-        method: 'GET',
-      }),
+    getPendingCoursesById: builder.query<
+      CourseReviewDetail,
+      string | undefined
+    >({
+      query: (id) => {
+        if (!id) {
+          throw new Error('Course ID is required');
+        } else {
+          return {
+            url: `/admin/courses/review-course/${id}`,
+            method: 'GET',
+          };
+        }
+      },
       transformResponse: (response: any) => {
         // console.log(response.data);
         return response.data;
@@ -158,6 +179,16 @@ export const coursesApi = createApi({
         { type: 'PendingCourses', id: 'LIST' },
       ],
     }),
+
+    // Get min and max price for course filters
+    getMinAndMaxPrice: builder.query<PriceRangeMetadata, void>({
+      query: () => ({
+        url: '/admin/courses/filter-metadata',
+        method: 'GET',
+      }),
+      transformResponse: (response: ApiResponse<PriceRangeMetadata>) =>
+        response.data,
+    }),
   }),
 });
 
@@ -167,4 +198,5 @@ export const {
   useGetPendingCoursesQuery,
   useGetPendingCoursesByIdQuery,
   useUpdateCourseStatusMutation,
+  useGetMinAndMaxPriceQuery,
 } = coursesApi;

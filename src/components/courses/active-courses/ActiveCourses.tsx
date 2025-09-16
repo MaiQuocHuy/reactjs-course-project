@@ -4,7 +4,10 @@ import CourseCard from '@/components/courses/CourseCard';
 import NoCourseFound from '@/components/courses/NoCourseFound';
 import ActiveCourseSkeleton from '@/components/courses/active-courses/ActiveCourseSkeleton';
 import type { Course as CourseType } from '@/types/courses';
-import { useGetAllCoursesQuery } from '@/services/coursesApi';
+import {
+  useGetAllCoursesQuery,
+  useGetMinAndMaxPriceQuery,
+} from '@/services/coursesApi';
 import { useGetAllCategoriesDropdownQuery } from '@/services/categoriesApi';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -65,40 +68,44 @@ const ActiveCourses: React.FC = () => {
 
   const { data, error, isLoading, refetch } = useGetAllCoursesQuery(apiParams);
 
-  // Fetch all courses to determine actual min/max prices
-  const allCoursesParams = useMemo(() => {
-    return {
-      page: 0,
-      size: 100, // Large size to get all courses
-    } as any;
-  }, [selectedCategoryId]);
+  // // Fetch all courses to determine actual min/max prices
+  // const allCoursesParams = useMemo(() => {
+  //   return {
+  //     page: 0,
+  //     size: 100, // Large size to get all courses
+  //   } as any;
+  // }, [selectedCategoryId]);
 
-  const { data: allCoursesData } = useGetAllCoursesQuery(allCoursesParams);
+  // const { data: allCoursesData } = useGetAllCoursesQuery(allCoursesParams);
 
-  // Calculate actual min and max prices from all courses
-  const { actualMinPrice, actualMaxPrice } = useMemo(() => {
-    const allCourses = allCoursesData?.content ?? [];
+  // // Calculate actual min and max prices from all courses
+  // const { actualMinPrice, actualMaxPrice } = useMemo(() => {
+  //   const allCourses = allCoursesData?.content ?? [];
 
-    if (allCourses.length === 0) {
-      return { actualMinPrice: 0, actualMaxPrice: 500 };
-    }
+  //   if (allCourses.length === 0) {
+  //     return { actualMinPrice: 0, actualMaxPrice: 500 };
+  //   }
 
-    const prices = allCourses
-      .map((course: CourseType) => course.price)
-      .filter((price: number) => price != null && price >= 0);
+  //   const prices = allCourses
+  //     .map((course: CourseType) => course.price)
+  //     .filter((price: number) => price != null && price >= 0);
 
-    if (prices.length === 0) {
-      return { actualMinPrice: 0, actualMaxPrice: 500 };
-    }
+  //   if (prices.length === 0) {
+  //     return { actualMinPrice: 0, actualMaxPrice: 500 };
+  //   }
 
-    const calculatedMin = Math.floor(Math.min(...prices));
-    const calculatedMax = Math.ceil(Math.max(...prices));
+  //   const calculatedMin = Math.floor(Math.min(...prices));
+  //   const calculatedMax = Math.ceil(Math.max(...prices));
 
-    return {
-      actualMinPrice: calculatedMin,
-      actualMaxPrice: calculatedMax,
-    };
-  }, [allCoursesData]);
+  //   return {
+  //     actualMinPrice: calculatedMin,
+  //     actualMaxPrice: calculatedMax,
+  //   };
+  // }, [allCoursesData]);
+
+  const { data: metadata } = useGetMinAndMaxPriceQuery();
+  const actualMinPrice = metadata?.minPrice ?? 0;
+  const actualMaxPrice = metadata?.maxPrice ?? 500;
 
   // Initialize price range with actual values when they're first loaded
   useEffect(() => {
