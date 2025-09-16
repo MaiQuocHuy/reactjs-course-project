@@ -58,4 +58,5 @@ export interface CreateDiscountRequest {
 export interface SendDiscountEmailRequest {
   subject: string;
   discount_id: string;
+  user_ids?: string[] | string;
 }
