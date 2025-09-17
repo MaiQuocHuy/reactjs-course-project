@@ -1,12 +1,23 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 
 import { baseQueryWithReauth } from '@/lib/baseQueryWithReauth';
-import type { ApiResponse } from '@/types/common';
-import type { ApiCoursesResponse, Section } from '@/types/courses';
+import type { ApiResponse, PaginatedResponse } from '@/types/common';
+import type {
+  ApiCoursesResponse,
+  Course,
+  CourseFilters,
+  Section,
+} from '@/types/courses';
 import type {
   ApiCoursesReviewResponse,
   CourseReviewDetail,
 } from '@/types/courses-review';
+
+// Price range metadata type
+export interface PriceRangeMetadata {
+  minPrice: number;
+  maxPrice: number;
+}
 
 export const coursesApi = createApi({
   reducerPath: 'coursesApi',
@@ -14,19 +25,13 @@ export const coursesApi = createApi({
   tagTypes: ['Courses', 'PendingCourses'],
   endpoints: (builder) => ({
     // Get all active courses
-    getAllCourses: builder.query<
-      ApiResponse<ApiCoursesResponse>,
-      {
-        page?: number;
-        size?: number;
-        sort?: string;
-        minPrice?: number;
-        maxPrice?: number;
-        search?: string;
-      }
-    >({
+    getAllCourses: builder.query<ApiCoursesResponse, CourseFilters>({
       query: (params = {}) => {
         const searchParams = new URLSearchParams();
+        // Default to active courses, but allow override
+        const status =
+          params.status === undefined ? 'true' : String(params.status);
+        searchParams.append('status', status);
         if (params.page !== undefined)
           searchParams.append('page', String(params.page));
         if (params.size !== undefined)
@@ -37,6 +42,11 @@ export const coursesApi = createApi({
         if (params.maxPrice !== undefined)
           searchParams.append('maxPrice', String(params.maxPrice));
         if (params.search) searchParams.append('search', params.search);
+        if (params.categoryId)
+          searchParams.append('categoryId', params.categoryId);
+        if (params.level) searchParams.append('level', params.level);
+        if (params.averageRating !== undefined)
+          searchParams.append('averageRating', String(params.averageRating));
 
         const queryString = searchParams.toString();
         return {
@@ -44,10 +54,12 @@ export const coursesApi = createApi({
           method: 'GET',
         };
       },
+      transformResponse: (response: ApiResponse<PaginatedResponse<Course>>) =>
+        response.data,
       providesTags: (result) =>
         result
           ? [
-              ...result.data.content.map((c) => ({
+              ...result.content.map((c) => ({
                 type: 'Courses' as const,
                 id: c.id,
               })),
@@ -57,13 +69,19 @@ export const coursesApi = createApi({
     }),
 
     // Get course detail
-    getCourseById: builder.query<Section[], string>({
-      query: (id) => ({
-        url: `/admin/courses/${id}`,
-        method: 'GET',
-      }),
+    getCourseById: builder.query<Section[], string | undefined>({
+      query: (id) => {
+        if (!id) {
+          throw new Error('Course ID is required');
+        } else {
+          return {
+            url: `/admin/courses/${id}`,
+            method: 'GET',
+          };
+        }
+      },
       transformResponse: (response: any) => response.data,
-      providesTags: (result, error, id) => [{ type: 'Courses', id }],
+      providesTags: (_result, _error, id) => [{ type: 'Courses', id }],
     }),
 
     // Get pending / resubmit courses
@@ -120,16 +138,25 @@ export const coursesApi = createApi({
     }),
 
     // Get course detail
-    getPendingCoursesById: builder.query<CourseReviewDetail, string>({
-      query: (id) => ({
-        url: `/admin/courses/review-course/${id}`,
-        method: 'GET',
-      }),
+    getPendingCoursesById: builder.query<
+      CourseReviewDetail,
+      string | undefined
+    >({
+      query: (id) => {
+        if (!id) {
+          throw new Error('Course ID is required');
+        } else {
+          return {
+            url: `/admin/courses/review-course/${id}`,
+            method: 'GET',
+          };
+        }
+      },
       transformResponse: (response: any) => {
         // console.log(response.data);
         return response.data;
       },
-      providesTags: (result, error, id) => [{ type: 'PendingCourses', id }],
+      providesTags: (_result, _error, id) => [{ type: 'PendingCourses', id }],
     }),
 
     // Update course status (accept or reject)
@@ -154,6 +181,16 @@ export const coursesApi = createApi({
         { type: 'PendingCourses', id: 'LIST' },
       ],
     }),
+
+    // Get min and max price for course filters
+    getMinAndMaxPrice: builder.query<PriceRangeMetadata, void>({
+      query: () => ({
+        url: '/admin/courses/filter-metadata',
+        method: 'GET',
+      }),
+      transformResponse: (response: ApiResponse<PriceRangeMetadata>) =>
+        response.data,
+    }),
   }),
 });
 
@@ -163,4 +200,5 @@ export const {
   useGetPendingCoursesQuery,
   useGetPendingCoursesByIdQuery,
   useUpdateCourseStatusMutation,
+  useGetMinAndMaxPriceQuery,
 } = coursesApi;

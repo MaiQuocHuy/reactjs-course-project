@@ -39,7 +39,7 @@ import {
   TableHeader,
   TableRow,
 } from '../../components/ui/table';
-import PendingCourses from '@/components/courses/PendingCourses';
+import PendingCourses from '@/components/courses/pending-courses/PendingCourses';
 import { useGetUsersQuery } from '@/services/usersApi';
 import { useGetAllCoursesQuery } from '@/services/coursesApi';
 import { useGetPaymentsQuery } from '@/services/paymentsApi';
@@ -92,10 +92,10 @@ export const DashboardPage: React.FC = () => {
       };
     }
 
-    if (courses && courses.data.content.length > 0) {
+    if (courses && courses.content.length > 0) {
       newStats[2] = {
         title: 'Total Courses',
-        value: courses.data.content.length.toString(),
+        value: courses.content.length.toString(),
         icon: BookOpen,
       };
     }

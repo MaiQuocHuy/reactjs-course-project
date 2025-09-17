@@ -1,20 +1,14 @@
 import { useCallback } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import CourseContent from '@/components/courses/course-detail/course-content/CourseContent';
-import { 
-  useGetPendingCoursesByIdQuery,
-} from '@/services/coursesApi';
-import CourseSkeleton from '@/components/courses/CourseSkeleton';
+import { useGetPendingCoursesByIdQuery } from '@/services/coursesApi';
 import NoCourseFound from '@/components/courses/NoCourseFound';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft} from 'lucide-react';
 import CourseStatistics from '@/components/courses/course-detail/course-content/CourseStatistics';
-
+import CourseDetailSkeleton from './CourseDetailSkeleton';
 
 const CourseReviewDetailPage = () => {
-  const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
 
   const {
@@ -22,7 +16,7 @@ const CourseReviewDetailPage = () => {
     isLoading,
     error,
     refetch,
-  } = id ? useGetPendingCoursesByIdQuery(id) : { data: undefined };
+  } = useGetPendingCoursesByIdQuery(id, { skip: !id });
 
   const handleRetry = useCallback(() => {
     if (refetch) {
@@ -31,7 +25,7 @@ const CourseReviewDetailPage = () => {
   }, [refetch]);
 
   if (isLoading) {
-    return <CourseSkeleton />;
+    return <CourseDetailSkeleton />;
   }
 
   if (error) {
@@ -51,18 +45,6 @@ const CourseReviewDetailPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2">
-        <Button
-          variant="outline"
-          size="lg"
-          className="cursor-pointer"
-          onClick={() => navigate('/admin/courses')}
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <span className="text-lg font-medium">Back to Courses</span>
-      </div>
-
       {/* Instructor information */}
       {/* {instructor && <InstructorInfo instructor={instructor} />} */}
 
@@ -75,7 +57,7 @@ const CourseReviewDetailPage = () => {
           <CardHeader>
             <CardTitle>Course Content</CardTitle>
           </CardHeader>
-          <CardContent className='space-y-4'>
+          <CardContent className="space-y-4">
             {/* statistics: sections / lessons / total duration */}
             <CourseStatistics
               countSection={courseData.countSection}
