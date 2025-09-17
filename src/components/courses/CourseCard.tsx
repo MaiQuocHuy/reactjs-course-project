@@ -1,21 +1,36 @@
-import type { Course } from "@/types/courses";
-import { Link } from "react-router-dom";
-import { PermissionButton } from "@/components/shared/PermissionComponents";
-import { useUserRole } from "@/hooks/usePermissions";
+import type { Course } from '@/types/courses';
+import { Link } from 'react-router-dom';
+import { PermissionButton } from '@/components/shared/PermissionComponents';
+import { Badge } from '../ui/badge';
 
 type Props = {
   course: Course;
 };
 
-const CourseCard = ({ course }: Props) => {
-  const { isAdmin, isInstructor } = useUserRole();
+const getCourseLevelColor = (level?: string): string => {
+  if (!level) return 'bg-blue-500';
+  
+  switch (level.toLowerCase()) {
+    case 'beginner':
+      return 'bg-green-500';
+    case 'intermediate':
+      return 'bg-yellow-500';
+    case 'advanced':
+      return 'bg-red-500';
+    default:
+      return 'bg-blue-500';
+  }
+};
 
+const CourseCard = ({ course }: Props) => {
   return (
     <Link
       to={`/admin/courses/${course.id}`}
+      target="_blank"
       className="relative bg-white rounded-lg shadow-sm overflow-hidden "
     >
       <div className="relative">
+        {/* Thumbnail */}
         {course.thumbnailUrl && (
           <img
             src={course.thumbnailUrl}
@@ -23,28 +38,63 @@ const CourseCard = ({ course }: Props) => {
             className="w-full h-40 object-cover"
           />
         )}
-        <div className="absolute top-3 left-3 bg-white/80 text-xs px-2 py-1 rounded">
-          {course.categories?.[0]?.name ?? "General"}
+
+        {/* Level */}
+        <div className={`absolute top-3 left-3 text-white text-sm px-2 py-1 rounded ${getCourseLevelColor(course.level)}`}>
+          {course.level}
         </div>
-        <div className="absolute top-3 right-3 bg-green-500 text-white text-xs px-2 py-1 rounded">
-          ${course.price?.toFixed(2) ?? "0.00"}
+
+        {/* Price */}
+        <div className="absolute top-3 right-3 bg-purple-600 text-white text-sm px-2 py-1 rounded">
+          ${course.price?.toFixed(2) ?? '0.00'}
         </div>
       </div>
 
       <div className="p-4">
         <h3 className="font-semibold text-lg mb-1">{course.title}</h3>
+
+        {/* Description */}
         <p className="text-sm text-gray-600 mb-3 line-clamp-2">
           {course.description}
         </p>
 
+        {/* Categories */}
+        <div className="flex items-center mb-3">
+          {course.categories && course.categories.length > 0 ? (
+            <div className="flex items-center gap-2 flex-wrap">
+              {course.categories.slice(0, 2).map((category) => (
+                <span
+                  key={category.id}
+                  className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full"
+                >
+                  {category.name}
+                </span>
+              ))}
+              {course.categories.length > 2 && (
+                <Badge
+                  variant={'outline'}
+                  className="text-xs text-gray-500 font-medium"
+                >
+                  +{course.categories.length - 2} more
+                </Badge>
+              )}
+            </div>
+          ) : (
+            <span className="inline-block bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full">
+              General
+            </span>
+          )}
+        </div>
+
         <div className="flex items-center justify-between">
+          {/* Instructor Info */}
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center font-semibold text-sm text-indigo-700">
               {course.instructor?.name
-                ?.split(" ")
+                ?.split(' ')
                 .map((n) => n[0])
                 .slice(0, 2)
-                .join("")}
+                .join('')}
             </div>
             <div>
               <div className="text-sm font-medium">
@@ -54,6 +104,7 @@ const CourseCard = ({ course }: Props) => {
             </div>
           </div>
 
+          {/* Ratings */}
           <div className="text-right">
             <div className="flex items-center gap-1 justify-end">
               {Array.from({ length: 5 }).map((_, i) => (
@@ -61,8 +112,8 @@ const CourseCard = ({ course }: Props) => {
                   key={i}
                   className={`w-4 h-4 ${
                     i < Math.round(course.averageRating ?? 0)
-                      ? "text-yellow-400"
-                      : "text-gray-300"
+                      ? 'text-yellow-400'
+                      : 'text-gray-300'
                   }`}
                   fill="currentColor"
                   viewBox="0 0 20 20"
@@ -84,8 +135,13 @@ const CourseCard = ({ course }: Props) => {
           </div>
 
           <PermissionButton
-            permissions={["course:READ"]}
+            permissions={['course:READ']}
             className="px-4 py-2 bg-indigo-600 text-white rounded cursor-pointer disabled:bg-gray-300 disabled:cursor-not-allowed"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              window.open(`/admin/courses/${course.id}`, '_blank');
+            }}
           >
             View Course
           </PermissionButton>

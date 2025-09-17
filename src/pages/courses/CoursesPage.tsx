@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import ActiveCourses from "../../components/courses/ActiveCourses";
-import PendingCourses from "@/components/courses/PendingCourses";
+import ActiveCourses from "@/components/courses/active-courses/ActiveCourses";
+import PendingCourses from "@/components/courses/pending-courses/PendingCourses";
 import { useNavigate, useLocation } from "react-router-dom";
 import { PermissionGate } from "@/components/shared/PermissionComponents";
 
