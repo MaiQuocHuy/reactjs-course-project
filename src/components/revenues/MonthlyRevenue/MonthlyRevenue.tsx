@@ -57,12 +57,16 @@ const MonthlyRevenue: React.FC = () => {
   // Update drill-down data when daily data is loaded
   useEffect(() => {
     if (dailyRevenueData && selectedMonthForDaily && selectedPeriod) {
+      // Ensure the data corresponds to the currently selected month and year
       const clickedMonth = monthNames[selectedMonthForDaily - 1];
+      if (selectedPeriod !== `${clickedMonth} ${selectedYear}`) {
+        return; // Stale data, do not update state
+      }
 
       setDailyRevenue({
         period: `${clickedMonth} ${selectedYear}`,
         type: 'daily',
-        data: dailyRevenueData ? dailyRevenueData : [],
+        data: dailyRevenueData || [],
       });
     }
   }, [dailyRevenueData, selectedMonthForDaily, selectedPeriod, selectedYear]);

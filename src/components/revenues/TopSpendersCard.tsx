@@ -19,7 +19,12 @@ export const TopSpendersCard: React.FC = () => {
   }
 
   const handleStudentClick = (studentId: string) => {
-    window.open(`/admin/users/${studentId}`, '_blank');
+    const newWindow = window.open(
+      `/admin/users/${studentId}`,
+      '_blank',
+      'noopener,noreferrer'
+    );
+    if (newWindow) newWindow.opener = null;
   };
 
   return (

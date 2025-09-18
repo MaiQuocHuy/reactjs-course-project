@@ -1,22 +1,22 @@
 export interface SeasonalData {
   month: string;
   day: number;
-  revenue: string;
+  revenue: number;
   date: string;
   transactions: number;
 }
 
 export interface SeasonalSummary {
   season: string;
-  totalRevenue: string;
-  averageDailyRevenue: string;
+  totalRevenue: number;
+  averageDailyRevenue: number;
   totalDays: number;
 }
 
 export interface SeasonalHeatmap {
   dailyData: SeasonalData[];
   seasonalSummary: SeasonalSummary[];
-  minRevenue: string;
-  maxRevenue: string;
+  minRevenue: number;
+  maxRevenue: number;
   year: number;
 }

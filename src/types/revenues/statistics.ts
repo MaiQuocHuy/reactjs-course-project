@@ -5,10 +5,10 @@ export interface StatCard {
 
 export interface Statistics {
   stats: StatCard[];
-  totalRevenue: string;
-  monthlyGrowth: string;
-  yearlyGrowth: string;
-  avgRevenuePerUser: string;
+  totalRevenue: number;
+  monthlyGrowth: number;
+  yearlyGrowth: number;
+  avgRevenuePerUser: number;
   totalActiveUsers: number;
   totalTransactions: number;
 }

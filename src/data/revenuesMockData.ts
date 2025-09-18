@@ -196,7 +196,7 @@ export const generateMonthlyRevenueData = (): MonthlyRevenue[] => {
     const baseRevenue = 400000 + Math.sin((i / 12) * 2 * Math.PI) * 100000;
     const revenue = Math.round(baseRevenue * (0.9 + Math.random() * 0.2));
     const prevYearRevenue = data[i] && data[i].revenue ? data[i].revenue : 0; // 2023 data
-    const growth = ((revenue - prevYearRevenue) / prevYearRevenue) * 100;
+    const growth = prevYearRevenue > 0 ? ((revenue - prevYearRevenue) / prevYearRevenue) * 100 : 0;
     
     data.push({
       month: months[i],

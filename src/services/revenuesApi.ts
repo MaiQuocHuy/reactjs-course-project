@@ -80,13 +80,13 @@ export const revenuesApi = createApi({
       providesTags: [{ type: 'Revenues', id: 'available-years' }],
     }),
 
-    getRevenueSummary: builder.query<any, { year?: number }>({
-      query: ({ year = 2024 } = {}) => ({
-        url: '/admin/revenues/summary',
-        params: { year },
-      }),
-      providesTags: [{ type: 'Revenues', id: 'summary' }],
-    }),
+    // getRevenueSummary: builder.query<any, { year?: number }>({
+    //   query: ({ year = 2024 } = {}) => ({
+    //     url: '/admin/revenues/summary',
+    //     params: { year },
+    //   }),
+    //   providesTags: [{ type: 'Revenues', id: 'summary' }],
+    // }),
   }),
 });
 
@@ -99,5 +99,5 @@ export const {
   useGetComparativeAnalysisQuery,
   useGetSeasonalHeatmapQuery,
   useGetAvailableYearsQuery,
-  useGetRevenueSummaryQuery,
+  // useGetRevenueSummaryQuery,
 } = revenuesApi;

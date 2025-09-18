@@ -2,7 +2,7 @@ export interface StudentSpendingData {
   id: string;
   name: string;
   email: string;
-  totalSpent: string;
+  totalSpent: number;
   coursesEnrolled: number;
   avatarUrl: string;
 }
