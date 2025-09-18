@@ -19,7 +19,6 @@ import {
   Home,
   Settings,
   LogOut,
-  Bell,
   Search,
   Menu,
   X,
@@ -223,13 +222,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       icon: RefreshCw,
       badge: refundsCount,
       permissions: ["refund:READ"],
-    },
-    {
-      name: "Discounts",
-      href: "/admin/discounts",
-      icon: TicketPercent,
-      badge: discountsCount,
-      // permissions: ["payment:READ"],
     },
     {
       name: "Discounts",
