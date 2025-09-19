@@ -7,7 +7,7 @@ import {
 } from 'react-router-dom';
 import LoginForm from './components/LoginForm';
 import { AdminLayout } from './components/admin/AdminLayout';
-import { DashboardPage } from './pages/admin/DashboardPage';
+import { DashboardPage } from './pages/Dashboard/DashboardPage';
 import { UsersListPage } from './pages/admin/users';
 import { UserDetailPage } from './pages/admin/users';
 import { PaymentsPage } from './pages/payments';
@@ -15,7 +15,6 @@ import { PaymentDetailPage } from './pages/payments/PaymentDetailPage';
 import RefundsPage from './pages/refunds';
 import { ApplicationDetail } from './components/ApplicationDetail/ApplicationDetail';
 import { ApplicationsListPage } from './pages/ApplicationList';
-import RevenuesPage from './pages/revenues/RevenuesPage';
 import CoursesPage from './pages/courses/CoursesPage';
 import CourseDetailPage from './pages/courses/course-detail/CourseDetailPage';
 import CourseReviewDetailPage from './pages/courses/course-detail/CourseReviewDetailPage';
@@ -30,6 +29,7 @@ import PermissionDemoPage from './pages/admin/PermissionDemoPage';
 import AdminPermissionDemoPage from './pages/admin/AdminPermissionDemoPage';
 import { AssignRoleToUsersPage } from './pages/admin/users/AssignRoleToUsersPage';
 import DiscountsPage from './pages/discounts/DiscountsPage';
+import RevenuesPage2 from './pages/revenues/RevenuesPage';
 
 function App() {
   return (
@@ -150,7 +150,7 @@ function App() {
               path="/admin/revenues"
               element={
                 <AdminLayout>
-                  <RevenuesPage />
+                  <RevenuesPage2 />
                 </AdminLayout>
               }
             />
