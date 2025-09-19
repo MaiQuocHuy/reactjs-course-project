@@ -16,6 +16,7 @@ import { useGetAllCoursesQuery } from '@/services/coursesApi';
 import { useGetPaymentsQuery } from '@/services/paymentsApi';
 import { useGetRefundsQuery } from '@/services/refundsApi';
 import SystemStatus from '@/components/Dashboard/SystemStatus';
+import { DashboardSkeleton } from '@/components/Dashboard/DashboardSkeleton';
 
 interface Stats {
   title: string;
@@ -90,16 +91,7 @@ export const DashboardPage: React.FC = () => {
     isLoadingPayments ||
     isLoadingRefunds
   ) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-12 w-12 rounded-full border-4 border-t-primary border-r-transparent border-b-primary border-l-transparent animate-spin"></div>
-          <p className="text-lg font-medium text-muted-foreground">
-            Loading dashboard data...
-          </p>
-        </div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   return (
@@ -136,7 +128,7 @@ export const DashboardPage: React.FC = () => {
       <PendingCourses />
 
       {/* Revenue statistics */}
-      <StatRevenues payments={payments} />
+      <StatRevenues />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Students */}

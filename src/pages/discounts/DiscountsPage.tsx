@@ -41,7 +41,7 @@ import EmailSubject from '@/components/discounts/SendEmailDialog/EmailSubject';
 import AdvanceSearchBar from '@/components/discounts/SendEmailDialog/AdvanceSearchBar';
 import SelectedUsersList from '@/components/discounts/SendEmailDialog/SelectedUsersList';
 import DiscountTableSkeleton from '@/components/discounts/DiscountTableSkeleton';
-import { Skeleton } from '@/components/ui/skeleton';
+import DiscountPageSkeleton from '../../components/discounts/DiscountPageSkeleton';
 
 const DiscountsPage: React.FC = () => {
   const [page, setPage] = useState(0);
@@ -368,30 +368,7 @@ const DiscountsPage: React.FC = () => {
 
   if (isLoadingAll) {
     return (
-      <div className="container mx-auto py-6">
-        <div className="flex justify-between items-center mb-6">
-          <Skeleton className="h-8 w-64" />
-          <Skeleton className="h-10 w-40" />
-        </div>
-
-        <div className="bg-white rounded-lg shadow mb-6">
-          {/* Filters skeleton */}
-          <div className="p-4 flex justify-between items-center border-b">
-            <Skeleton className="h-6 w-48" />
-            <div className="flex items-center gap-4">
-              {Array.from({ length: 4 }).map((_, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <Skeleton className="h-4 w-16" />
-                  <Skeleton className="h-8 w-32" />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Discount Table Skeleton */}
-          <DiscountTableSkeleton />
-        </div>
-      </div>
+     <DiscountPageSkeleton />
     );
   }
 
@@ -445,7 +422,7 @@ const DiscountsPage: React.FC = () => {
             </div>
 
             {/* Filter by Discount Code */}
-            <div className="flex items-center gap-2">
+            {/* <div className="flex items-center gap-2">
               <label className="text-sm font-medium">Code:</label>
               <Input
                 placeholder="Enter discount code"
@@ -454,10 +431,10 @@ const DiscountsPage: React.FC = () => {
                 className={`w-40`}
                 disabled={filterOwnerUserId.trim() !== ''}
               />
-            </div>
+            </div> */}
 
             {/* Filter by Owner User Id */}
-            <div className="flex items-center gap-2">
+            {/* <div className="flex items-center gap-2">
               <label className="text-sm font-medium">Owner ID:</label>
               <Input
                 placeholder="Enter owner user ID"
@@ -466,7 +443,7 @@ const DiscountsPage: React.FC = () => {
                 className="w-40"
                 disabled={filterCode.trim() !== ''}
               />
-            </div>
+            </div> */}
 
             {/* Filter by Date */}
             <Button
@@ -521,6 +498,8 @@ const DiscountsPage: React.FC = () => {
                   discounts={discounts?.content}
                   onRowClick={handleRowClick}
                   onSendEmail={handleSendEmail}
+                  page={page}
+                  itemsPerPage={pageSize}
                 />
 
                 {/* Pagination component */}

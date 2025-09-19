@@ -9,6 +9,7 @@ import type {
   PerformanceMetrics,
   ComparativeAnalysis,
   SeasonalHeatmap,
+  RecentRevenue,
 } from '@/types/revenues';
 import type { ApiResponse } from '@/types/common';
 
@@ -24,15 +25,28 @@ export const revenuesApi = createApi({
     }),
 
     getMonthlyRevenue: builder.query<MonthlyRevenue, { year?: number }>({
-      query: ({ year = 2024 } = {}) => ({
+      query: ({ year = 2025 } = {}) => ({
         url: '/admin/revenues/monthly',
         params: { year },
       }),
-      transformResponse: (response: ApiResponse<MonthlyRevenue>) => response.data,
+      transformResponse: (response: ApiResponse<MonthlyRevenue>) =>
+        response.data,
       providesTags: [{ type: 'Revenues', id: 'monthly' }],
     }),
 
-    getDailyRevenue: builder.query<DailyData[], { year?: number; month: number }>({
+    getRecentRevenue: builder.query<RecentRevenue, void>({
+      query: () => ({
+        url: '/admin/revenues/recent',
+      }),
+      transformResponse: (response: ApiResponse<RecentRevenue>) =>
+        response.data,
+      providesTags: [{ type: 'Revenues', id: 'recent' }],
+    }),
+
+    getDailyRevenue: builder.query<
+      DailyData[],
+      { year?: number; month: number }
+    >({
       query: ({ year = 2025, month }) => ({
         url: '/admin/revenues/daily',
         params: { year, month },
@@ -52,16 +66,21 @@ export const revenuesApi = createApi({
 
     getPerformanceMetrics: builder.query<PerformanceMetrics, void>({
       query: () => '/admin/revenues/performance',
-      transformResponse: (response: ApiResponse<PerformanceMetrics>) => response.data,
+      transformResponse: (response: ApiResponse<PerformanceMetrics>) =>
+        response.data,
       providesTags: [{ type: 'Revenues', id: 'performance' }],
     }),
 
-    getComparativeAnalysis: builder.query<ComparativeAnalysis, { period?: 'monthly' | 'quarterly' | 'yearly'; year?: number }>({
+    getComparativeAnalysis: builder.query<
+      ComparativeAnalysis,
+      { period?: 'monthly' | 'quarterly' | 'yearly'; year?: number }
+    >({
       query: ({ period = 'monthly', year = 2025 } = {}) => ({
         url: '/admin/revenues/comparative',
         params: { period, year },
       }),
-      transformResponse: (response: ApiResponse<ComparativeAnalysis>) => response.data,
+      transformResponse: (response: ApiResponse<ComparativeAnalysis>) =>
+        response.data,
       providesTags: [{ type: 'Revenues', id: 'comparative' }],
     }),
 
@@ -70,7 +89,8 @@ export const revenuesApi = createApi({
         url: '/admin/revenues/seasonal',
         params: { year },
       }),
-      transformResponse: (response: ApiResponse<SeasonalHeatmap>) => response.data,
+      transformResponse: (response: ApiResponse<SeasonalHeatmap>) =>
+        response.data,
       providesTags: [{ type: 'Revenues', id: 'seasonal' }],
     }),
 
@@ -81,7 +101,7 @@ export const revenuesApi = createApi({
     }),
 
     // getRevenueSummary: builder.query<any, { year?: number }>({
-    //   query: ({ year = 2024 } = {}) => ({
+    //   query: ({ year = 2025 } = {}) => ({
     //     url: '/admin/revenues/summary',
     //     params: { year },
     //   }),
@@ -93,6 +113,7 @@ export const revenuesApi = createApi({
 export const {
   useGetStatisticsQuery,
   useGetMonthlyRevenueQuery,
+  useGetRecentRevenueQuery,
   useGetDailyRevenueQuery,
   useGetTopSpendersQuery,
   useGetPerformanceMetricsQuery,
