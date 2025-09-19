@@ -12,33 +12,43 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { useGetRecentRevenueQuery } from '@/services/revenuesApi';
+import NoCourseFound from '../courses/NoCourseFound';
 
 const StatRevenues: React.FC = () => {
   const {
     data: recentRevenuesData,
     isLoading,
-    isError,
+    error,
+    refetch,
   } = useGetRecentRevenueQuery();
 
   const recentRevenues =
-    recentRevenuesData?.recentRevenues.map((item) => {
-      return { name: item.month, value: item.revenue };
-    }) || [];
+    recentRevenuesData?.recentRevenues?.map((item) => ({
+      name: item.month,
+      value: item.revenue,
+    })) || [];
 
   const calculatePercentageChange = () => {
-    const growth = recentRevenuesData && recentRevenuesData.growth;
-    if (!growth || growth === 0) return '0%';
+    const growth = recentRevenuesData?.growth;
+    if (!growth) return '0%';
 
-    const prefix = growth > 0 ? '+' : '-';
+    const prefix = growth > 0 ? '+' : '';
     return `${prefix}${growth}% from last month`;
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div>Loading Data...</div>;
   }
 
-  if (isError) {
-    return <div>Error loading data.</div>;
+  if (error) {
+    return (
+      <NoCourseFound
+        title="Failed to load recent revenues"
+        description={String((error as any).error ?? 'Unknown error')}
+        actionLabel="Try again"
+        onAction={refetch}
+      />
+    );
   }
 
   return (
