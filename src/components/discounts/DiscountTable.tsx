@@ -30,9 +30,11 @@ type Props = {
   discounts?: Discount[];
   onRowClick: (discount: Discount) => void;
   onSendEmail: (e: React.MouseEvent, discount: Discount) => void;
+  page: number;
+  itemsPerPage: number;
 };
 
-const DiscountTable = ({ discounts, onRowClick, onSendEmail }: Props) => {
+const DiscountTable = ({ discounts, onRowClick, onSendEmail, page, itemsPerPage }: Props) => {
   const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
   const [alertDialogProps, setAlertDialogProps] = useState({
     title: '',
@@ -144,7 +146,7 @@ const DiscountTable = ({ discounts, onRowClick, onSendEmail }: Props) => {
             >
               {/* Order */}
               <TableCell className="font-medium text-center">
-                {index + 1}
+                {page * itemsPerPage + index + 1}
               </TableCell>
 
               {/* Code */}
