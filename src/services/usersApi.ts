@@ -83,6 +83,7 @@ export const usersApi = createApi({
           method: 'GET',
         };
       },
+      providesTags: ['User'],
     }),
 
     // GET /api/admin/users/{id} - Get user by ID

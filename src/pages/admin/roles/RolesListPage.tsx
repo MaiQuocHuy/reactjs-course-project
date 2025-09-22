@@ -33,7 +33,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { useGetRolesQuery, useDeleteRoleMutation } from "@/services/rolesApi";
+import {
+  useGetRolesQuery,
+  useDeleteRoleMutation,
+  rolesApi,
+} from "@/services/rolesApi";
 import type { RoleWithPermissions } from "@/services/rolesApi";
 import { CreateRoleDialog } from "./CreateRoleDialog";
 import { CreateUserWithRoleDialog } from "./CreateUserWithRoleDialog";
@@ -43,9 +47,11 @@ import { DeleteRoleDialog } from "./DeleteRoleDialog";
 import { RolePermissionsDialog } from "./RolePermissionsDialog";
 import { AssignPermissionsDialog } from "./AssignPermissionsDialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useDispatch } from "react-redux";
 import { toast } from "sonner";
 
 export const RolesListPage: React.FC = () => {
+  const dispatch = useDispatch();
   const [page, setPage] = useState(0);
   const [size] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
@@ -70,12 +76,24 @@ export const RolesListPage: React.FC = () => {
     isLoading,
     error,
     refetch,
-  } = useGetRolesQuery({ page, size });
+  } = useGetRolesQuery(
+    { page, size },
+    {
+      refetchOnMountOrArgChange: true,
+      refetchOnFocus: true,
+    }
+  );
   const [deleteRole] = useDeleteRoleMutation();
 
   const roles = rolesData?.data?.content || [];
   const totalPages = rolesData?.data?.totalPages || 0;
   const totalElements = rolesData?.data?.totalElements || 0;
+
+  // Force refresh function to clear cache and refetch
+  const forceRefreshRoles = () => {
+    dispatch(rolesApi.util.invalidateTags(["Role"]));
+    refetch();
+  };
 
   // Helper function to check if role is protected (system role)
   const isProtectedRole = (roleName: string): boolean => {
@@ -94,8 +112,15 @@ export const RolesListPage: React.FC = () => {
   };
 
   const handleViewPermissions = (role: RoleWithPermissions) => {
-    setSelectedRole(role);
-    setPermissionsDialogOpen(true);
+    // Clear previous selected role first to avoid showing stale data
+    setSelectedRole(null);
+    setPermissionsDialogOpen(false);
+
+    // Set new role and open dialog after a small delay to ensure state is clean
+    setTimeout(() => {
+      setSelectedRole(role);
+      setPermissionsDialogOpen(true);
+    }, 10);
   };
 
   const handleAssignPermissions = (role: RoleWithPermissions) => {
@@ -173,7 +198,7 @@ export const RolesListPage: React.FC = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Roles</CardTitle>
@@ -188,44 +213,6 @@ export const RolesListPage: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{roles.length}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Avg Permissions
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {roles.length > 0
-                ? Math.round(
-                    roles.reduce(
-                      (acc: number, role: RoleWithPermissions) =>
-                        acc + (role.totalPermission || 0),
-                      0
-                    ) / roles.length
-                  )
-                : 0}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Most Permissions
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {roles.length > 0
-                ? Math.max(
-                    ...roles.map(
-                      (role: RoleWithPermissions) => role.totalPermission || 0
-                    )
-                  )
-                : 0}
-            </div>
           </CardContent>
         </Card>
       </div>
@@ -256,7 +243,6 @@ export const RolesListPage: React.FC = () => {
                 <TableRow>
                   <TableHead>Name</TableHead>
                   <TableHead>Permissions Count</TableHead>
-                  <TableHead>Users Count</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Assign Permissions</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
@@ -274,7 +260,7 @@ export const RolesListPage: React.FC = () => {
                         <Skeleton className="h-4 w-[60px]" />
                       </TableCell>
                       <TableCell>
-                        <Skeleton className="h-4 w-[60px]" />
+                        <Skeleton className="h-4 w-[80px]" />
                       </TableCell>
                       <TableCell>
                         <Skeleton className="h-4 w-[80px]" />
@@ -323,11 +309,6 @@ export const RolesListPage: React.FC = () => {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline">
-                            {role.totalUsers || 0}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
                           <Badge variant="active">Active</Badge>
                         </TableCell>
                         <TableCell>
@@ -357,25 +338,37 @@ export const RolesListPage: React.FC = () => {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem
-                                onClick={() => handleView(role)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleView(role);
+                                }}
                               >
                                 <Eye className="mr-2 h-4 w-4" />
                                 View
                               </DropdownMenuItem>
                               <DropdownMenuItem
-                                onClick={() => handleViewPermissions(role)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleViewPermissions(role);
+                                }}
                               >
                                 <Shield className="mr-2 h-4 w-4" />
                                 View Permissions
                               </DropdownMenuItem>
                               <DropdownMenuItem
-                                onClick={() => handleEdit(role)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleEdit(role);
+                                }}
                               >
                                 <Edit className="mr-2 h-4 w-4" />
                                 Edit
                               </DropdownMenuItem>
                               <DropdownMenuItem
-                                onClick={() => handleDelete(role)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDelete(role);
+                                }}
                                 className={`${
                                   isProtectedRole(role.name)
                                     ? "text-gray-400 cursor-not-allowed"
@@ -473,7 +466,13 @@ export const RolesListPage: React.FC = () => {
 
           <RolePermissionsDialog
             open={permissionsDialogOpen}
-            onOpenChange={setPermissionsDialogOpen}
+            onOpenChange={(open) => {
+              setPermissionsDialogOpen(open);
+              // Clear selected role when dialog closes to prevent stale data
+              if (!open) {
+                setSelectedRole(null);
+              }
+            }}
             roleId={selectedRole?.id || null}
             roleName={selectedRole?.name || ""}
           />
@@ -483,6 +482,7 @@ export const RolesListPage: React.FC = () => {
             onOpenChange={setAssignPermissionsDialogOpen}
             roleId={selectedRole?.id || null}
             roleName={selectedRole?.name || ""}
+            onSuccess={forceRefreshRoles}
           />
         </>
       )}

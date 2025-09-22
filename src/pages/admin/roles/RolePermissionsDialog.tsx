@@ -14,7 +14,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Shield, ShieldCheck, User, CheckCircle, XCircle } from "lucide-react";
 import {
   useGetRolePermissionsQuery,
-  type Permission,
   type PermissionsByResource,
 } from "@/services/rolesApi";
 
@@ -37,6 +36,8 @@ export const RolePermissionsDialog: React.FC<RolePermissionsDialogProps> = ({
     error,
   } = useGetRolePermissionsQuery(roleId!, {
     skip: !roleId || !open,
+    // Force refetch when roleId changes to avoid stale data
+    refetchOnMountOrArgChange: true,
   });
 
   console.log("Permissions Response:", permissionsResponse);
@@ -44,6 +45,11 @@ export const RolePermissionsDialog: React.FC<RolePermissionsDialogProps> = ({
 
   const resources: PermissionsByResource =
     permissionsResponse?.data?.resources || {};
+
+  // Handle dialog close - clear state
+  const handleOpenChange = (isOpen: boolean) => {
+    onOpenChange(isOpen);
+  };
 
   const getActionColor = (action: string) => {
     switch (action.toLowerCase()) {
@@ -74,7 +80,7 @@ export const RolePermissionsDialog: React.FC<RolePermissionsDialogProps> = ({
 
   if (error) {
     return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="w-[70vw] max-w-[70vw] sm:max-w-[70vw] max-h-[90vh]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -94,16 +100,25 @@ export const RolePermissionsDialog: React.FC<RolePermissionsDialogProps> = ({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="w-[70vw] max-w-[70vw] sm:max-w-[70vw] max-h-[90vh]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Shield className="h-5 w-5" />
             Permissions for {roleName}
+            {isLoading && (
+              <div className="animate-spin h-4 w-4 border-2 border-blue-600 border-t-transparent rounded-full ml-2"></div>
+            )}
           </DialogTitle>
           <DialogDescription>
-            View all permissions assigned to this role ({totalPermissions}{" "}
-            permissions total)
+            {isLoading ? (
+              "Loading permissions..."
+            ) : (
+              <>
+                View all permissions assigned to this role ({totalPermissions}{" "}
+                permissions total)
+              </>
+            )}
           </DialogDescription>
         </DialogHeader>
 

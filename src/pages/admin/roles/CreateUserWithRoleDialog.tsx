@@ -186,7 +186,11 @@ export const CreateUserWithRoleDialog: React.FC<
                 <FormItem>
                   <FormLabel>Role</FormLabel>
                   <Select
-                    onValueChange={field.onChange}
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      // Force form state update
+                      form.trigger("role");
+                    }}
                     value={field.value}
                     disabled={isLoading}
                   >
@@ -224,9 +228,7 @@ export const CreateUserWithRoleDialog: React.FC<
           <Button
             type="submit"
             onClick={form.handleSubmit(onSubmit)}
-            disabled={
-              isLoading || !form.formState.isValid || !form.formState.isDirty
-            }
+            disabled={isLoading || !form.formState.isValid}
             className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
           >
             {isLoading ? (
