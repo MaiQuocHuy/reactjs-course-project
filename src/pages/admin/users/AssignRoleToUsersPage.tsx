@@ -145,7 +145,11 @@ export const AssignRoleToUsersPage: React.FC = () => {
   });
 
   // API calls - Get all users without pagination for custom role assignment
-  const { data: usersResponse, isLoading: isUsersLoading } = useGetUsersQuery({
+  const {
+    data: usersResponse,
+    isLoading: isUsersLoading,
+    refetch: refetchUsers,
+  } = useGetUsersQuery({
     search: searchQuery,
     role: filters.role !== "ALL" ? filters.role : undefined,
     isActive:
@@ -198,6 +202,9 @@ export const AssignRoleToUsersPage: React.FC = () => {
       }).unwrap();
 
       toast.success(`Role "${roleValue}" assigned successfully!`);
+
+      // Refresh the users list to show updated role
+      refetchUsers();
     } catch (error: any) {
       console.error("Failed to assign role:", error);
       toast.error(error?.data?.message || "Failed to assign role");

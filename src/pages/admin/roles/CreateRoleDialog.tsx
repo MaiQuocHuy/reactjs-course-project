@@ -27,7 +27,11 @@ const createRoleSchema = z.object({
   name: z
     .string()
     .min(1, "Role name is required")
-    .max(50, "Role name must be less than 50 characters"),
+    .max(50, "Role name must be less than 50 characters")
+    .transform((val) => val.toUpperCase().trim())
+    .refine((val) => val.length > 0, {
+      message: "Role name is required",
+    }),
 });
 
 type CreateRoleFormValues = z.infer<typeof createRoleSchema>;
@@ -95,6 +99,12 @@ export const CreateRoleDialog: React.FC<CreateRoleDialogProps> = ({
                       placeholder="Enter role name..."
                       {...field}
                       disabled={isLoading}
+                      onChange={(e) => {
+                        // Convert to uppercase as user types
+                        const upperValue = e.target.value.toUpperCase();
+                        field.onChange(upperValue);
+                      }}
+                      style={{ textTransform: "uppercase" }}
                     />
                   </FormControl>
                   <FormMessage />
