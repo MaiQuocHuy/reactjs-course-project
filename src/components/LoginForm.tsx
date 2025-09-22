@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/form";
 import { Mail, Lock } from "lucide-react";
 import { toast } from "sonner";
-import { useAppDispatch, useAppSelector } from "@/hooks/redux";
+import { useAppSelector } from "@/hooks/redux";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 

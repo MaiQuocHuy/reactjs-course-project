@@ -15,7 +15,6 @@ import { useDebounce } from '@/hooks/useDebounce';
 import type { Discount, SendDiscountEmailRequest } from '@/types/discounts';
 import type { User } from '@/types/users';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -239,34 +238,34 @@ const DiscountsPage: React.FC = () => {
     setPage(0);
   };
 
-  const handleFilterByCode = (code: string) => {
-    setFilterCode(code);
-    if (code.trim()) {
-      setActiveFilter('code');
-      if (filterType !== 'ALL') {
-        setFilterType('ALL');
-      }
-    } else {
-      setActiveFilter('all');
-    }
-    setPage(0);
-  };
+  // const handleFilterByCode = (code: string) => {
+  //   setFilterCode(code);
+  //   if (code.trim()) {
+  //     setActiveFilter('code');
+  //     if (filterType !== 'ALL') {
+  //       setFilterType('ALL');
+  //     }
+  //   } else {
+  //     setActiveFilter('all');
+  //   }
+  //   setPage(0);
+  // };
 
-  const handleFilterByOwnerUserId = (ownerUserId: string) => {
-    setFilterOwnerUserId(ownerUserId);
+  // const handleFilterByOwnerUserId = (ownerUserId: string) => {
+  //   setFilterOwnerUserId(ownerUserId);
 
-    // If owner user ID is provided, set type to REFERRAL
-    if (ownerUserId.trim()) {
-      if (filterType !== 'REFERRAL') {
-        setFilterType('REFERRAL');
-      }
-      setActiveFilter('owner');
-    } else {
-      setActiveFilter('all');
-      setFilterType('ALL');
-    }
-    setPage(0);
-  };
+  //   // If owner user ID is provided, set type to REFERRAL
+  //   if (ownerUserId.trim()) {
+  //     if (filterType !== 'REFERRAL') {
+  //       setFilterType('REFERRAL');
+  //     }
+  //     setActiveFilter('owner');
+  //   } else {
+  //     setActiveFilter('all');
+  //     setFilterType('ALL');
+  //   }
+  //   setPage(0);
+  // };
 
   const clearFilters = () => {
     setFilterType('ALL');
