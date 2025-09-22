@@ -122,9 +122,9 @@ export function useCourses(searchQuery = ""): UseCoursesResult {
   } = useGetAllCoursesQuery({});
 
   const courses = useMemo(() => {
-    if (!coursesResponse?.data?.content) return [];
+    if (!coursesResponse?.content) return [];
     
-    const allCourses = coursesResponse.data.content;
+    const allCourses = coursesResponse.content;
     
     // Transform courses to match our Certificate Course interface
     const transformedCourses = allCourses.map(course => ({

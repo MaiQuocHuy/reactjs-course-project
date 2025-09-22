@@ -12,11 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Shield, ShieldCheck, User, CheckCircle, XCircle } from "lucide-react";
-import {
-  useGetRolePermissionsQuery,
-  type Permission,
-  type PermissionsByResource,
-} from "@/services/rolesApi";
+import { useGetRolePermissionsQuery, type PermissionsByResource } from "@/services/rolesApi";
 
 interface RolePermissionsDialogProps {
   open: boolean;
@@ -42,8 +38,7 @@ export const RolePermissionsDialog: React.FC<RolePermissionsDialogProps> = ({
   console.log("Permissions Response:", permissionsResponse);
   console.log("Resources data:", permissionsResponse?.data?.resources);
 
-  const resources: PermissionsByResource =
-    permissionsResponse?.data?.resources || {};
+  const resources: PermissionsByResource = permissionsResponse?.data?.resources || {};
 
   const getActionColor = (action: string) => {
     switch (action.toLowerCase()) {
@@ -67,8 +62,7 @@ export const RolePermissionsDialog: React.FC<RolePermissionsDialogProps> = ({
   // Count only assigned permissions
   const totalPermissions = Object.values(resources).reduce(
     (total, permissions) =>
-      total +
-      (permissions?.filter((p: any) => p?.isAssigned === true)?.length || 0),
+      total + (permissions?.filter((p: any) => p?.isAssigned === true)?.length || 0),
     0
   );
 
@@ -84,9 +78,7 @@ export const RolePermissionsDialog: React.FC<RolePermissionsDialogProps> = ({
           </DialogHeader>
           <Alert variant="destructive">
             <XCircle className="h-4 w-4" />
-            <AlertDescription>
-              Failed to load permissions. Please try again.
-            </AlertDescription>
+            <AlertDescription>Failed to load permissions. Please try again.</AlertDescription>
           </Alert>
         </DialogContent>
       </Dialog>
@@ -102,8 +94,7 @@ export const RolePermissionsDialog: React.FC<RolePermissionsDialogProps> = ({
             Permissions for {roleName}
           </DialogTitle>
           <DialogDescription>
-            View all permissions assigned to this role ({totalPermissions}{" "}
-            permissions total)
+            View all permissions assigned to this role ({totalPermissions} permissions total)
           </DialogDescription>
         </DialogHeader>
 
@@ -124,28 +115,21 @@ export const RolePermissionsDialog: React.FC<RolePermissionsDialogProps> = ({
           ) : totalPermissions === 0 ? (
             <div className="text-center py-8">
               <Shield className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500">
-                No permissions assigned to this role
-              </p>
+              <p className="text-gray-500">No permissions assigned to this role</p>
             </div>
           ) : (
             <div className="space-y-6">
               {Object.entries(resources)
-                .filter(([_, permissions]) =>
-                  permissions?.some((p: any) => p?.isAssigned === true)
-                )
+                .filter(([_, permissions]) => permissions?.some((p: any) => p?.isAssigned === true))
                 .map(([resourceName, permissions]) => {
                   const assignedPermissions =
-                    permissions?.filter((p: any) => p?.isAssigned === true) ||
-                    [];
+                    permissions?.filter((p: any) => p?.isAssigned === true) || [];
 
                   return (
                     <div key={resourceName} className="space-y-3">
                       <div className="flex items-center gap-2">
                         <ShieldCheck className="h-5 w-5 text-blue-600" />
-                        <h3 className="text-lg font-semibold capitalize">
-                          {resourceName}
-                        </h3>
+                        <h3 className="text-lg font-semibold capitalize">{resourceName}</h3>
                         <Badge variant="secondary" className="ml-auto">
                           {assignedPermissions.length} assigned
                         </Badge>
@@ -153,14 +137,9 @@ export const RolePermissionsDialog: React.FC<RolePermissionsDialogProps> = ({
 
                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
                         {permissions
-                          ?.filter(
-                            (permission: any) => permission?.isAssigned === true
-                          )
+                          ?.filter((permission: any) => permission?.isAssigned === true)
                           ?.map((permission: any, index: number) => {
-                            console.log(
-                              "Assigned Permission object:",
-                              permission
-                            );
+                            console.log("Assigned Permission object:", permission);
 
                             // Handle different permission object structures
                             const permissionName =
@@ -174,11 +153,7 @@ export const RolePermissionsDialog: React.FC<RolePermissionsDialogProps> = ({
 
                             return (
                               <Badge
-                                key={
-                                  permission?.id ||
-                                  permission?.permissionKey ||
-                                  index
-                                }
+                                key={permission?.id || permission?.permissionKey || index}
                                 variant="outline"
                                 className={`${getActionColor(
                                   action
@@ -208,9 +183,7 @@ export const RolePermissionsDialog: React.FC<RolePermissionsDialogProps> = ({
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Resource Types:</span>
-                    <Badge variant="outline">
-                      {Object.keys(resources).length}
-                    </Badge>
+                    <Badge variant="outline">{Object.keys(resources).length}</Badge>
                   </div>
                   <div className="flex items-center justify-between">
                     <span>Role:</span>

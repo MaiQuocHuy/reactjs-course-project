@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { ArrowUpDown, Loader2, PlusCircle, X } from 'lucide-react';
+import React, { useState } from "react";
+import { ArrowUpDown, Loader2, PlusCircle, X } from "lucide-react";
 
-import { Pagination } from '@/components/shared/Pagination';
+import { Pagination } from "@/components/shared/Pagination";
 import {
   useGetAllDiscountsQuery,
   useGetDiscountByIdQuery,
@@ -9,20 +9,19 @@ import {
   useGetDiscountByCodeQuery,
   useGetDiscountsByOwnerUserIdQuery,
   useSendEmailMutation,
-} from '@/services/discountsApi';
-import { useGetUsersQuery } from '@/services/usersApi';
-import { useDebounce } from '@/hooks/useDebounce';
-import type { Discount, SendDiscountEmailRequest } from '@/types/discounts';
-import type { User } from '@/types/users';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+} from "@/services/discountsApi";
+import { useGetUsersQuery } from "@/services/usersApi";
+import { useDebounce } from "@/hooks/useDebounce";
+import type { Discount, SendDiscountEmailRequest } from "@/types/discounts";
+import type { User } from "@/types/users";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -30,50 +29,43 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import CreateDiscountDialog from '@/components/discounts/CreateDiscountDialog';
-import { toast } from 'sonner';
-import DiscountTable from '@/components/discounts/DiscountTable';
-import DiscountDetails from '@/components/discounts/DiscountDetails';
-import EmailSubject from '@/components/discounts/SendEmailDialog/EmailSubject';
-import AdvanceSearchBar from '@/components/discounts/SendEmailDialog/AdvanceSearchBar';
-import SelectedUsersList from '@/components/discounts/SendEmailDialog/SelectedUsersList';
-import DiscountTableSkeleton from '@/components/discounts/DiscountTableSkeleton';
-import DiscountPageSkeleton from '../../components/discounts/DiscountPageSkeleton';
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import CreateDiscountDialog from "@/components/discounts/CreateDiscountDialog";
+import { toast } from "sonner";
+import DiscountTable from "@/components/discounts/DiscountTable";
+import DiscountDetails from "@/components/discounts/DiscountDetails";
+import EmailSubject from "@/components/discounts/SendEmailDialog/EmailSubject";
+import AdvanceSearchBar from "@/components/discounts/SendEmailDialog/AdvanceSearchBar";
+import SelectedUsersList from "@/components/discounts/SendEmailDialog/SelectedUsersList";
+import DiscountTableSkeleton from "@/components/discounts/DiscountTableSkeleton";
+import DiscountPageSkeleton from "../../components/discounts/DiscountPageSkeleton";
 
 const DiscountsPage: React.FC = () => {
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
-  const [sortDir, setSortDir] = useState<'ASC' | 'DESC'>('DESC');
-  const [selectedDiscountId, setSelectedDiscountId] = useState<string | null>(
-    null
-  );
+  const [sortDir, setSortDir] = useState<"ASC" | "DESC">("DESC");
+  const [selectedDiscountId, setSelectedDiscountId] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   // Email dialog states
   const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
-  const [emailSubject, setEmailSubject] = useState('');
-  const [selectedDiscountForEmail, setSelectedDiscountForEmail] =
-    useState<Discount | null>(null);
+  const [emailSubject, setEmailSubject] = useState("");
+  const [selectedDiscountForEmail, setSelectedDiscountForEmail] = useState<Discount | null>(null);
 
   // Email tabs and user selection states
-  const [emailTab, setEmailTab] = useState<'all' | 'specific'>('all');
-  const [userSearchQuery, setUserSearchQuery] = useState('');
+  const [emailTab, setEmailTab] = useState<"all" | "specific">("all");
+  const [userSearchQuery, setUserSearchQuery] = useState("");
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
-  const [specificUsersError, setSpecificUsersError] = useState('');
+  const [specificUsersError, setSpecificUsersError] = useState("");
 
   // Filter states
-  const [filterType, setFilterType] = useState<'ALL' | 'GENERAL' | 'REFERRAL'>(
-    'ALL'
-  );
-  const [filterCode, setFilterCode] = useState('');
-  const [filterOwnerUserId, setFilterOwnerUserId] = useState('');
-  const [activeFilter, setActiveFilter] = useState<
-    'all' | 'type' | 'code' | 'owner'
-  >('all');
+  const [filterType, setFilterType] = useState<"ALL" | "GENERAL" | "REFERRAL">("ALL");
+  const [filterCode, setFilterCode] = useState("");
+  const [filterOwnerUserId, setFilterOwnerUserId] = useState("");
+  const [activeFilter, setActiveFilter] = useState<"all" | "type" | "code" | "owner">("all");
 
   // Debounced search for user selection
   const debouncedSearchQuery = useDebounce(userSearchQuery, 300);
@@ -87,11 +79,11 @@ const DiscountsPage: React.FC = () => {
     {
       page,
       size: pageSize,
-      sortBy: 'createdAt',
+      sortBy: "createdAt",
       sortDir,
     },
     {
-      skip: activeFilter !== 'all',
+      skip: activeFilter !== "all",
     }
   );
 
@@ -101,14 +93,14 @@ const DiscountsPage: React.FC = () => {
     error: errorType,
   } = useGetDiscountsByTypeQuery(
     {
-      type: filterType as 'GENERAL' | 'REFERRAL',
+      type: filterType as "GENERAL" | "REFERRAL",
       page,
       size: pageSize,
-      sortBy: 'createdAt',
+      sortBy: "createdAt",
       sortDir,
     },
     {
-      skip: activeFilter !== 'type' || filterType === 'ALL',
+      skip: activeFilter !== "type" || filterType === "ALL",
     }
   );
 
@@ -117,7 +109,7 @@ const DiscountsPage: React.FC = () => {
     isLoading: isLoadingCode,
     error: errorCode,
   } = useGetDiscountByCodeQuery(filterCode, {
-    skip: activeFilter !== 'code' || !filterCode.trim(),
+    skip: activeFilter !== "code" || !filterCode.trim(),
   });
 
   const {
@@ -127,24 +119,24 @@ const DiscountsPage: React.FC = () => {
   } = useGetDiscountsByOwnerUserIdQuery(
     {
       ownerUserId: filterOwnerUserId,
-      type: 'REFERRAL',
+      type: "REFERRAL",
       page,
       size: pageSize,
-      sortBy: 'createdAt',
+      sortBy: "createdAt",
       sortDir,
     },
     {
-      skip: activeFilter !== 'owner' || !filterOwnerUserId.trim(),
+      skip: activeFilter !== "owner" || !filterOwnerUserId.trim(),
     }
   );
 
   // Combine data based on active filter
   const discounts =
-    activeFilter === 'all'
+    activeFilter === "all"
       ? allDiscounts
-      : activeFilter === 'type'
+      : activeFilter === "type"
       ? typeDiscounts
-      : activeFilter === 'code'
+      : activeFilter === "code"
       ? codeDiscount
         ? {
             content: [codeDiscount],
@@ -158,25 +150,26 @@ const DiscountsPage: React.FC = () => {
             },
           }
         : null
-      : activeFilter === 'owner'
+      : activeFilter === "owner"
       ? ownerDiscounts
       : null;
 
-  const isLoadingDiscounts =
-    isLoadingAll || isLoadingType || isLoadingCode || isLoadingOwner;
+  const isLoadingDiscounts = isLoadingAll || isLoadingType || isLoadingCode || isLoadingOwner;
   const error = errorAll || errorType;
 
   // Fetch selected discount details
-  const { data: selectedDiscount, isLoading: isLoadingDetails } =
-    useGetDiscountByIdQuery(selectedDiscountId || '', {
+  const { data: selectedDiscount, isLoading: isLoadingDetails } = useGetDiscountByIdQuery(
+    selectedDiscountId || "",
+    {
       skip: !selectedDiscountId,
-    });
+    }
+  );
 
   // Fetch users for search (only when searching for specific users)
   const { data: searchUsersData, isLoading: isLoadingUsers } = useGetUsersQuery(
     {
       search: debouncedSearchQuery,
-      role: 'STUDENT',
+      role: "STUDENT",
       isActive: true,
       page: 0,
       size: 10,
@@ -193,7 +186,7 @@ const DiscountsPage: React.FC = () => {
   const addUserToSelection = (user: User) => {
     if (!selectedUsers.find((u) => u.id === user.id)) {
       setSelectedUsers((prev) => [...prev, user]);
-      setSpecificUsersError('');
+      setSpecificUsersError("");
     }
   };
 
@@ -203,7 +196,7 @@ const DiscountsPage: React.FC = () => {
 
   const clearSelectedUsers = () => {
     setSelectedUsers([]);
-    setSpecificUsersError('');
+    setSpecificUsersError("");
   };
 
   // Handle page change
@@ -219,60 +212,60 @@ const DiscountsPage: React.FC = () => {
 
   // Handle sort direction change
   const toggleSortDirection = () => {
-    setSortDir(sortDir === 'DESC' ? 'ASC' : 'DESC');
+    setSortDir(sortDir === "DESC" ? "ASC" : "DESC");
   };
 
   // Filter handlers
-  const handleFilterByType = (type: 'ALL' | 'GENERAL' | 'REFERRAL') => {
+  const handleFilterByType = (type: "ALL" | "GENERAL" | "REFERRAL") => {
     setFilterType(type);
 
     // If type is GENERAL, clear owner user ID
-    if (type === 'GENERAL' || type === 'ALL') {
-      setFilterOwnerUserId('');
+    if (type === "GENERAL" || type === "ALL") {
+      setFilterOwnerUserId("");
     }
 
-    if (type === 'ALL') {
-      setActiveFilter('all');
+    if (type === "ALL") {
+      setActiveFilter("all");
     } else {
-      setActiveFilter('type');
+      setActiveFilter("type");
     }
     setPage(0);
   };
 
-  const handleFilterByCode = (code: string) => {
-    setFilterCode(code);
-    if (code.trim()) {
-      setActiveFilter('code');
-      if (filterType !== 'ALL') {
-        setFilterType('ALL');
-      }
-    } else {
-      setActiveFilter('all');
-    }
-    setPage(0);
-  };
+  // const handleFilterByCode = (code: string) => {
+  //   setFilterCode(code);
+  //   if (code.trim()) {
+  //     setActiveFilter("code");
+  //     if (filterType !== "ALL") {
+  //       setFilterType("ALL");
+  //     }
+  //   } else {
+  //     setActiveFilter("all");
+  //   }
+  //   setPage(0);
+  // };
 
-  const handleFilterByOwnerUserId = (ownerUserId: string) => {
-    setFilterOwnerUserId(ownerUserId);
+  // const handleFilterByOwnerUserId = (ownerUserId: string) => {
+  //   setFilterOwnerUserId(ownerUserId);
 
-    // If owner user ID is provided, set type to REFERRAL
-    if (ownerUserId.trim()) {
-      if (filterType !== 'REFERRAL') {
-        setFilterType('REFERRAL');
-      }
-      setActiveFilter('owner');
-    } else {
-      setActiveFilter('all');
-      setFilterType('ALL');
-    }
-    setPage(0);
-  };
+  //   // If owner user ID is provided, set type to REFERRAL
+  //   if (ownerUserId.trim()) {
+  //     if (filterType !== "REFERRAL") {
+  //       setFilterType("REFERRAL");
+  //     }
+  //     setActiveFilter("owner");
+  //   } else {
+  //     setActiveFilter("all");
+  //     setFilterType("ALL");
+  //   }
+  //   setPage(0);
+  // };
 
   const clearFilters = () => {
-    setFilterType('ALL');
-    setFilterCode('');
-    setFilterOwnerUserId('');
-    setActiveFilter('all');
+    setFilterType("ALL");
+    setFilterCode("");
+    setFilterOwnerUserId("");
+    setActiveFilter("all");
     setPage(0);
   };
 
@@ -287,17 +280,17 @@ const DiscountsPage: React.FC = () => {
     e.stopPropagation(); // Prevent row click from triggering
 
     // Check if discount type is GENERAL
-    if (discount.type !== 'GENERAL') {
-      toast.error('Email can only be sent for GENERAL type discounts');
+    if (discount.type !== "GENERAL") {
+      toast.error("Email can only be sent for GENERAL type discounts");
       return;
     }
 
     // Set the selected discount and open the email dialog
     setSelectedDiscountForEmail(discount);
-    setEmailSubject('');
-    setEmailTab('all');
+    setEmailSubject("");
+    setEmailTab("all");
     clearSelectedUsers();
-    setUserSearchQuery('');
+    setUserSearchQuery("");
     setIsEmailDialogOpen(true);
   };
 
@@ -307,16 +300,14 @@ const DiscountsPage: React.FC = () => {
 
     // Validate subject length
     if (emailSubject.length < 5 || emailSubject.length > 200) {
-      toast.error('Subject must be between 5 and 200 characters');
+      toast.error("Subject must be between 5 and 200 characters");
       return;
     }
 
     // Validate specific users selection if specific tab is active
-    if (emailTab === 'specific') {
+    if (emailTab === "specific") {
       if (selectedUsers.length === 0) {
-        setSpecificUsersError(
-          'Please select at least one student to send the email to.'
-        );
+        setSpecificUsersError("Please select at least one student to send the email to.");
         return;
       }
     }
@@ -327,7 +318,7 @@ const DiscountsPage: React.FC = () => {
         discount_id: selectedDiscountForEmail.id,
       };
 
-      if (emailTab === 'specific') {
+      if (emailTab === "specific") {
         const user_ids = selectedUsers.map((user) => user.id);
         // Convert to string if only one user is selected
         if (user_ids.length === 1) {
@@ -341,35 +332,31 @@ const DiscountsPage: React.FC = () => {
 
       toast.success(
         `Discount email sent successfully to ${
-          emailTab === 'all'
-            ? 'all students'
-            : `${selectedUsers.length} selected students`
+          emailTab === "all" ? "all students" : `${selectedUsers.length} selected students`
         }`
       );
       setIsEmailDialogOpen(false);
-      setEmailSubject('');
+      setEmailSubject("");
       setSelectedDiscountForEmail(null);
       clearSelectedUsers();
-      setUserSearchQuery('');
+      setUserSearchQuery("");
     } catch (error) {
-      console.error('Failed to send discount email:', error);
-      toast.error('Failed to send discount email');
+      console.error("Failed to send discount email:", error);
+      toast.error("Failed to send discount email");
     }
   };
 
   // Handle cancel send email
   const handleCancelSendEmail = () => {
     setIsEmailDialogOpen(false);
-    setEmailSubject('');
+    setEmailSubject("");
     setSelectedDiscountForEmail(null);
     clearSelectedUsers();
-    setUserSearchQuery('');
+    setUserSearchQuery("");
   };
 
   if (isLoadingAll) {
-    return (
-     <DiscountPageSkeleton />
-    );
+    return <DiscountPageSkeleton />;
   }
 
   if (error) {
@@ -406,9 +393,7 @@ const DiscountsPage: React.FC = () => {
               <Select
                 value={filterType}
                 onValueChange={handleFilterByType}
-                disabled={
-                  filterCode.trim() !== '' || filterOwnerUserId.trim() !== ''
-                }
+                disabled={filterCode.trim() !== "" || filterOwnerUserId.trim() !== ""}
               >
                 <SelectTrigger className="w-32">
                   <SelectValue />
@@ -454,17 +439,14 @@ const DiscountsPage: React.FC = () => {
               disabled={isLoadingDiscounts}
             >
               <span>Date</span>
-              <ArrowUpDown
-                className={sortDir === 'DESC' ? 'transform rotate-180' : ''}
-                size={16}
-              />
+              <ArrowUpDown className={sortDir === "DESC" ? "transform rotate-180" : ""} size={16} />
               <span className="sr-only">
-                {sortDir === 'DESC' ? 'Sort ascending' : 'Sort descending'}
+                {sortDir === "DESC" ? "Sort ascending" : "Sort descending"}
               </span>
             </Button>
 
             {/* Clear Filters Button */}
-            {activeFilter !== 'all' && (
+            {activeFilter !== "all" && (
               <Button
                 variant="outline"
                 size="sm"
@@ -485,9 +467,7 @@ const DiscountsPage: React.FC = () => {
           <>
             {errorCode || errorOwner ? (
               <div className="p-8 text-center">
-                <div className="text-gray-500 text-lg font-medium mb-2">
-                  No Discounts Found
-                </div>
+                <div className="text-gray-500 text-lg font-medium mb-2">No Discounts Found</div>
                 <div className="text-gray-400 text-sm">
                   Please modify the filters to find relevant discounts
                 </div>
@@ -503,17 +483,15 @@ const DiscountsPage: React.FC = () => {
                 />
 
                 {/* Pagination component */}
-                {discounts &&
-                  discounts.page &&
-                  discounts.page.totalPages >= 1 && (
-                    <Pagination
-                      currentPage={page}
-                      itemsPerPage={pageSize}
-                      pageInfo={discounts.page}
-                      onPageChange={handlePageChange}
-                      onItemsPerPageChange={handlePageSizeChange}
-                    />
-                  )}
+                {discounts && discounts.page && discounts.page.totalPages >= 1 && (
+                  <Pagination
+                    currentPage={page}
+                    itemsPerPage={pageSize}
+                    pageInfo={discounts.page}
+                    onPageChange={handlePageChange}
+                    onItemsPerPageChange={handlePageSizeChange}
+                  />
+                )}
               </div>
             )}
           </>
@@ -540,7 +518,7 @@ const DiscountsPage: React.FC = () => {
           <DialogHeader>
             <DialogTitle>Send Discount Email</DialogTitle>
             <DialogDescription>
-              Send an email notification for the discount{' '}
+              Send an email notification for the discount{" "}
               <strong>{selectedDiscountForEmail?.code}</strong>.
               <br />
               <span className="text-amber-600 font-medium mt-2 block">
@@ -551,32 +529,24 @@ const DiscountsPage: React.FC = () => {
 
           <div className="space-y-6">
             {/* Email Subject */}
-            <EmailSubject
-              emailSubject={emailSubject}
-              setEmailSubject={setEmailSubject}
-            />
+            <EmailSubject emailSubject={emailSubject} setEmailSubject={setEmailSubject} />
 
             {/* Recipient Selection Tabs */}
             <div className="space-y-4">
               <Label>Select Recipients</Label>
               <Tabs
                 value={emailTab}
-                onValueChange={(value) =>
-                  setEmailTab(value as 'all' | 'specific')
-                }
+                onValueChange={(value) => setEmailTab(value as "all" | "specific")}
               >
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="all">Send to All Students</TabsTrigger>
-                  <TabsTrigger value="specific">
-                    Send to Specific Users
-                  </TabsTrigger>
+                  <TabsTrigger value="specific">Send to Specific Users</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="all" className="mt-4">
                   <div className="p-4 bg-muted/50 rounded-lg">
                     <p className="text-sm text-muted-foreground">
-                      The email will be sent to all active students in the
-                      system.
+                      The email will be sent to all active students in the system.
                     </p>
                   </div>
                 </TabsContent>
@@ -605,11 +575,7 @@ const DiscountsPage: React.FC = () => {
           </div>
 
           <DialogFooter className="sm:justify-between">
-            <Button
-              variant="outline"
-              onClick={handleCancelSendEmail}
-              className="cursor-pointer"
-            >
+            <Button variant="outline" onClick={handleCancelSendEmail} className="cursor-pointer">
               Cancel
             </Button>
             <Button
@@ -619,7 +585,7 @@ const DiscountsPage: React.FC = () => {
                 emailSubject.length < 5 ||
                 emailSubject.length > 200 ||
                 isSendingEmail ||
-                (emailTab === 'specific' && selectedUsers.length === 0)
+                (emailTab === "specific" && selectedUsers.length === 0)
               }
             >
               {isSendingEmail ? (
@@ -629,9 +595,9 @@ const DiscountsPage: React.FC = () => {
                 </>
               ) : (
                 `Send Email${
-                  emailTab === 'specific'
+                  emailTab === "specific"
                     ? ` to ${selectedUsers.length} Students`
-                    : ' to All Students'
+                    : " to All Students"
                 }`
               )}
             </Button>
