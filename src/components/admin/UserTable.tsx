@@ -74,7 +74,6 @@ export const UserTable: React.FC<UserTableProps> = ({
   pageSize = 10,
 }) => {
   const { hasPermission: canUpdateUser } = usePermission("user:UPDATE");
-  const { hasPermission: canReadUser } = usePermission("user:READ");
 
   return (
     <div className="rounded-md border">

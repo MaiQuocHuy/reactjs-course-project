@@ -14,7 +14,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Shield, ShieldCheck, User, CheckCircle, XCircle } from "lucide-react";
 import {
   useGetRolePermissionsQuery,
-  type Permission,
   type PermissionsByResource,
 } from "@/services/rolesApi";
 
