@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import type { Course } from '@/types/courses-review';
+import type { Course } from '@/types/courses';
 
 type Props = {
   course: Course;

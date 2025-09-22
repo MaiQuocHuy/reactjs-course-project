@@ -35,11 +35,12 @@ interface AssignPermissionsDialogProps {
   onOpenChange: (open: boolean) => void;
   roleId: string | null;
   roleName: string;
+  onSuccess?: () => void;
 }
 
 export const AssignPermissionsDialog: React.FC<
   AssignPermissionsDialogProps
-> = ({ open, onOpenChange, roleId, roleName }) => {
+> = ({ open, onOpenChange, roleId, roleName, onSuccess }) => {
   const [selectedPermissions, setSelectedPermissions] = useState<Set<string>>(
     new Set()
   );
@@ -150,16 +151,27 @@ export const AssignPermissionsDialog: React.FC<
         })),
       };
 
-      await updateRolePermissions({
+      console.log("🔄 Updating permissions for role:", roleId);
+      console.log("📝 Permissions to update:", permissionsToUpdate);
+
+      const result = await updateRolePermissions({
         roleId,
         data: permissionsToUpdate,
       }).unwrap();
 
+      console.log("✅ Update successful:", result);
+
       toast.success(`Permissions updated successfully for ${roleName}`);
       onOpenChange(false);
       refetch();
+
+      // Wait a bit for cache invalidation to process, then force refresh
+      setTimeout(() => {
+        console.log("🔄 Calling onSuccess callback to refresh parent");
+        onSuccess?.();
+      }, 100);
     } catch (error) {
-      console.error("Error updating permissions:", error);
+      console.error("❌ Error updating permissions:", error);
       toast.error("Failed to update permissions. Please try again.");
     }
   };

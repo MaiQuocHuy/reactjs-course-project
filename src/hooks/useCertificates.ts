@@ -9,6 +9,7 @@ import { useGetAllCoursesQuery } from '@/services/coursesApi';
 import { useGetUsersQuery } from '@/services/usersApi';
 import type {
   CertificateFilters,
+  Course,
   UseCertificatesResult,
   UseCoursesResult,
   UseUsersResult,
@@ -127,7 +128,7 @@ export function useCourses(searchQuery = ""): UseCoursesResult {
     const allCourses = coursesResponse.content;
     
     // Transform courses to match our Certificate Course interface
-    const transformedCourses = allCourses.map(course => ({
+    const transformedCourses = allCourses.map((course: Course) => ({
       id: course.id,
       title: course.title,
       instructor: typeof course.instructor === 'object' 
