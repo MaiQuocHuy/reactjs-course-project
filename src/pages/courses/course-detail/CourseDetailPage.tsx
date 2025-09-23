@@ -6,6 +6,7 @@ import CourseContent from '@/components/courses/course-detail/course-content/Cou
 import { useGetCourseByIdQuery } from '@/services/coursesApi';
 import NoCourseFound from '@/components/courses/NoCourseFound';
 import CourseDetailSkeleton from './CourseDetailSkeleton';
+import { EmptyState } from '@/components/shared';
 
 const CourseDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -51,7 +52,7 @@ const CourseDetailPage = () => {
       {/* <CourseBasicInfo course={mockCourseDetail} /> */}
 
       {/* Course content */}
-      {courseData && (
+      {courseData && courseData.length > 0 ? (
         <Card>
           <CardHeader>
             <CardTitle>Course Content</CardTitle>
@@ -67,6 +68,8 @@ const CourseDetailPage = () => {
             <CourseContent sections={courseData} />
           </CardContent>
         </Card>
+      ) : (
+        <EmptyState type="no-data" />
       )}
     </div>
   );

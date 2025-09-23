@@ -33,6 +33,7 @@ import {
 } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
 import PendingCoursesSkeleton from './PendingCoursesSkeleton';
+import { RefreshCcw } from 'lucide-react';
 
 // Define the schema for reject reason validation
 const rejectFormSchema = z.object({
@@ -130,9 +131,9 @@ const PendingCourses = () => {
   const getStatusBadgeColor = (status: string) => {
     switch (status) {
       case 'RESUBMITTED':
-        return 'bg-amber-500 hover:bg-amber-600 text-white';
+        return 'text-white text-purple-700 bg-purple-200 px-5 py-2 font-medium';
       case 'PENDING':
-        return 'bg-blue-500 hover:bg-blue-600 text-white';
+        return 'text-yellow-700 bg-yellow-200 px-5 py-2 font-medium';
       default:
         // Other statuses
         return 'bg-red-500 hover:bg-red-600 text-white';
@@ -171,7 +172,8 @@ const PendingCourses = () => {
     <div className="space-y-2">
       <div className="flex justify-between items-center">
         <h2 className="text-lg font-bold text-gray-800">Pending Courses</h2>
-        <Button onClick={handleRetry} variant="outline" className="px-4">
+        <Button onClick={handleRetry} variant="outline" className="px-4 cursor-pointer">
+          <RefreshCcw className="mr-2 h-4 w-4" />
           Refresh
         </Button>
       </div>
