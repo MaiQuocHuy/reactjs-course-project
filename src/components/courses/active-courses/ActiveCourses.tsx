@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/select';
 import { Filter } from 'lucide-react';
 import { Pagination } from '@/components/shared';
+import CourseCardSkeleton from './CourseCardSkeleton';
 
 const ActiveCourses: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -36,6 +37,7 @@ const ActiveCourses: React.FC = () => {
   const [selectedRating, setSelectedRating] = useState<string>('all');
   const [showAdvancedFilters, setShowAdvancedFilters] =
     useState<boolean>(false);
+  const [isFiltering, setIsFiltering] = useState<boolean>(false);
 
   // Fetch categories
   const { data: categoriesData } = useGetAllCategoriesDropdownQuery();
@@ -68,44 +70,11 @@ const ActiveCourses: React.FC = () => {
 
   const { data, error, isLoading, refetch } = useGetAllCoursesQuery(apiParams);
 
-  // // Fetch all courses to determine actual min/max prices
-  // const allCoursesParams = useMemo(() => {
-  //   return {
-  //     page: 0,
-  //     size: 100, // Large size to get all courses
-  //   } as any;
-  // }, [selectedCategoryId]);
-
-  // const { data: allCoursesData } = useGetAllCoursesQuery(allCoursesParams);
-
-  // // Calculate actual min and max prices from all courses
-  // const { actualMinPrice, actualMaxPrice } = useMemo(() => {
-  //   const allCourses = allCoursesData?.content ?? [];
-
-  //   if (allCourses.length === 0) {
-  //     return { actualMinPrice: 0, actualMaxPrice: 500 };
-  //   }
-
-  //   const prices = allCourses
-  //     .map((course: CourseType) => course.price)
-  //     .filter((price: number) => price != null && price >= 0);
-
-  //   if (prices.length === 0) {
-  //     return { actualMinPrice: 0, actualMaxPrice: 500 };
-  //   }
-
-  //   const calculatedMin = Math.floor(Math.min(...prices));
-  //   const calculatedMax = Math.ceil(Math.max(...prices));
-
-  //   return {
-  //     actualMinPrice: calculatedMin,
-  //     actualMaxPrice: calculatedMax,
-  //   };
-  // }, [allCoursesData]);
+  const courses: CourseType[] = data?.content ?? [];
 
   const { data: metadata } = useGetMinAndMaxPriceQuery();
   const actualMinPrice = metadata?.minPrice ?? 0;
-  const actualMaxPrice = metadata?.maxPrice ?? 500;
+  const actualMaxPrice = metadata?.maxPrice ?? 999.99;
 
   // Initialize price range with actual values when they're first loaded
   useEffect(() => {
@@ -115,7 +84,33 @@ const ActiveCourses: React.FC = () => {
     }
   }, [actualMinPrice, actualMaxPrice]);
 
-  const courses: CourseType[] = data?.content ?? [];
+  // Determine if any filters are active
+  useEffect(() => {
+    const filtering =
+      searchQuery !== '' ||
+      selectedCategoryId !== 'all' ||
+      selectedLevel !== 'all' ||
+      selectedRating !== 'all' ||
+      minPrice !== actualMinPrice ||
+      maxPrice !== actualMaxPrice;
+    setIsFiltering(filtering);
+  }, [
+    searchQuery,
+    selectedCategoryId,
+    selectedLevel,
+    selectedRating,
+    minPrice,
+    maxPrice,
+    actualMinPrice,
+    actualMaxPrice,
+  ]);
+
+  // Reset filtering state when courses load
+  useEffect(() => {
+    if (courses) {
+      setIsFiltering(false);
+    }
+  }, [courses]);
 
   useEffect(() => {
     // Reset to first page when filters/search changes
@@ -375,7 +370,9 @@ const ActiveCourses: React.FC = () => {
         </CardContent>
       </Card>
 
-      {courses.length === 0 ? (
+      {isFiltering ? (
+        <CourseCardSkeleton count={itemsPerPage} />
+      ) : courses.length === 0 ? (
         <NoCourseFound
           title="No published courses found"
           description="There are no published or approved courses matching your criteria."
