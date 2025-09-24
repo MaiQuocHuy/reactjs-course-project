@@ -17,7 +17,7 @@ type Props = {
   sections: Section[];
 };
 
-const CourseContent = ({ sections }: Props) => {  
+const CourseContent = ({ sections }: Props) => {
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set()
   );
@@ -154,15 +154,17 @@ const CourseContent = ({ sections }: Props) => {
               {/* Lessons */}
               <div className="space-y-4">
                 <h4 className="font-medium">
-                  Lessons ({section.lessons.length})
+                  Lessons ({section.lessons?.length || 0})
                 </h4>
 
                 {/* Render lessons in edit mode */}
-                <div className="space-y-4">
-                  {section.lessons.map((lesson, lessonIndex) =>
-                    renderLesson(lesson, lessonIndex)
-                  )}
-                </div>
+                {section.lessons && section.lessons.length > 0 && (
+                  <div className="space-y-4">
+                    {section.lessons.map((lesson, lessonIndex) =>
+                      renderLesson(lesson, lessonIndex)
+                    )}
+                  </div>
+                )}
               </div>
             </CardContent>
           </CollapsibleContent>
@@ -172,7 +174,7 @@ const CourseContent = ({ sections }: Props) => {
   };
 
   return (
-    <div className='space-y-6'>
+    <div className="space-y-6">
       {sections.map((section, sectionIndex) =>
         renderSection(section, sectionIndex)
       )}
