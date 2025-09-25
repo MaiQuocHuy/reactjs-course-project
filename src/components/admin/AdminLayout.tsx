@@ -40,9 +40,9 @@ import { useGetRefundStatisticsQuery } from "@/services/refundsApi";
 import { useGetApplicationsQuery } from "@/services/applicationsApi";
 import { useGetRolesListQuery } from "@/services/rolesApi";
 import { usePermissions } from "@/hooks/usePermissions";
-import { useGetAllDiscountsQuery } from "@/services/discountsApi";
 import type { RootState } from "@/store/store";
 import { NotificationTrigger } from "../notifications/NotificationTrigger";
+import { useGetPendingCoursesQuery } from "@/services/coursesApi";
 
 // Component to render navigation item with permission check
 const PermissionNavigationItem: React.FC<{
@@ -133,6 +133,10 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const { data: categoriesData } = useGetAllCategoriesDropdownQuery();
   const categoriesCount = categoriesData?.data?.length || 0;
 
+  // Get pending / resubmitting courses count
+  const { data: pendingCoursesData } = useGetPendingCoursesQuery({page: 0, size: 100});
+  const pendingCoursesCount = pendingCoursesData?.content.length || 0;
+
   // Get payments count
   const { data: paymentStatistics } = useGetPaymentStatisticsQuery();
   const paymentsCount = paymentStatistics?.data?.total || 0;
@@ -150,11 +154,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   // Get roles count
   const { data: rolesListData } = useGetRolesListQuery();
   const rolesCount = rolesListData?.data?.length || 0;
-
-  // Get discounts count
-  const { data: discountsListData } = useGetAllDiscountsQuery({});
-  const discountsCount =
-    (discountsListData && discountsListData.page.totalElements) || 0;
 
   const navigation: NavigationItem[] = [
     { name: "Dashboard", href: "/admin", icon: Home }, // No permission needed for dashboard
@@ -194,7 +193,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       name: "Courses",
       href: "/admin/courses",
       icon: BookOpen,
-      badge: 3,
+      badge: pendingCoursesCount,
       permissions: ["course:READ"],
     },
     { name: "Certificates", href: "/admin/certificates", icon: Award },
@@ -202,7 +201,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       name: "Revenues",
       href: "/admin/revenues",
       icon: HandCoins,
-      badge: 1,
     },
     {
       name: "Affiliate Revenue",
@@ -227,8 +225,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       name: "Discounts",
       href: "/admin/discounts",
       icon: TicketPercent,
-      badge: discountsCount,
-      // permissions: ["payment:READ"],
     },
     {
       name: "Settings",
