@@ -19,8 +19,8 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const schema = z.object({
-  email: z.string().email("Email không hợp lệ"),
-  password: z.string().min(6, "Tối thiểu 6 ký tự"),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Minimum 6 characters"),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -58,16 +58,16 @@ export default function LoginForm() {
       console.error("Login error:", err);
 
       // Handle different error cases
-      let errorMessage = "Đăng nhập thất bại";
+      let errorMessage = "Login failed";
 
       if (err?.data?.message) {
         errorMessage = err.data.message;
       } else if (err?.status === 401) {
-        errorMessage = "Email hoặc mật khẩu không đúng";
+        errorMessage = "Invalid email or password";
       } else if (err?.status === 500) {
-        errorMessage = "Lỗi server, vui lòng thử lại";
+        errorMessage = "Server error, please try again";
       } else if (!navigator.onLine) {
-        errorMessage = "Không có kết nối internet";
+        errorMessage = "No internet connection";
       }
 
       toast.error(errorMessage);
@@ -79,8 +79,8 @@ export default function LoginForm() {
     return (
       <div className="max-w-sm mx-auto mt-10 p-6 border rounded-xl shadow-sm">
         <div className="text-center">
-          <p>Đã đăng nhập với tư cách {auth.user?.name}</p>
-          <p className="text-sm text-muted-foreground">Đang chuyển hướng...</p>
+          <p>Already logged in as {auth.user?.name}</p>
+          <p className="text-sm text-muted-foreground">Redirecting...</p>
         </div>
       </div>
     );
@@ -89,8 +89,8 @@ export default function LoginForm() {
   return (
     <div className="max-w-sm mx-auto mt-10 p-6 border rounded-xl shadow-sm space-y-4">
       <div className="text-center space-y-2">
-        <h2 className="text-xl font-semibold">Đăng nhập</h2>
-        <p className="text-sm text-muted-foreground">Đăng nhập với tài khoản admin của bạn</p>
+        <h2 className="text-xl font-semibold">Login</h2>
+        <p className="text-sm text-muted-foreground">Sign in to your admin account</p>
       </div>
 
       <Form {...form}>
@@ -123,7 +123,7 @@ export default function LoginForm() {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Mật khẩu</FormLabel>
+                <FormLabel>Password</FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Lock className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -142,7 +142,7 @@ export default function LoginForm() {
           />
 
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Đang đăng nhập..." : "Đăng nhập"}
+            {isLoading ? "Signing in..." : "Sign In"}
           </Button>
         </form>
       </Form>
