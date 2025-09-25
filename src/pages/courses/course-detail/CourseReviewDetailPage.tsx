@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import CourseContent from '@/components/courses/course-detail/course-content/CourseContent';
@@ -7,9 +7,13 @@ import { useGetPendingCoursesByIdQuery } from '@/services/coursesApi';
 import NoCourseFound from '@/components/courses/NoCourseFound';
 import CourseStatistics from '@/components/courses/course-detail/course-content/CourseStatistics';
 import CourseDetailSkeleton from './CourseDetailSkeleton';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 
 const CourseReviewDetailPage = () => {
   const { id } = useParams<{ id: string }>();
+
+  const navigate = useNavigate();
 
   const {
     data: courseData,
@@ -45,6 +49,16 @@ const CourseReviewDetailPage = () => {
 
   return (
     <div className="space-y-6">
+      {/* Back button */}
+      <Button
+        variant="outline"
+        onClick={() => navigate('/admin/pending-courses')}
+        className="flex items-center gap-2"
+      >
+        <ArrowLeft className="h-4 w-4" />{' '}
+        <span className="text-sm cursor-pointer">Back to courses</span>
+      </Button>
+
       {/* Instructor information */}
       {/* {instructor && <InstructorInfo instructor={instructor} />} */}
 
