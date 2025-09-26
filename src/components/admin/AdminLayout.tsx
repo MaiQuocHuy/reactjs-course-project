@@ -17,7 +17,6 @@ import {
   CreditCard,
   RefreshCw,
   Home,
-  Settings,
   LogOut,
   Search,
   Menu,
@@ -129,6 +128,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const location = useLocation();
   const [logOut] = useLogoutMutation();
 
+  // Get user data from Redux store
+  const user = useSelector((state: RootState) => state.auth.user);
+
   // Get categories count
   const { data: categoriesData } = useGetAllCategoriesDropdownQuery();
   const categoriesCount = categoriesData?.data?.length || 0;
@@ -139,11 +141,11 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
   // Get payments count
   const { data: paymentStatistics } = useGetPaymentStatisticsQuery();
-  const paymentsCount = paymentStatistics?.data?.total || 0;
+  const paymentsCount = paymentStatistics?.data?.pending || 0;
 
   // Get refund count
   const { data: refundStatistics } = useGetRefundStatisticsQuery();
-  const refundsCount = refundStatistics?.data?.total || 0;
+  const refundsCount = refundStatistics?.data?.pending || 0;
 
   // Get all pending applications count
   const { data: pendingApplicationsCount } = useGetApplicationsQuery();
@@ -226,11 +228,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       href: "/admin/discounts",
       icon: TicketPercent,
     },
-    {
-      name: "Settings",
-      href: "/admin/settings",
-      icon: Settings,
-    },
     // {
     //   name: "Permission Demo",
     //   href: "/admin/permission-system-demo",
@@ -295,30 +292,42 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-4 py-6 space-y-2">
-            {navigation.map((item) => (
-              <PermissionNavigationItem
-                key={item.name}
-                item={item}
-                isActive={isActive}
-                setSidebarOpen={setSidebarOpen}
-              />
-            ))}
+          <nav className="flex-1 overflow-y-auto">
+            <div className="px-4 py-6 space-y-2">
+              {navigation.map((item) => (
+                <PermissionNavigationItem
+                  key={item.name}
+                  item={item}
+                  isActive={isActive}
+                  setSidebarOpen={setSidebarOpen}
+                />
+              ))}
+            </div>
           </nav>
 
           {/* User info */}
           <div className="p-4 border-t border-gray-200">
             <div className="flex items-center space-x-3 p-3 rounded-lg bg-gray-50">
               <Avatar className="h-8 w-8">
-                <AvatarImage src="/api/placeholder/32/32" />
-                <AvatarFallback>AD</AvatarFallback>
+                <AvatarImage
+                  src={user?.thumbnailUrl || "/api/placeholder/32/32"}
+                />
+                <AvatarFallback>
+                  {user?.name
+                    ? user.name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                        .toUpperCase()
+                    : "AD"}
+                </AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-900 truncate">
-                  Admin User
+                  {user?.name || "Admin User"}
                 </p>
                 <p className="text-xs text-gray-500 truncate">
-                  admin@sybau.edu
+                  {user?.email || "admin@sybau.edu"}
                 </p>
               </div>
             </div>
@@ -365,22 +374,33 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                     className="flex items-center space-x-3"
                   >
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src="/api/placeholder/32/32" />
-                      <AvatarFallback>AD</AvatarFallback>
+                      <AvatarImage
+                        src={user?.thumbnailUrl || "/api/placeholder/32/32"}
+                      />
+                      <AvatarFallback>
+                        {user?.name
+                          ? user.name
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")
+                              .toUpperCase()
+                          : "AD"}
+                      </AvatarFallback>
                     </Avatar>
                     <span className="hidden sm:block text-sm font-medium">
-                      Admin User
+                      {user?.name || "Admin User"}
                     </span>
                     <ChevronDown className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                  <DropdownMenuLabel>
+                    My Account
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {user?.email || "No email"}
+                    </p>
+                  </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                    <Settings className="mr-2 h-4 w-4" />
-                    Settings
-                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleLogout}>
                     <LogOut className="mr-2 h-4 w-4" />
                     Log out
