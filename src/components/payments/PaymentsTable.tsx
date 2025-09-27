@@ -27,6 +27,15 @@ export const PaymentsTable = () => {
   const dispatch = useAppDispatch();
 
   const { data, isLoading, error, refetch } = useGetPaymentsQuery({
+    search: searchQuery || undefined,
+    status:
+      statusFilter !== "ALL"
+        ? (statusFilter as "PENDING" | "COMPLETED" | "FAILED")
+        : undefined,
+    paymentMethod:
+      paymentMethodFilter !== "ALL" ? paymentMethodFilter : undefined,
+    fromDate: dateRange.from || undefined,
+    toDate: dateRange.to || undefined,
     page: currentPage,
     size: itemsPerPage,
   });

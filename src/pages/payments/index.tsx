@@ -25,6 +25,15 @@ export const PaymentsPage = () => {
   } = useAppSelector((state) => state.searchFilter.payments);
 
   const { data } = useGetPaymentsQuery({
+    search: searchQuery || undefined,
+    status:
+      statusFilter !== "ALL"
+        ? (statusFilter as "PENDING" | "COMPLETED" | "FAILED")
+        : undefined,
+    paymentMethod:
+      paymentMethodFilter !== "ALL" ? paymentMethodFilter : undefined,
+    fromDate: dateRange.from || undefined,
+    toDate: dateRange.to || undefined,
     page: currentPage,
     size: itemsPerPage,
   });

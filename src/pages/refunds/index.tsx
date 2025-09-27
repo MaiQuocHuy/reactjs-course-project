@@ -18,6 +18,13 @@ const RefundsPage = () => {
     useAppSelector((state) => state.searchFilter.refunds);
 
   const { data, error } = useGetRefundsQuery({
+    search: searchQuery || undefined,
+    status:
+      statusFilter !== "ALL"
+        ? (statusFilter as "PENDING" | "COMPLETED" | "FAILED")
+        : undefined,
+    fromDate: dateRange.from || undefined,
+    toDate: dateRange.to || undefined,
     page: currentPage,
     size: itemsPerPage,
   });
