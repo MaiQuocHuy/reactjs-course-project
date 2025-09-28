@@ -73,8 +73,18 @@ const RefundsPage = () => {
                 statusFilter={statusFilter}
                 dateRange={dateRange}
                 searchQuery={searchQuery}
+                statusOptions={[
+                  { value: "ALL", label: "All Statuses" },
+                  { value: "PENDING", label: "Pending" },
+                  { value: "COMPLETED", label: "Completed" },
+                  { value: "FAILED", label: "Failed" },
+                ]}
                 onStatusFilterChange={(status) =>
-                  dispatch(setRefundsStatusFilter(status))
+                  dispatch(
+                    setRefundsStatusFilter(
+                      status as "ALL" | "PENDING" | "COMPLETED" | "FAILED"
+                    )
+                  )
                 }
                 onDateRangeChange={(range) =>
                   dispatch(setRefundsDateRange(range))
