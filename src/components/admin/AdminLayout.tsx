@@ -32,7 +32,7 @@ import {
   Award,
 } from "lucide-react";
 import { Input } from "../ui/input";
-import { useLogoutMutation } from "@/services/authApi";
+import { useLogoutAdminMutation } from "@/services/authApi";
 import { useGetAllCategoriesDropdownQuery } from "@/services/categoriesApi";
 import { useGetPaymentStatisticsQuery } from "@/services/paymentsApi";
 import { useGetRefundStatisticsQuery } from "@/services/refundsApi";
@@ -94,16 +94,11 @@ const PermissionNavigationItem: React.FC<{
       onClick={() => setSidebarOpen(false)}
     >
       <div className="flex items-center space-x-3">
-        <Icon
-          className={`h-5 w-5 ${active ? "text-blue-600" : "text-gray-400"}`}
-        />
+        <Icon className={`h-5 w-5 ${active ? "text-blue-600" : "text-gray-400"}`} />
         <span>{item.name}</span>
       </div>
       {item.badge && (
-        <Badge
-          variant={active ? "default" : "secondary"}
-          className="h-5 text-xs"
-        >
+        <Badge variant={active ? "default" : "secondary"} className="h-5 text-xs">
           {item.badge}
         </Badge>
       )}
@@ -126,7 +121,7 @@ interface NavigationItem {
 export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
-  const [logOut] = useLogoutMutation();
+  const [logOut] = useLogoutAdminMutation();
 
   // Get user data from Redux store
   const user = useSelector((state: RootState) => state.auth.user);
@@ -146,8 +141,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   // Get all pending applications count
   const { data: pendingApplicationsCount } = useGetApplicationsQuery();
   const pendingCount =
-    pendingApplicationsCount?.filter((app) => app.status === "PENDING")
-      .length || 0;
+    pendingApplicationsCount?.filter((app) => app.status === "PENDING").length || 0;
 
   // Get roles count
   const { data: rolesListData } = useGetRolesListQuery();
@@ -155,8 +149,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
   // Get discounts count
   const { data: discountsListData } = useGetAllDiscountsQuery({});
-  const discountsCount =
-    (discountsListData && discountsListData.page.totalElements) || 0;
+  const discountsCount = (discountsListData && discountsListData.page.totalElements) || 0;
 
   const navigation: NavigationItem[] = [
     { name: "Dashboard", href: "/admin", icon: Home }, // No permission needed for dashboard
@@ -281,9 +274,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">SE</span>
               </div>
-              <span className="text-xl font-bold text-gray-900">
-                Sybau Admin
-              </span>
+              <span className="text-xl font-bold text-gray-900">Sybau Admin</span>
             </div>
             <Button
               variant="ghost"
@@ -313,9 +304,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           <div className="p-4 border-t border-gray-200">
             <div className="flex items-center space-x-3 p-3 rounded-lg bg-gray-50">
               <Avatar className="h-8 w-8">
-                <AvatarImage
-                  src={user?.thumbnailUrl || "/api/placeholder/32/32"}
-                />
+                <AvatarImage src={user?.thumbnailUrl || "/api/placeholder/32/32"} />
                 <AvatarFallback>
                   {user?.name
                     ? user.name
@@ -330,9 +319,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                 <p className="text-sm font-medium text-gray-900 truncate">
                   {user?.name || "Admin User"}
                 </p>
-                <p className="text-xs text-gray-500 truncate">
-                  {user?.email || "admin@sybau.edu"}
-                </p>
+                <p className="text-xs text-gray-500 truncate">{user?.email || "admin@sybau.edu"}</p>
               </div>
             </div>
           </div>
@@ -373,14 +360,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               {/* User menu */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="flex items-center space-x-3"
-                  >
+                  <Button variant="ghost" className="flex items-center space-x-3">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage
-                        src={user?.thumbnailUrl || "/api/placeholder/32/32"}
-                      />
+                      <AvatarImage src={user?.thumbnailUrl || "/api/placeholder/32/32"} />
                       <AvatarFallback>
                         {user?.name
                           ? user.name
