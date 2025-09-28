@@ -28,7 +28,7 @@ export const PaymentsPage = () => {
     search: searchQuery || undefined,
     status:
       statusFilter !== "ALL"
-        ? (statusFilter as "PENDING" | "COMPLETED" | "FAILED")
+        ? (statusFilter as "PENDING" | "COMPLETED" | "FAILED" | "REFUNDED")
         : undefined,
     paymentMethod:
       paymentMethodFilter !== "ALL" ? paymentMethodFilter : undefined,

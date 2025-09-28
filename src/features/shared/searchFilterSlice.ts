@@ -4,7 +4,6 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 // Base interface for common search and filter functionality
 interface BaseSearchFilterState {
   searchQuery: string;
-  statusFilter: "ALL" | "PENDING" | "COMPLETED" | "FAILED";
   dateRange: {
     from: string | null;
     to: string | null;
@@ -13,20 +12,25 @@ interface BaseSearchFilterState {
   itemsPerPage: number;
 }
 
-// Extended interface for payments (includes payment method filter)
+// Interface for payments (includes payment method filter and REFUNDED status)
 interface PaymentsSearchFilterState extends BaseSearchFilterState {
+  statusFilter: "ALL" | "PENDING" | "COMPLETED" | "FAILED" | "REFUNDED";
   paymentMethodFilter: "ALL" | "stripe" | "paypal";
+}
+
+// Interface for refunds (does not include REFUNDED status)
+interface RefundsSearchFilterState extends BaseSearchFilterState {
+  statusFilter: "ALL" | "PENDING" | "COMPLETED" | "FAILED";
 }
 
 // State structure for the combined slice
 interface SearchFilterState {
   payments: PaymentsSearchFilterState;
-  refunds: BaseSearchFilterState;
+  refunds: RefundsSearchFilterState;
 }
 
 const baseInitialState: BaseSearchFilterState = {
   searchQuery: "",
-  statusFilter: "ALL",
   dateRange: {
     from: null,
     to: null,
@@ -38,10 +42,12 @@ const baseInitialState: BaseSearchFilterState = {
 const initialState: SearchFilterState = {
   payments: {
     ...baseInitialState,
+    statusFilter: "ALL",
     paymentMethodFilter: "ALL",
   },
   refunds: {
     ...baseInitialState,
+    statusFilter: "ALL",
   },
 };
 
@@ -97,7 +103,7 @@ const searchFilterSlice = createSlice({
     },
     setRefundsStatusFilter: (
       state,
-      action: PayloadAction<BaseSearchFilterState["statusFilter"]>
+      action: PayloadAction<RefundsSearchFilterState["statusFilter"]>
     ) => {
       state.refunds.statusFilter = action.payload;
       state.refunds.currentPage = 0;
