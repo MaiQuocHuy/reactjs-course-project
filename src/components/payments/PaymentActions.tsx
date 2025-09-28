@@ -64,6 +64,15 @@ export const PaymentActions = ({ payment }: PaymentActionsProps) => {
   });
   const navigate = useNavigate();
 
+  // Format numeric value to 2 decimal places with locale-aware separators
+  const formatAmount = (value: number | string | null | undefined) => {
+    const n = Number(value ?? 0);
+    return n.toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  };
+
   const handleViewDetails = () => {
     navigate(`/admin/payments/${payment.id}`);
   };
@@ -232,14 +241,14 @@ export const PaymentActions = ({ payment }: PaymentActionsProps) => {
 
                 <span className="text-muted-foreground">Amount:</span>
                 <span className="font-medium">
-                  ${paidOutDialog.data.amount}
+                  ${formatAmount(paidOutDialog.data.amount)}
                 </span>
 
                 <span className="text-muted-foreground">
                   Instructor Earning:
                 </span>
                 <span className="font-medium text-green-600">
-                  ${paidOutDialog.data.instructorEarning}
+                  ${formatAmount(paidOutDialog.data.instructorEarning)}
                 </span>
               </div>
               <p className="text-sm text-muted-foreground bg-muted p-2 rounded">

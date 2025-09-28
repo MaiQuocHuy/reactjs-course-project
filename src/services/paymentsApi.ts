@@ -11,7 +11,7 @@ import { createApi } from "@reduxjs/toolkit/query/react";
 // Payment query parameters interface
 export interface PaymentQueryParams {
   search?: string;
-  status?: "PENDING" | "COMPLETED" | "FAILED";
+  status?: "PENDING" | "COMPLETED" | "FAILED" | "REFUNDED";
   fromDate?: string;
   toDate?: string;
   paymentMethod?: string;
@@ -35,7 +35,7 @@ export const paymentsApi = createApi({
         size = 10,
       } = {}) => {
         const params: Record<string, any> = { page, size };
-        
+
         if (search) params.search = search;
         if (status) params.status = status;
         if (fromDate) params.fromDate = fromDate;

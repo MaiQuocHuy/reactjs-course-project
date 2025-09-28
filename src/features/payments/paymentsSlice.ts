@@ -4,7 +4,7 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 interface PaymentsState {
   // Filter states
   searchQuery: string;
-  statusFilter: "ALL" | "PENDING" | "COMPLETED" | "FAILED";
+  statusFilter: "ALL" | "PENDING" | "COMPLETED" | "FAILED" | "REFUNDED";
   paymentMethodFilter: "ALL" | "stripe" | "paypal";
   dateRange: {
     from: string | null;

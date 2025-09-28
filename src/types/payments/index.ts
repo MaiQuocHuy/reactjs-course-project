@@ -35,7 +35,7 @@ export interface PaymentResponse {
   user: PaymentUser;
   amount: number;
   currency: string;
-  status: "PENDING" | "COMPLETED" | "FAILED";
+  status: "PENDING" | "COMPLETED" | "FAILED" | "REFUNDED";
   paymentMethod: string;
   createdAt: string;
   paidAt: string | null;
@@ -48,7 +48,7 @@ export interface PaymentDetailResponse {
   user: PaymentUser;
   amount: number;
   currency: string;
-  status: "PENDING" | "COMPLETED" | "FAILED";
+  status: "PENDING" | "COMPLETED" | "FAILED" | "REFUNDED";
   paymentMethod: string;
   createdAt: string;
   paidAt: string | null;
@@ -150,7 +150,7 @@ export interface Payment {
   user: User;
   course: Course;
   amount: number;
-  status: "PENDING" | "COMPLETED" | "FAILED";
+  status: "PENDING" | "COMPLETED" | "FAILED" | "REFUNDED";
   paymentMethod: "stripe" | "paypal";
   sessionId?: string;
   paidAt?: string;
