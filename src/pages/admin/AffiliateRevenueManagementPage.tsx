@@ -37,13 +37,11 @@ import {
   useGetAffiliateStatisticsQuery,
   useMarkPayoutAsPaidMutation,
   useCancelPayoutMutation,
-  useExportPayoutsMutation,
   type PayoutParams,
 } from "@/services/affiliateApi";
 import { AffiliatePayoutDetailDialog } from "@/components/admin/AffiliatePayoutDetailDialog";
 import {
   Search,
-  Download,
   CheckCircle,
   XCircle,
   DollarSign,
@@ -83,7 +81,6 @@ const AffiliateRevenueManagementPage = () => {
 
   const [markAsPaid] = useMarkPayoutAsPaidMutation();
   const [cancelPayout] = useCancelPayoutMutation();
-  const [exportPayouts] = useExportPayoutsMutation();
 
   const payouts = payoutsResponse?.data?.content || [];
   const pagination = payoutsResponse?.data?.page || {
@@ -150,30 +147,6 @@ const AffiliateRevenueManagementPage = () => {
     }
   };
 
-  // Handle export
-  const handleExport = async () => {
-    try {
-      const result = await exportPayouts(filters).unwrap();
-
-      // Create download link
-      const url = window.URL.createObjectURL(new Blob([result]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute(
-        "download",
-        `affiliate-payouts-${new Date().toISOString().split("T")[0]}.csv`
-      );
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-
-      toast.success("Payouts exported successfully");
-    } catch (error) {
-      toast.error("Failed to export payouts");
-    }
-  };
-
   // Apply date range filter
   const applyDateFilter = () => {
     handleFilterChange("startDate", dateRange.startDate);
@@ -224,17 +197,6 @@ const AffiliateRevenueManagementPage = () => {
           <p className="text-muted-foreground">
             Manage commission payouts and track affiliate performance
           </p>
-        </div>
-
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={handleExport}
-            disabled={payoutsLoading}
-          >
-            <Download className="w-4 h-4 mr-2" />
-            Export
-          </Button>
         </div>
       </div>
 
@@ -307,79 +269,84 @@ const AffiliateRevenueManagementPage = () => {
           <CardTitle>Filters</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Search */}
-            <div className="space-y-2">
-              <Label>Search</Label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <div className="space-y-4">
+            {/* First row - Date Range, Search, Status */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Date Range */}
+              <div className="space-y-2">
+                <Label>Start Date</Label>
                 <Input
-                  placeholder="Search users, courses..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  type="date"
+                  value={dateRange.startDate}
+                  onChange={(e) =>
+                    setDateRange((prev) => ({
+                      ...prev,
+                      startDate: e.target.value,
+                    }))
+                  }
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label>End Date</Label>
+                <Input
+                  type="date"
+                  value={dateRange.endDate}
+                  onChange={(e) =>
+                    setDateRange((prev) => ({
+                      ...prev,
+                      endDate: e.target.value,
+                    }))
+                  }
+                />
+              </div>
+
+              {/* Search */}
+              <div className="space-y-2">
+                <Label>Search</Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search users, courses..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+
+              {/* Status Filter */}
+              <div className="space-y-2">
+                <Label>Status</Label>
+                <Select
+                  value={filters.status || "all"}
+                  onValueChange={(value) =>
+                    handleFilterChange(
+                      "status",
+                      value === "all" ? undefined : value
+                    )
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="All statuses" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Statuses</SelectItem>
+                    <SelectItem value="PENDING">Pending</SelectItem>
+                    <SelectItem value="PAID">Paid</SelectItem>
+                    <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
-            {/* Status Filter */}
-            <div className="space-y-2">
-              <Label>Status</Label>
-              <Select
-                value={filters.status || "all"}
-                onValueChange={(value) =>
-                  handleFilterChange(
-                    "status",
-                    value === "all" ? undefined : value
-                  )
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="All statuses" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="PENDING">Pending</SelectItem>
-                  <SelectItem value="PAID">Paid</SelectItem>
-                  <SelectItem value="CANCELLED">Cancelled</SelectItem>
-                </SelectContent>
-              </Select>
+            {/* Second row - Action Buttons */}
+            <div className="flex gap-2">
+              <Button onClick={applyDateFilter}>Apply Date Filter</Button>
+              <Button variant="outline" onClick={clearDateFilter}>
+                Clear
+              </Button>
             </div>
-
-            {/* Date Range */}
-            <div className="space-y-2">
-              <Label>Start Date</Label>
-              <Input
-                type="date"
-                value={dateRange.startDate}
-                onChange={(e) =>
-                  setDateRange((prev) => ({
-                    ...prev,
-                    startDate: e.target.value,
-                  }))
-                }
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>End Date</Label>
-              <Input
-                type="date"
-                value={dateRange.endDate}
-                onChange={(e) =>
-                  setDateRange((prev) => ({ ...prev, endDate: e.target.value }))
-                }
-              />
-            </div>
-          </div>
-
-          <div className="flex gap-2 mt-4">
-            <Button onClick={applyDateFilter} size="sm">
-              Apply Date Filter
-            </Button>
-            <Button variant="outline" onClick={clearDateFilter} size="sm">
-              Clear
-            </Button>
           </div>
         </CardContent>
       </Card>
@@ -431,8 +398,8 @@ const AffiliateRevenueManagementPage = () => {
                   <TableHead>Referrer</TableHead>
                   <TableHead>Course</TableHead>
                   <TableHead>Discount Code</TableHead>
-                  <TableHead>Commission</TableHead>
-                  <TableHead>Amount</TableHead>
+                  <TableHead className="text-right">Commission</TableHead>
+                  <TableHead className="text-right">Amount</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Created</TableHead>
                   <TableHead>Actions</TableHead>
@@ -472,8 +439,10 @@ const AffiliateRevenueManagementPage = () => {
                         </span>
                       )}
                     </TableCell>
-                    <TableCell>{payout.commissionPercent}%</TableCell>
-                    <TableCell className="font-medium">
+                    <TableCell className="text-right">
+                      {payout.commissionPercent}%
+                    </TableCell>
+                    <TableCell className="font-medium text-right">
                       {formatCurrency(payout.commissionAmount)}
                     </TableCell>
                     <TableCell>

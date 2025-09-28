@@ -153,7 +153,9 @@ export const ViewRoleDialog: React.FC<ViewRoleDialogProps> = ({
                             variant="secondary"
                             className="text-base px-3 py-1"
                           >
-                            {role.permissions?.length || 0}
+                            {role.permissions?.filter(
+                              (p) => p.isActive !== false
+                            )?.length || 0}
                           </Badge>
                         </div>
                       </div>

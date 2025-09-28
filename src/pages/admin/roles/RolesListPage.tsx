@@ -17,6 +17,7 @@ import {
   Trash2,
   Shield,
   UserPlus,
+  RefreshCw,
 } from "lucide-react";
 import {
   Table,
@@ -90,9 +91,14 @@ export const RolesListPage: React.FC = () => {
   const totalElements = rolesData?.data?.totalElements || 0;
 
   // Force refresh function to clear cache and refetch
-  const forceRefreshRoles = () => {
-    dispatch(rolesApi.util.invalidateTags(["Role"]));
-    refetch();
+  const forceRefreshRoles = async () => {
+    try {
+      dispatch(rolesApi.util.invalidateTags(["Role"]));
+      await refetch();
+      toast.success("Roles data refreshed successfully");
+    } catch (error) {
+      toast.error("Failed to refresh roles data");
+    }
   };
 
   // Helper function to check if role is protected (system role)
@@ -107,8 +113,15 @@ export const RolesListPage: React.FC = () => {
   };
 
   const handleView = (role: RoleWithPermissions) => {
-    setSelectedRole(role);
-    setViewDialogOpen(true);
+    // Clear previous selected role first to avoid showing stale data
+    setSelectedRole(null);
+    setViewDialogOpen(false);
+
+    // Set new role and open dialog after a small delay to ensure state is clean
+    setTimeout(() => {
+      setSelectedRole(role);
+      setViewDialogOpen(true);
+    }, 10);
   };
 
   const handleViewPermissions = (role: RoleWithPermissions) => {
@@ -183,6 +196,17 @@ export const RolesListPage: React.FC = () => {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            onClick={forceRefreshRoles}
+            variant="outline"
+            size="sm"
+            disabled={isLoading}
+          >
+            <RefreshCw
+              className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+            />
+            Refresh
+          </Button>
           <Button
             onClick={() => setCreateUserWithRoleDialogOpen(true)}
             variant="outline"
@@ -305,7 +329,9 @@ export const RolesListPage: React.FC = () => {
                         </TableCell>
                         <TableCell>
                           <Badge variant="secondary">
-                            {role.totalPermission || 0}
+                            {role.permissions?.filter(
+                              (p) => p.isActive !== false
+                            )?.length || 0}
                           </Badge>
                         </TableCell>
                         <TableCell>
