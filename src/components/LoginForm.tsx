@@ -16,7 +16,7 @@ import { Mail, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { useAppSelector } from "@/hooks/redux";
 import { useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const schema = z.object({
   email: z.string().email("Invalid email address"),
