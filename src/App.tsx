@@ -1,35 +1,31 @@
-import './App.css';
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from 'react-router-dom';
-import LoginForm from './components/LoginForm';
-import { AdminLayout } from './components/admin/AdminLayout';
-import { DashboardPage } from './pages/Dashboard/DashboardPage';
-import { UsersListPage } from './pages/admin/users';
-import { UserDetailPage } from './pages/admin/users';
-import { PaymentsPage } from './pages/payments';
-import { PaymentDetailPage } from './pages/payments/PaymentDetailPage';
-import RefundsPage from './pages/refunds';
-import { ApplicationDetail } from './components/ApplicationDetail/ApplicationDetail';
-import { ApplicationsListPage } from './pages/ApplicationList';
-import CoursesPage from './pages/courses/CoursesPage';
-import CourseDetailPage from './pages/courses/course-detail/CourseDetailPage';
-import CourseReviewDetailPage from './pages/courses/course-detail/CourseReviewDetailPage';
-import AffiliateRevenueManagementPage from './pages/admin/AffiliateRevenueManagementPage';
-import { Toaster } from '@/components/ui/sonner';
-import { RefundDetailPage } from './pages/refunds/RefundDetailPage';
-import { CategoriesListPage } from './pages/admin/categories/CategoriesListPage';
-import { RolesListPage } from './pages/admin/roles';
-import AdminCertificatesPage from './pages/certificates';
-import { PermissionProvider } from '@/components/providers/PermissionProvider';
-import PermissionDemoPage from './pages/admin/PermissionDemoPage';
-import AdminPermissionDemoPage from './pages/admin/AdminPermissionDemoPage';
-import { AssignRoleToUsersPage } from './pages/admin/users/AssignRoleToUsersPage';
-import DiscountsPage from './pages/discounts/DiscountsPage';
-import RevenuesPage2 from './pages/revenues/RevenuesPage';
+import "./App.css";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import LoginForm from "./components/LoginForm";
+import { AdminLayout } from "./components/admin/AdminLayout";
+import { DashboardPage } from "./pages/Dashboard/DashboardPage";
+import { UsersListPage } from "./pages/admin/users";
+import { UserDetailPage } from "./pages/admin/users";
+import { PaymentsPage } from "./pages/payments";
+import { PaymentDetailPage } from "./pages/payments/PaymentDetailPage";
+import RefundsPage from "./pages/refunds";
+import { ApplicationDetail } from "./components/ApplicationDetail/ApplicationDetail";
+import { ApplicationsListPage } from "./pages/ApplicationList";
+import CoursesPage from "./pages/courses/CoursesPage";
+import CourseDetailPage from "./pages/courses/course-detail/CourseDetailPage";
+import CourseReviewDetailPage from "./pages/courses/course-detail/CourseReviewDetailPage";
+import AffiliateRevenueManagementPage from "./pages/admin/AffiliateRevenueManagementPage";
+import { Toaster } from "@/components/ui/sonner";
+import { RefundDetailPage } from "./pages/refunds/RefundDetailPage";
+import { CategoriesListPage } from "./pages/admin/categories/CategoriesListPage";
+import { RolesListPage } from "./pages/admin/roles";
+import AdminCertificatesPage from "./pages/certificates";
+import { PermissionProvider } from "@/components/providers/PermissionProvider";
+import PermissionDemoPage from "./pages/admin/PermissionDemoPage";
+import AdminPermissionDemoPage from "./pages/admin/AdminPermissionDemoPage";
+import { AssignRoleToUsersPage } from "./pages/admin/users/AssignRoleToUsersPage";
+import DiscountsPage from "./pages/discounts/DiscountsPage";
+import RevenuesPage2 from "./pages/revenues/RevenuesPage";
+import { PrivateRoute, PublicRoute } from "./components/auth/PrivateRoute";
 
 function App() {
   return (
@@ -37,16 +33,25 @@ function App() {
       <PermissionProvider>
         <Router>
           <Routes>
-            {/* Login route */}
-            <Route path="/login" element={<LoginForm />} />
+            {/* Public routes (redirect to admin if already logged in) */}
+            <Route
+              path="/login"
+              element={
+                <PublicRoute>
+                  <LoginForm />
+                </PublicRoute>
+              }
+            />
 
-            {/* Admin routes */}
+            {/* Protected Admin routes */}
             <Route
               path="/admin"
               element={
-                <AdminLayout>
-                  <DashboardPage />
-                </AdminLayout>
+                <PrivateRoute>
+                  <AdminLayout>
+                    <DashboardPage />
+                  </AdminLayout>
+                </PrivateRoute>
               }
             />
 
@@ -54,9 +59,11 @@ function App() {
             <Route
               path="/admin/permissions-demo"
               element={
-                <AdminLayout>
-                  <PermissionDemoPage />
-                </AdminLayout>
+                <PrivateRoute>
+                  <AdminLayout>
+                    <PermissionDemoPage />
+                  </AdminLayout>
+                </PrivateRoute>
               }
             />
 
@@ -64,9 +71,11 @@ function App() {
             <Route
               path="/admin/permission-system-demo"
               element={
-                <AdminLayout>
-                  <AdminPermissionDemoPage />
-                </AdminLayout>
+                <PrivateRoute>
+                  <AdminLayout>
+                    <AdminPermissionDemoPage />
+                  </AdminLayout>
+                </PrivateRoute>
               }
             />
 
@@ -74,18 +83,22 @@ function App() {
             <Route
               path="/admin/users"
               element={
-                <AdminLayout>
-                  <UsersListPage />
-                </AdminLayout>
+                <PrivateRoute>
+                  <AdminLayout>
+                    <UsersListPage />
+                  </AdminLayout>
+                </PrivateRoute>
               }
             />
             {/* User Detail */}
             <Route
               path="/admin/users/:id"
               element={
-                <AdminLayout>
-                  <UserDetailPage />
-                </AdminLayout>
+                <PrivateRoute>
+                  <AdminLayout>
+                    <UserDetailPage />
+                  </AdminLayout>
+                </PrivateRoute>
               }
             />
 
@@ -93,9 +106,11 @@ function App() {
             <Route
               path="/admin/assign-roles"
               element={
-                <AdminLayout>
-                  <AssignRoleToUsersPage />
-                </AdminLayout>
+                <PrivateRoute>
+                  <AdminLayout>
+                    <AssignRoleToUsersPage />
+                  </AdminLayout>
+                </PrivateRoute>
               }
             />
 
@@ -103,35 +118,43 @@ function App() {
             <Route
               path="/admin/courses"
               element={
-                <AdminLayout>
-                  <CoursesPage />
-                </AdminLayout>
+                <PrivateRoute>
+                  <AdminLayout>
+                    <CoursesPage />
+                  </AdminLayout>
+                </PrivateRoute>
               }
             />
             <Route
               path="/admin/pending-courses"
               element={
-                <AdminLayout>
-                  <CoursesPage />
-                </AdminLayout>
+                <PrivateRoute>
+                  <AdminLayout>
+                    <CoursesPage />
+                  </AdminLayout>
+                </PrivateRoute>
               }
             />
             {/* Course Detail */}
             <Route
               path="/admin/courses/:id"
               element={
-                <AdminLayout>
-                  <CourseDetailPage />
-                </AdminLayout>
+                <PrivateRoute>
+                  <AdminLayout>
+                    <CourseDetailPage />
+                  </AdminLayout>
+                </PrivateRoute>
               }
             />
             {/* Course Review Detail */}
             <Route
               path="/admin/courses/review-course/:id"
               element={
-                <AdminLayout>
-                  <CourseReviewDetailPage />
-                </AdminLayout>
+                <PrivateRoute>
+                  <AdminLayout>
+                    <CourseReviewDetailPage />
+                  </AdminLayout>
+                </PrivateRoute>
               }
             />
 
@@ -139,9 +162,11 @@ function App() {
             <Route
               path="/admin/certificates"
               element={
-                <AdminLayout>
-                  <AdminCertificatesPage />
-                </AdminLayout>
+                <PrivateRoute>
+                  <AdminLayout>
+                    <AdminCertificatesPage />
+                  </AdminLayout>
+                </PrivateRoute>
               }
             />
 
@@ -149,9 +174,11 @@ function App() {
             <Route
               path="/admin/revenues"
               element={
-                <AdminLayout>
-                  <RevenuesPage2 />
-                </AdminLayout>
+                <PrivateRoute>
+                  <AdminLayout>
+                    <RevenuesPage2 />
+                  </AdminLayout>
+                </PrivateRoute>
               }
             />
 
@@ -159,9 +186,11 @@ function App() {
             <Route
               path="/admin/affiliate-revenue"
               element={
-                <AdminLayout>
-                  <AffiliateRevenueManagementPage />
-                </AdminLayout>
+                <PrivateRoute>
+                  <AdminLayout>
+                    <AffiliateRevenueManagementPage />
+                  </AdminLayout>
+                </PrivateRoute>
               }
             />
 
@@ -169,9 +198,11 @@ function App() {
             <Route
               path="/admin/categories"
               element={
-                <AdminLayout>
-                  <CategoriesListPage />
-                </AdminLayout>
+                <PrivateRoute>
+                  <AdminLayout>
+                    <CategoriesListPage />
+                  </AdminLayout>
+                </PrivateRoute>
               }
             />
 
@@ -179,9 +210,11 @@ function App() {
             <Route
               path="/admin/roles"
               element={
-                <AdminLayout>
-                  <RolesListPage />
-                </AdminLayout>
+                <PrivateRoute>
+                  <AdminLayout>
+                    <RolesListPage />
+                  </AdminLayout>
+                </PrivateRoute>
               }
             />
 
@@ -189,33 +222,41 @@ function App() {
             <Route
               path="/admin/payments"
               element={
-                <AdminLayout>
-                  <PaymentsPage />
-                </AdminLayout>
+                <PrivateRoute>
+                  <AdminLayout>
+                    <PaymentsPage />
+                  </AdminLayout>
+                </PrivateRoute>
               }
             />
             <Route
               path="/admin/payments/:id"
               element={
-                <AdminLayout>
-                  <PaymentDetailPage />
-                </AdminLayout>
+                <PrivateRoute>
+                  <AdminLayout>
+                    <PaymentDetailPage />
+                  </AdminLayout>
+                </PrivateRoute>
               }
             />
             <Route
               path="/admin/refunds"
               element={
-                <AdminLayout>
-                  <RefundsPage />
-                </AdminLayout>
+                <PrivateRoute>
+                  <AdminLayout>
+                    <RefundsPage />
+                  </AdminLayout>
+                </PrivateRoute>
               }
             />
             <Route
               path="/admin/refunds/:id"
               element={
-                <AdminLayout>
-                  <RefundDetailPage />
-                </AdminLayout>
+                <PrivateRoute>
+                  <AdminLayout>
+                    <RefundDetailPage />
+                  </AdminLayout>
+                </PrivateRoute>
               }
             />
 
@@ -223,32 +264,38 @@ function App() {
             <Route
               path="/admin/discounts"
               element={
-                <AdminLayout>
-                  <DiscountsPage />
-                </AdminLayout>
+                <PrivateRoute>
+                  <AdminLayout>
+                    <DiscountsPage />
+                  </AdminLayout>
+                </PrivateRoute>
               }
             />
 
             <Route
               path="/admin/applications/:userId"
               element={
-                <AdminLayout>
-                  <ApplicationDetail />
-                </AdminLayout>
+                <PrivateRoute>
+                  <AdminLayout>
+                    <ApplicationDetail />
+                  </AdminLayout>
+                </PrivateRoute>
               }
             />
 
             <Route
               path="/admin/applications"
               element={
-                <AdminLayout>
-                  <ApplicationsListPage />
-                </AdminLayout>
+                <PrivateRoute>
+                  <AdminLayout>
+                    <ApplicationsListPage />
+                  </AdminLayout>
+                </PrivateRoute>
               }
             />
 
             {/* Default redirect */}
-            <Route path="/" element={<Navigate to="/login" replace />} />
+            <Route path="/" element={<Navigate to="/admin" replace />} />
           </Routes>
         </Router>
         <Toaster position="top-right" richColors />

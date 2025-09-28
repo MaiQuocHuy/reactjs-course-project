@@ -16,7 +16,7 @@ import { Mail, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { useAppSelector } from "@/hooks/redux";
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const schema = z.object({
   email: z.string().email("Invalid email address"),
@@ -44,16 +44,16 @@ export default function LoginForm() {
   // Redirect if already authenticated
   useEffect(() => {
     if (auth.isAuthenticated) {
-      navigate("/admin");
+      navigate("/admin", { replace: true });
     }
-  }, [auth.isAuthenticated, auth.user]);
+  }, [auth.isAuthenticated, auth.user, navigate]);
 
   const onSubmit = async (data: FormValues) => {
     try {
       const res = await loginAdmin(data).unwrap();
 
       toast.success(res.message || "Login successful");
-      navigate("/admin");
+      navigate("/admin", { replace: true });
     } catch (err: any) {
       console.error("Login error:", err);
 
