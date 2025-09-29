@@ -84,6 +84,26 @@ export const authApi = createApi({
         }
       },
     }),
+
+    logoutAdmin: builder.mutation<any, void>({
+      query: () => ({
+        url: '/auth/admin/logout',
+        method: 'POST',
+        credentials: 'include', // Gửi cookie kèm theo
+      }),
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+        } catch (error) {
+          console.error('Logout API failed:', error);
+        } finally {
+          // Dù API có fail hay không thì vẫn clear localStorage và Redux
+          localStorage.removeItem('user');
+          localStorage.removeItem('accessToken');
+          dispatch(logout());
+        }
+      },
+    }),
   }),
 });
 
@@ -91,4 +111,5 @@ export const {
   useLoginAdminMutation,
   useRefreshTokenMutation,
   useLogoutMutation,
+  useLogoutAdminMutation
 } = authApi;

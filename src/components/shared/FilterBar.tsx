@@ -16,14 +16,18 @@ import {
 } from "@/components/ui/popover";
 
 interface FilterBarProps {
-  statusFilter: "ALL" | "PENDING" | "COMPLETED" | "FAILED";
+  statusFilter: "ALL" | "PENDING" | "COMPLETED" | "FAILED" | "REFUNDED";
   dateRange: {
     from: string | null;
     to: string | null;
   };
   searchQuery: string;
+  statusOptions?: Array<{
+    value: string;
+    label: string;
+  }>;
   onStatusFilterChange: (
-    status: "ALL" | "PENDING" | "COMPLETED" | "FAILED"
+    status: "ALL" | "PENDING" | "COMPLETED" | "FAILED" | "REFUNDED"
   ) => void;
   onDateRangeChange: (range: {
     from: string | null;
@@ -39,6 +43,7 @@ export const FilterBar = ({
   statusFilter,
   dateRange,
   searchQuery,
+  statusOptions,
   onStatusFilterChange,
   onDateRangeChange,
   onClearFilters,
@@ -61,10 +66,21 @@ export const FilterBar = ({
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="ALL">All Statuses</SelectItem>
-            <SelectItem value="PENDING">Pending</SelectItem>
-            <SelectItem value="COMPLETED">Completed</SelectItem>
-            <SelectItem value="FAILED">Failed</SelectItem>
+            {statusOptions ? (
+              statusOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))
+            ) : (
+              <>
+                <SelectItem value="ALL">All Statuses</SelectItem>
+                <SelectItem value="PENDING">Pending</SelectItem>
+                <SelectItem value="COMPLETED">Completed</SelectItem>
+                <SelectItem value="FAILED">Failed</SelectItem>
+                <SelectItem value="REFUNDED">Refunded</SelectItem>
+              </>
+            )}
           </SelectContent>
         </Select>
 

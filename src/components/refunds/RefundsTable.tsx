@@ -19,6 +19,13 @@ export const RefundsTable = () => {
     useAppSelector((state) => state.searchFilter.refunds);
 
   const { data, isLoading, error, refetch } = useGetRefundsQuery({
+    search: searchQuery || undefined,
+    status:
+      statusFilter !== "ALL"
+        ? (statusFilter as "PENDING" | "COMPLETED" | "FAILED")
+        : undefined,
+    fromDate: dateRange.from || undefined,
+    toDate: dateRange.to || undefined,
     page: currentPage,
     size: itemsPerPage,
   });
@@ -42,39 +49,7 @@ export const RefundsTable = () => {
 
   const allRefunds = data?.data?.content || [];
 
-  // Client-side filtering (API doesn't support server-side search/filter)
-  const filteredRefunds = allRefunds.filter((refund) => {
-    // Search: match id, payment id, or reason
-    if (searchQuery) {
-      const searchLower = searchQuery.toLowerCase();
-      const matchesSearch =
-        refund.id.toLowerCase().includes(searchLower) ||
-        refund.payment.user.name.toLowerCase().includes(searchLower) ||
-        refund.payment?.id?.toLowerCase().includes(searchLower) ||
-        refund.reason?.toLowerCase().includes(searchLower);
-      if (!matchesSearch) return false;
-    }
-
-    // Status filter
-    if (statusFilter !== "ALL" && refund.status !== statusFilter) {
-      return false;
-    }
-
-    // Date range filter (use requestedAt)
-    if (dateRange.from || dateRange.to) {
-      const refundDate = new Date(refund.requestedAt);
-      if (dateRange.from && refundDate < new Date(dateRange.from)) {
-        return false;
-      }
-      if (dateRange.to && refundDate > new Date(dateRange.to + " 23:59:59")) {
-        return false;
-      }
-    }
-
-    return true;
-  });
-
-  if (filteredRefunds.length === 0) {
+  if (allRefunds.length === 0) {
     return (
       <EmptyState
         type={hasActiveFilters ? "no-results" : "no-data"}
@@ -123,7 +98,7 @@ export const RefundsTable = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredRefunds.map((refund, index) => (
+              {allRefunds.map((refund, index) => (
                 <RefundRow
                   key={refund.id}
                   refund={refund}

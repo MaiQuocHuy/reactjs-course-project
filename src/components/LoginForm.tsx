@@ -44,16 +44,16 @@ export default function LoginForm() {
   // Redirect if already authenticated
   useEffect(() => {
     if (auth.isAuthenticated) {
-      navigate("/admin");
+      navigate("/admin", { replace: true });
     }
-  }, [auth.isAuthenticated, auth.user]);
+  }, [auth.isAuthenticated, auth.user, navigate]);
 
   const onSubmit = async (data: FormValues) => {
     try {
       const res = await loginAdmin(data).unwrap();
 
       toast.success(res.message || "Login successful");
-      navigate("/admin");
+      navigate("/admin", { replace: true });
     } catch (err: any) {
       console.error("Login error:", err);
 

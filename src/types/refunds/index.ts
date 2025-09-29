@@ -1,6 +1,5 @@
 import type { PaymentDetailResponse, PaymentUser } from "../payments";
 
-
 export interface RefundPaymentBasic {
   id: string;
   amount: number;

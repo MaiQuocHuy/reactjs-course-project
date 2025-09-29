@@ -18,6 +18,13 @@ const RefundsPage = () => {
     useAppSelector((state) => state.searchFilter.refunds);
 
   const { data, error } = useGetRefundsQuery({
+    search: searchQuery || undefined,
+    status:
+      statusFilter !== "ALL"
+        ? (statusFilter as "PENDING" | "COMPLETED" | "FAILED")
+        : undefined,
+    fromDate: dateRange.from || undefined,
+    toDate: dateRange.to || undefined,
     page: currentPage,
     size: itemsPerPage,
   });
@@ -66,8 +73,18 @@ const RefundsPage = () => {
                 statusFilter={statusFilter}
                 dateRange={dateRange}
                 searchQuery={searchQuery}
+                statusOptions={[
+                  { value: "ALL", label: "All Statuses" },
+                  { value: "PENDING", label: "Pending" },
+                  { value: "COMPLETED", label: "Completed" },
+                  { value: "FAILED", label: "Failed" },
+                ]}
                 onStatusFilterChange={(status) =>
-                  dispatch(setRefundsStatusFilter(status))
+                  dispatch(
+                    setRefundsStatusFilter(
+                      status as "ALL" | "PENDING" | "COMPLETED" | "FAILED"
+                    )
+                  )
                 }
                 onDateRangeChange={(range) =>
                   dispatch(setRefundsDateRange(range))
