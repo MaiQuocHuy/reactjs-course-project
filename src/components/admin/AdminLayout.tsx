@@ -42,6 +42,7 @@ import { usePermissions } from "@/hooks/usePermissions";
 import { useGetAllDiscountsQuery } from "@/services/discountsApi";
 import type { RootState } from "@/store/store";
 import { NotificationTrigger } from "../notifications/NotificationTrigger";
+import { useGetPendingCoursesQuery } from "@/services/coursesApi";
 
 // Component to render navigation item with permission check
 const PermissionNavigationItem: React.FC<{
@@ -151,6 +152,10 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const { data: discountsListData } = useGetAllDiscountsQuery({});
   const discountsCount = (discountsListData && discountsListData.page.totalElements) || 0;
 
+  // Get pending / resubmitted courses
+  const { data: pendingCourses } = useGetPendingCoursesQuery({size: 100});
+  const pendingCoursesCount = pendingCourses?.page.totalElements || 0;
+
   const navigation: NavigationItem[] = [
     { name: "Dashboard", href: "/admin", icon: Home }, // No permission needed for dashboard
     {
@@ -189,7 +194,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       name: "Courses",
       href: "/admin/courses",
       icon: BookOpen,
-      badge: 3,
+      badge: pendingCoursesCount,
       permissions: ["course:READ"],
     },
     { name: "Certificates", href: "/admin/certificates", icon: Award },
@@ -197,7 +202,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       name: "Revenues",
       href: "/admin/revenues",
       icon: HandCoins,
-      badge: 1,
     },
     {
       name: "Affiliate Revenue",
@@ -223,7 +227,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       href: "/admin/discounts",
       icon: TicketPercent,
       badge: discountsCount,
-      // permissions: ["payment:READ"],
     },
     // {
     //   name: "Permission Demo",
